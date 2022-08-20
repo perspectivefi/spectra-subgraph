@@ -1,0 +1,7 @@
+{
+    "network": "matic",
+    "startBlock": 22800000,
+    "contracts": {
+        "controller": "0x4bA30FA240047c17FC557b8628799068d4396790"
+    }
+}

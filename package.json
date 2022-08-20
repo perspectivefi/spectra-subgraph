@@ -1,0 +1,32 @@
+{
+    "name": "apwine-v2-subgraph",
+    "version": "0.0.1",
+    "repository": "https://github.com/APWine/apwine-v2-subgraph",
+    "license": "MIT",
+    "scripts": {
+        "create": "graph create apwine/apwine-v2-subgraph --node https://api.thegraph.com/deploy/",
+        "create-local": "graph create apwine/apwine-v2-subgraph --node http://127.0.0.1:8020",
+        "codegen": "graph codegen",
+        "build": "graph build",
+        "deploy": "graph deploy apwine/apwine-v2-subgraph --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
+        "deploy:local": "graph deploy apwine/apwine-v2-subgraph --debug --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
+        "generate-config": "node ./src/scripts/subgraphConfigGenerator.js",
+        "generate-config:polygon": "node ./src/scripts/subgraphConfigGenerator.js polygon",
+        "generate-config:arbitrum": "node ./src/scripts/subgraphConfigGenerator.js arbitrum"
+    },
+    "devDependencies": {
+        "@graphprotocol/graph-cli": "^0.30.2",
+        "@graphprotocol/graph-ts": "^0.27.0",
+        "@typescript-eslint/eslint-plugin": "^5.33.1",
+        "@typescript-eslint/parser": "^5.33.1",
+        "eslint": "^8.22.0",
+        "eslint-config-prettier": "^8.5.0",
+        "matchstick-as": "^0.5.0",
+        "prettier": "^2.7.1"
+    },
+    "dependencies": {
+        "babel-polyfill": "^6.26.0",
+        "babel-register": "^6.26.0",
+        "mustache": "^4.2.0"
+    }
+}

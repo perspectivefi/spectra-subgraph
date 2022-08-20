@@ -1,0 +1,26 @@
+name: PR check
+on: [pull_request]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Install modules
+        run: yarn
+      - name: Run prettier check
+        run: yarn run prettier "./**/*.{js,json,ts}" --check
+  test-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Install modules
+        run: yarn
+      - name: Run unit tests
+        run: yarn test

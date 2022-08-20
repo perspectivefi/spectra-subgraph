@@ -1,0 +1,27 @@
+type User @entity {
+    id: ID!
+    address: Bytes!
+
+    portfolio: [Token!] @derivedFrom(field: "user")
+}
+
+enum AssetType {
+    IBT
+    PT
+    YT
+    FYT
+    LP
+}
+
+type Token @entity {
+    id: ID!
+    address: Bytes!
+
+    symbol: String!
+    decimals: BigInt!
+    balance: BigDecimal!
+
+    type: TokenType!
+
+    user: User!
+}
