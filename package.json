@@ -12,7 +12,8 @@
         "deploy:local": "graph deploy apwine/apwine-v2-subgraph --debug --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
         "generate-config": "node ./src/scripts/subgraphConfigGenerator.js",
         "generate-config:polygon": "node ./src/scripts/subgraphConfigGenerator.js polygon",
-        "generate-config:arbitrum": "node ./src/scripts/subgraphConfigGenerator.js arbitrum"
+        "generate-config:arbitrum": "node ./src/scripts/subgraphConfigGenerator.js arbitrum",
+        "test": "graph test"
     },
     "devDependencies": {
         "@graphprotocol/graph-cli": "^0.30.2",
