@@ -65,6 +65,7 @@ typings/
 
 # IDE
 .idea
+.DS_Store
 
 # Subgraph config files (generated)
 subgraph.yaml
