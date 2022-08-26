@@ -13,7 +13,7 @@ enum AssetType {
     LP
 }
 
-type Token @entity {
+type PortfolioToken @entity {
     id: ID!
     address: Bytes!
 
@@ -21,7 +21,19 @@ type Token @entity {
     decimals: BigInt!
     balance: BigDecimal!
 
-    type: TokenType!
-
+    type: AssetType!
     user: User!
+}
+
+type Transaction @entity {
+    id: ID!
+    from: User!
+    to: User!
+    value: BigDecimal!
+    timestamp: BigInt!
+    block: BigInt!
+    gasUsed: Int!
+    gasPrice: BigDecimal!
+    input: String!
+    amount: BigInt!
 }
