@@ -1,39 +1,103 @@
-type User @entity {
-    id: ID!
-    address: Bytes!
-
-    portfolio: [Token!] @derivedFrom(field: "user")
-}
+####################
+# Enums
+####################
 
 enum AssetType {
+    UNDERLYING
     IBT
     PT
     YT
     FYT
     LP
+    UNKNOWN
 }
 
-type PortfolioToken @entity {
-    id: ID!
-    address: Bytes!
-
-    symbol: String!
-    decimals: BigInt!
-    balance: BigDecimal!
-
-    type: AssetType!
-    user: User!
+enum TransactionType {
+    DEPOSIT
+    WITHDRAW
+    CLAIM
+    SWAP
 }
 
-type Transaction @entity {
+enum FutureStatus {
+    ACTIVE
+    PAUSED
+    EXPIRED
+}
+
+enum AMM {
+    CURVE
+    UNISWAP_V3
+    UNKNOWN
+}
+
+enum FeedType {
+    CHAINLINK
+    REDSTONE
+}
+
+
+
+####################
+# Low level event entities
+####################
+
+type Value @entity {
+# defines set of values when timestamp of it’s creation is important
     id: ID!
-    from: User!
-    to: User!
-    value: BigDecimal!
     timestamp: BigInt!
-    block: BigInt!
-    gasUsed: Int!
-    gasPrice: BigDecimal!
-    input: String!
+    value: BigDecimal!
+}
+
+type Platform @entity {
+# IBT platform (as entity because of permissionless pool creation process - possibility to add new platforms without subgraph update)
+    id: ID!
+    createdAtTimestamp: BigInt!
+    name: String!
+    infoUrl: String!
+}
+
+type LPTokenDetails @entity {
+# if an Asset is LPToken we need more details for this entity
+    id: ID!
+    address: String!
+    createdAtTimestamp: BigInt!
+    supply: BigDecimal!
+    numberOfTokens: Int!
+    tokens: [Asset!]!
+}
+
+type FYTTokenDetails @entity {
+# if an AssetAmount describes amount of FYTToken we need more details for this entity
+    id: ID!
+    createdAtTimestamp: BigInt!
+    expirationAtTimestamp: BigInt!
+    generatedYield: BigDecimal!
+    generatedYieldValue: BigDecimal
+}
+
+
+
+####################
+# Assets and prices
+####################
+
+type AssetPrice @entity {
+# Asset dollar price which belongs to already created Asset entity
+    id: ID!
+    createdAtTimestamp: BigInt!
+    price: BigDecimal!
+    source: PriceSource
+    asset: Asset!
+}
+
+type AssetAmount @entity {
+# defines amount and value of all the instances of Asset as well as entity these values belongs to
+    id: ID!
+    createdAtTimestamp: BigInt!
     amount: BigInt!
+    value: BigDecimal!
+    asset: Asset!
+    user: User
+    fytTokenDetails: FYTTokenDetails
 }

@@ -5,8 +5,9 @@
 ## Networks and Performance
 
 This subgraph can be found on The Graph Hosted Service for the following networks:
-- [Mainnet](https://thegraph.com/hosted-service/subgraph/techlocalboy/apwine-v2-subgraph)
-- [Polygon](https://thegraph.com/hosted-service/subgraph/techlocalboy/apwine-v2-subgraph-polygon)
+- [Mainnet](https://thegraph.com/hosted-service/subgraph/apwine/apwine-v2-subgraph)
+- [Polygon](https://thegraph.com/hosted-service/subgraph/apwine/apwine-v2-subgraph-polygon)
+- [Arbitrum One](https://thegraph.com/hosted-service/subgraph/apwine/apwine-v2-subgraph-arbitrum)
 
 You can also run this subgraph locally, if you wish. Instructions for that can be found in [The Graph Documentation](https://thegraph.com/docs/en/cookbook/quick-start/).
 

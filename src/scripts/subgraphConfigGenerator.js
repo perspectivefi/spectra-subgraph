@@ -8,11 +8,11 @@ const rootDir = "../../"
 const DEFAULT = {
     NETWORK: "mainnet",
     TEMPLATE_PATH: path.resolve(__dirname, `${rootDir}/subgraph.template.yaml`),
-    FILENAME: "subgraph"
+    FILENAME: "subgraph",
 }
 
 const encoding = {
-    encoding: "utf-8"
+    encoding: "utf-8",
 }
 
 const generateConfig = (
@@ -60,7 +60,7 @@ if (NETWORK !== "all") {
         fs.readdir(
             path.resolve(__dirname, `${rootDir}/src/configs`),
             (_, files) => {
-                files.map(file => {
+                files.map((file) => {
                     const [network] = file.split(".")
                     generateConfig(network, FILENAME, TEMPLATE_PATH)
                 })
