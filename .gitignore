@@ -71,3 +71,6 @@ typings/
 subgraph.yaml
 subgraph.polygon.yaml
 subgraph.arbitrum.yaml
+
+# Tests
+tests/.bin/
