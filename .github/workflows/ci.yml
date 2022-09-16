@@ -22,5 +22,9 @@ jobs:
           ref: ${{ github.head_ref }}
       - name: Install modules
         run: yarn
+      - name: Generate default config file
+        run: yarn generate-config
+      - name: Build subgraph schema classes
+        run: yarn codegen
       - name: Run unit tests
         run: yarn test
