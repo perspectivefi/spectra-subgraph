@@ -31,7 +31,6 @@ describe("handleAnswerUpdated()", () => {
             "roundId",
             ethereum.Value.fromI32(1)
         )
-
         let updatedAtParam = new ethereum.EventParam(
             "updatedAt",
             ethereum.Value.fromI32(99)

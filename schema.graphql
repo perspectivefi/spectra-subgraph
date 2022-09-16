@@ -40,13 +40,6 @@ enum PriceSource {
 # Low level event entities
 ####################
 
-type Value @entity {
-# defines set of values when timestamp of it’s creation is important
-    id: ID!
-    timestamp: BigInt!
-    value: BigDecimal!
-}
-
 type Platform @entity {
 # IBT platform (as entity because of permissionless pool creation process - possibility to add new platforms without subgraph update)
     id: ID!
