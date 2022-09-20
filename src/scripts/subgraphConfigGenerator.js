@@ -36,7 +36,7 @@ const generateConfig = (
 
         const output = Mustache.render(template, view)
         const outputFileName =
-            network === DEFAULT.NETWORK
+            network === DEFAULT.NETWORK || network === "local"
                 ? `${filename}.yaml`
                 : `${filename}.${network}.yaml`
 
