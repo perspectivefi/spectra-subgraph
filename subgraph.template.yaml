@@ -3,15 +3,28 @@ description: APWine subgraph v2 config file template
 repository: https://github.com/APWine/apwine-v2-subgraph
 schema:
   file: ./schema.graphql
+features:
+  - nonFatalErrors
 dataSources:
-  - kind: ethereum/contract
-    network: {{ network }}
+  - name: ChainlinkAggregatorDataSource
+    kind: ethereum/contract
+    network: {{network}}
     source:
+      abi: ChainlinkAggregatorProxyContract
+      startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
       language: wasm/assemblyscript
-      entities:
+      entities: []
+      file: ./src/mappings/chainlinkAggregator.ts
       abis:
+        - name: ChainlinkAggregatorProxyContract
+          file: ./node_modules/@chainlink/contracts/abi/v0.8/AggregatorProxy.json
+        - name: FeedRegistryInterface
+          file: ./node_modules/@chainlink/contracts/abi/v0.8/FeedRegistryInterface.json
+        - name: ERC20Contract
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
       eventHandlers:
-      file: ./src/mappings/pools.ts
+        - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
+          handler: handleAnswerUpdated

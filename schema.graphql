@@ -31,23 +31,14 @@ enum AMM {
     UNKNOWN
 }
 
-enum FeedType {
+enum PriceSource {
     CHAINLINK
     REDSTONE
 }
 
-
-
 ####################
 # Low level event entities
 ####################
-
-type Value @entity {
-# defines set of values when timestamp of it’s creation is important
-    id: ID!
-    timestamp: BigInt!
-    value: BigDecimal!
-}
 
 type Platform @entity {
 # IBT platform (as entity because of permissionless pool creation process - possibility to add new platforms without subgraph update)
@@ -86,7 +77,7 @@ type AssetPrice @entity {
 # Asset dollar price which belongs to already created Asset entity
     id: ID!
     createdAtTimestamp: BigInt!
-    price: BigDecimal!
+    value: BigDecimal!
     source: PriceSource
     asset: Asset!
 }
@@ -98,6 +89,25 @@ type AssetAmount @entity {
     amount: BigInt!
     value: BigDecimal!
     asset: Asset!
-    user: User
+#    user: User
     fytTokenDetails: FYTTokenDetails
+}
+
+type Asset @entity {
+    id: ID!
+    address: String!
+    createdAtTimestamp: BigInt!
+    name: String!
+    symbol: String!
+    decimals: Int!
+    price: AssetPrice
+    type: String
+
+    chainlinkPriceFeed: ChainlinkAggregatorProxy
+}
+
+type ChainlinkAggregatorProxy @entity {
+    id: ID!
+    aggregator: String!
+    asset: Asset!
 }
