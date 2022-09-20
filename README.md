@@ -97,12 +97,7 @@ http://127.0.0.1:8000/subgraphs/name/apwine/apwine-v2-subgraph/graphql
 
 ### Deployment
 
-2b. Create subgraph
-```properties
-yarn create
-```
-
-3b. Generate subgraph config file for the network you want to deploy the subgraph
+1. Generate subgraph config file for the network you want to deploy the subgraph
 - Mainnet
 ```properties
 yarn generate-config
@@ -112,12 +107,22 @@ yarn generate-config
 generate-config:<NETWORK>
 ```
 
-4b. Authorize your TheGraph account 
+2. Generate contract and schema dependencies
+```properties
+yarn codegen
+```
+
+3. Create subgraph
+```properties
+yarn create
+```
+
+4. Authorize your TheGraph account 
 ```properties
 graph auth https://api.thegraph.com/deploy/ <ACCESS_TOKEN>
 ```
 
-5b. Deploy the subgraph
+5. Deploy the subgraph
 - Mainnet
 ```properties
 yarn deploy
