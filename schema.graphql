@@ -1,4 +1,18 @@
 ####################
+# Registry
+####################
+
+type RegisteredContract @entity {
+    id: ID!
+    name: String!
+    address: String!
+}
+
+type Test @entity {
+    id: ID!
+}
+
+####################
 # Enums
 ####################
 
