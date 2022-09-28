@@ -1,17 +1,7 @@
 import { Bytes } from "@graphprotocol/graph-ts"
 
-import {
-    Initialized,
-    RegistryUpdate,
-} from "../../generated/APWineProtocol/Registry"
-import { Registry, RegisteredContract } from "../../generated/schema"
-
-export function handleInitialized(event: Initialized): void {
-    let registry = new Registry("1")
-    registry.contracts = []
-
-    registry.save()
-}
+import { RegistryUpdate } from "../../generated/APWineProtocol/Registry"
+import { RegisteredContract } from "../../generated/schema"
 
 export function handleRegistryUpdate(event: RegistryUpdate): void {
     let contractName = event.params._contractName

@@ -9,30 +9,16 @@ import {
     beforeEach,
 } from "matchstick-as/assembly/index"
 
-import {
-    Initialized,
-    RegistryUpdate,
-} from "../../generated/APWineProtocol/Registry"
+import { RegistryUpdate } from "../../generated/APWineProtocol/Registry"
 import { RegisteredContract } from "../../generated/schema"
-import { handleInitialized, handleRegistryUpdate } from "../mappings/registry"
-import { REGISTERED_CONTRACT_ENTITY, REGISTRY_ENTITY } from "./utils/entities"
+import { handleRegistryUpdate } from "../mappings/registry"
 import {
     FIRST_CONTRACT_NAME,
     SECOND_CONTRACT_NAME,
     NEW_ADDRESS_MOCK,
     OLD_ADDRESS_MOCK,
 } from "./mocks/Registry"
-
-describe("handleInitialized()", () => {
-    test("Should create new Registry entity", () => {
-        let newInitializedEvent = changetype<Initialized>(newMockEvent())
-
-        handleInitialized(newInitializedEvent)
-
-        assert.entityCount(REGISTRY_ENTITY, 1)
-        assert.fieldEquals(REGISTRY_ENTITY, "1", "contracts", "[]")
-    })
-})
+import { REGISTERED_CONTRACT_ENTITY } from "./utils/entities"
 
 describe("handleRegistryUpdate()", () => {
     beforeEach(() => {
@@ -90,6 +76,7 @@ describe("handleRegistryUpdate()", () => {
     test("Should create new RegisteredContract entity for every different contract name", () => {
         assert.entityCount(REGISTERED_CONTRACT_ENTITY, 2)
     })
+
     test("Should should save new address and add the old one to the history", () => {
         // third event
         let thirdRegistryUpdateEvent = changetype<RegistryUpdate>(
@@ -130,6 +117,7 @@ describe("handleRegistryUpdate()", () => {
             "address",
             NEW_ADDRESS_MOCK.toHexString()
         )
+
         assert.equals(
             ethereum.Value.fromBytes(firstContract.addressesHistory[0]),
             ethereum.Value.fromAddress(OLD_ADDRESS_MOCK)

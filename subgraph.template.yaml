@@ -42,7 +42,5 @@ dataSources:
         - name: Registry
           file: ./abis/Registry.json
       eventHandlers:
-        - event: Initialized(uint8)
-          handler: handleInitialized
         - event: RegistryUpdate(string,address,address)
           handler: handleRegistryUpdate
