@@ -2,14 +2,15 @@
 # Registry
 ####################
 
-type RegisteredContract @entity {
+type Registry @entity {
     id: ID!
-    name: String!
-    address: String!
+    contracts: [RegisteredContract!]
 }
 
-type Test @entity {
+type RegisteredContract @entity {
     id: ID!
+    address: Bytes!
+    addressesHistory: [Bytes!]!
 }
 
 ####################

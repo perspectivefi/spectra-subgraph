@@ -10,7 +10,7 @@ import {
 
 import { AnswerUpdated } from "../../generated/ChainlinkAggregatorDataSource/ChainlinkAggregatorProxyContract"
 import { handleAnswerUpdated } from "../../src/mappings/chainlinkAggregator"
-import { ASSET_ENTITY_TYPE } from "./entities"
+import { ASSET_ENTITY } from "./utils/entities"
 import { ETH_ADDRESS_MOCK, mockERC20Functions } from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 
@@ -45,9 +45,9 @@ describe("handleAnswerUpdated()", () => {
 
         handleAnswerUpdated(newAnswerUpdatedEvent)
 
-        assert.entityCount(ASSET_ENTITY_TYPE, 1)
+        assert.entityCount(ASSET_ENTITY, 1)
         assert.fieldEquals(
-            ASSET_ENTITY_TYPE,
+            ASSET_ENTITY,
             ETH_ADDRESS_MOCK,
             "price",
             `${ETH_ADDRESS_MOCK}-${newAnswerUpdatedEvent.block.timestamp}`

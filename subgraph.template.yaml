@@ -28,27 +28,21 @@ dataSources:
           handler: handleAnswerUpdated
   - name: APWineProtocol
     kind: ethereum/contract
-    network: {{ network }}
+    network: mainnet
     source:
-      abi: FutureVault
-      address: '0x731a10897d267e19b34503ad902d0a29173ba4b1'
+      abi: Registry
+      startBlock: 0
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
       apiVersion: 0.0.5
-      entities: []
+      entities: [ ]
       file: ./src/mappings/registry.ts
       abis:
         - name: Registry
           file: ./abis/Registry.json
-        - name: TokenFactory
-          file: ./abis/TokenFactory.json
-        - name: FutureVault
-          file: ./abis/FutureVault.json
       eventHandlers:
         - event: Initialized(uint8)
           handler: handleInitialized
-        - event: Deposit(indexed address,indexed address,uint256,uint256)
-          handler: handleDeposit
-      blockHandlers:
-        - handler: handleBlock
+        - event: RegistryUpdate(string,address,address)
+          handler: handleRegistryUpdate
