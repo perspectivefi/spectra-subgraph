@@ -1,13 +1,13 @@
 import { RegistryUpdate } from "../../generated/Registry/Registry"
-import { RegisteredContract } from "../../generated/schema"
-import { createRegisteredContract } from "../entities/RegisteredContract"
+import { RegisteredTokenFactory } from "../../generated/schema"
+import { createRegisteredTokenFactory } from "../entities/RegisteredTokenFactory"
 
 export function handleRegistryUpdate(event: RegistryUpdate): void {
     let contractAddress = event.params._new
-    let contract = RegisteredContract.load(contractAddress.toHex())
+    let contract = RegisteredTokenFactory.load(contractAddress.toHex())
 
     if (!contract) {
-        contract = createRegisteredContract(
+        contract = createRegisteredTokenFactory(
             contractAddress,
             event.params._contractName,
             event.block.timestamp
@@ -15,10 +15,10 @@ export function handleRegistryUpdate(event: RegistryUpdate): void {
     }
 
     let oldAddress = event.params._old
-    let oldContract = RegisteredContract.load(oldAddress.toHex())
+    let oldContract = RegisteredTokenFactory.load(oldAddress.toHex())
 
     if (!oldContract) {
-        oldContract = createRegisteredContract(
+        oldContract = createRegisteredTokenFactory(
             oldAddress,
             event.params._contractName,
             event.block.timestamp

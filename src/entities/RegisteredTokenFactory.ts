@@ -1,13 +1,13 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 
-import { RegisteredContract } from "../../generated/schema"
+import { RegisteredTokenFactory } from "../../generated/schema"
 
-export function createRegisteredContract(
+export function createRegisteredTokenFactory(
     address: Address,
     name: string,
     timestamp: BigInt
-): RegisteredContract {
-    let newContract = new RegisteredContract(address.toHex())
+): RegisteredTokenFactory {
+    let newContract = new RegisteredTokenFactory(address.toHex())
     newContract.name = name
     newContract.address = address
     newContract.createdAtTimestamp = timestamp

@@ -64,7 +64,7 @@ describe("handleRegistryUpdate()", () => {
         clearStore()
     })
 
-    test("Should create new RegisteredContract entity for every registry update with unique address", () => {
+    test("Should create new RegisteredTokenFactory entity for every registry update with unique address", () => {
         assert.entityCount(REGISTERED_CONTRACT_ENTITY, 2)
     })
 
@@ -83,7 +83,7 @@ describe("handleRegistryUpdate()", () => {
         )
     })
 
-    test("Should create RegisteredContract entity with old address if the one has been updated but entity with the old address does not exist", () => {
+    test("Should create RegisteredTokenFactory entity with old address if the one has been updated but entity with the old address does not exist", () => {
         // third event
         let registryUpdateEvent = changetype<RegistryUpdate>(newMockEvent())
 

@@ -2,11 +2,11 @@
 # Registry
 ####################
 
-type RegisteredContract @entity {
+type RegisteredTokenFactory @entity {
     id: ID!
     createdAtTimestamp: BigInt!
     name: String!
-    old: RegisteredContract
+    old: RegisteredTokenFactory
     address: Bytes!
 }
 
