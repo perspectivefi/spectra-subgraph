@@ -1,23 +1,32 @@
-import { Bytes } from "@graphprotocol/graph-ts"
-
-import { RegistryUpdate } from "../../generated/APWineProtocol/Registry"
+import { RegistryUpdate } from "../../generated/Registry/Registry"
 import { RegisteredContract } from "../../generated/schema"
+import { createRegisteredContract } from "../entities/RegisteredContract"
 
 export function handleRegistryUpdate(event: RegistryUpdate): void {
-    let contractName = event.params._contractName
-    let contract = RegisteredContract.load(contractName)
-
-    let addressesHistory: Bytes[] = []
+    let contractAddress = event.params._new
+    let contract = RegisteredContract.load(contractAddress.toHex())
 
     if (!contract) {
-        contract = new RegisteredContract(contractName)
-    } else if (contract.addressesHistory.length > 0) {
-        addressesHistory = contract.addressesHistory
+        contract = createRegisteredContract(
+            contractAddress,
+            event.params._contractName,
+            event.block.timestamp
+        )
     }
 
-    addressesHistory.push(event.params._old)
+    let oldAddress = event.params._old
+    let oldContract = RegisteredContract.load(oldAddress.toHex())
 
-    contract.addressesHistory = addressesHistory
-    contract.address = event.params._new
+    if (!oldContract) {
+        oldContract = createRegisteredContract(
+            oldAddress,
+            event.params._contractName,
+            event.block.timestamp
+        )
+        oldContract.save()
+    }
+
+    contract.old = oldContract.address.toHex()
+
     contract.save()
 }

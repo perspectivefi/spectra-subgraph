@@ -6,15 +6,21 @@ import {
     afterEach,
     clearStore,
     assert,
+    beforeAll,
 } from "matchstick-as/assembly/index"
 
 import { AnswerUpdated } from "../../generated/ChainlinkAggregatorDataSource/ChainlinkAggregatorProxyContract"
-import { handleAnswerUpdated } from "../../src/mappings/chainlinkAggregator"
-import { ASSET_ENTITY } from "./utils/entities"
+import { handleAnswerUpdated } from "../mappings/chainlinkAggregator"
 import { ETH_ADDRESS_MOCK, mockERC20Functions } from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
+import { ASSET_ENTITY } from "./utils/entities"
 
 describe("handleAnswerUpdated()", () => {
+    beforeAll(() => {
+        mockERC20Functions()
+        mockFeedRegistryInterfaceFunctions()
+    })
+
     afterEach(() => {
         clearStore()
     })
@@ -35,9 +41,6 @@ describe("handleAnswerUpdated()", () => {
             "updatedAt",
             ethereum.Value.fromI32(99)
         )
-
-        mockERC20Functions()
-        mockFeedRegistryInterfaceFunctions()
 
         newAnswerUpdatedEvent.parameters.push(currentParam)
         newAnswerUpdatedEvent.parameters.push(roundIdParam)

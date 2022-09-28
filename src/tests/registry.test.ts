@@ -9,23 +9,21 @@ import {
     beforeEach,
 } from "matchstick-as/assembly/index"
 
-import { RegistryUpdate } from "../../generated/APWineProtocol/Registry"
-import { RegisteredContract } from "../../generated/schema"
+import { RegistryUpdate } from "../../generated/Registry/Registry"
 import { handleRegistryUpdate } from "../mappings/registry"
 import {
     FIRST_CONTRACT_NAME,
     SECOND_CONTRACT_NAME,
     NEW_ADDRESS_MOCK,
     OLD_ADDRESS_MOCK,
+    THIRD_EVENT_ADDRESS_MOCK,
 } from "./mocks/Registry"
 import { REGISTERED_CONTRACT_ENTITY } from "./utils/entities"
 
 describe("handleRegistryUpdate()", () => {
     beforeEach(() => {
         // first event
-        let firstRegistryUpdateEvent = changetype<RegistryUpdate>(
-            newMockEvent()
-        )
+        let registryUpdateEvent = changetype<RegistryUpdate>(newMockEvent())
 
         let firstNameParam = new ethereum.EventParam(
             "_contractName",
@@ -42,46 +40,52 @@ describe("handleRegistryUpdate()", () => {
             ethereum.Value.fromAddress(OLD_ADDRESS_MOCK)
         )
 
-        firstRegistryUpdateEvent.parameters = [
+        registryUpdateEvent.parameters = [
             firstNameParam,
             oldAddressParam,
             newAddressParam,
         ]
-        handleRegistryUpdate(firstRegistryUpdateEvent)
+        handleRegistryUpdate(registryUpdateEvent)
 
         // // second event
-        let secondRegistryUpdateEvent = changetype<RegistryUpdate>(
-            newMockEvent()
-        )
-
-        secondRegistryUpdateEvent.parameters = new Array()
-
         let secondNameParam = new ethereum.EventParam(
             "_contractName",
             ethereum.Value.fromString(SECOND_CONTRACT_NAME)
         )
 
-        secondRegistryUpdateEvent.parameters = [
+        registryUpdateEvent.parameters = [
             secondNameParam,
             oldAddressParam,
             newAddressParam,
         ]
-        handleRegistryUpdate(secondRegistryUpdateEvent)
-        handleRegistryUpdate(secondRegistryUpdateEvent)
+        handleRegistryUpdate(registryUpdateEvent)
     })
     afterEach(() => {
         clearStore()
     })
 
-    test("Should create new RegisteredContract entity for every different contract name", () => {
+    test("Should create new RegisteredContract entity for every registry update with unique address", () => {
         assert.entityCount(REGISTERED_CONTRACT_ENTITY, 2)
     })
 
-    test("Should should save new address and add the old one to the history", () => {
-        // third event
-        let thirdRegistryUpdateEvent = changetype<RegistryUpdate>(
-            newMockEvent()
+    test("Should should save new address and add the old one to the entity", () => {
+        assert.fieldEquals(
+            REGISTERED_CONTRACT_ENTITY,
+            NEW_ADDRESS_MOCK.toHex(),
+            "address",
+            NEW_ADDRESS_MOCK.toHexString()
         )
+        assert.fieldEquals(
+            REGISTERED_CONTRACT_ENTITY,
+            NEW_ADDRESS_MOCK.toHex(),
+            "old",
+            OLD_ADDRESS_MOCK.toHexString()
+        )
+    })
+
+    test("Should create RegisteredContract entity with old address if the one has been updated but entity with the old address does not exist", () => {
+        // third event
+        let registryUpdateEvent = changetype<RegistryUpdate>(newMockEvent())
 
         let nameParam = new ethereum.EventParam(
             "_contractName",
@@ -94,7 +98,7 @@ describe("handleRegistryUpdate()", () => {
         )
 
         let thirdEventOldAddress = ethereum.Value.fromAddress(
-            Address.fromString("0x0000000000000000000000000000000000000005")
+            Address.fromString(THIRD_EVENT_ADDRESS_MOCK)
         )
 
         let oldAddressParam = new ethereum.EventParam(
@@ -102,32 +106,30 @@ describe("handleRegistryUpdate()", () => {
             thirdEventOldAddress
         )
 
-        thirdRegistryUpdateEvent.parameters = [
+        registryUpdateEvent.parameters = [
             nameParam,
             oldAddressParam,
             newAddressParam,
         ]
-        handleRegistryUpdate(thirdRegistryUpdateEvent)
-
-        let firstContract = RegisteredContract.load(FIRST_CONTRACT_NAME)!
+        handleRegistryUpdate(registryUpdateEvent)
 
         assert.fieldEquals(
             REGISTERED_CONTRACT_ENTITY,
-            FIRST_CONTRACT_NAME,
+            NEW_ADDRESS_MOCK.toHex(),
             "address",
-            NEW_ADDRESS_MOCK.toHexString()
+            NEW_ADDRESS_MOCK.toHex()
         )
-
-        assert.equals(
-            ethereum.Value.fromBytes(firstContract.addressesHistory[0]),
-            ethereum.Value.fromAddress(OLD_ADDRESS_MOCK)
+        assert.fieldEquals(
+            REGISTERED_CONTRACT_ENTITY,
+            NEW_ADDRESS_MOCK.toHex(),
+            "old",
+            THIRD_EVENT_ADDRESS_MOCK
         )
-
-        let secondContract = RegisteredContract.load(SECOND_CONTRACT_NAME)!
-
-        assert.equals(
-            ethereum.Value.fromBytes(secondContract.addressesHistory[2]),
-            thirdEventOldAddress
+        assert.fieldEquals(
+            REGISTERED_CONTRACT_ENTITY,
+            THIRD_EVENT_ADDRESS_MOCK,
+            "address",
+            THIRD_EVENT_ADDRESS_MOCK
         )
     })
 })

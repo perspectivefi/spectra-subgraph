@@ -4,8 +4,10 @@
 
 type RegisteredContract @entity {
     id: ID!
+    createdAtTimestamp: BigInt!
+    name: String!
+    old: RegisteredContract
     address: Bytes!
-    addressesHistory: [Bytes!]!
 }
 
 ####################
@@ -46,6 +48,12 @@ enum PriceSource {
     REDSTONE
 }
 
+enum FutureState {
+    ACTIVE
+    PAUSED
+    EXPIRED
+}
+
 ####################
 # Low level event entities
 ####################
@@ -76,8 +84,6 @@ type FYTTokenDetails @entity {
     generatedYield: BigDecimal!
     generatedYieldValue: BigDecimal
 }
-
-
 
 ####################
 # Assets and prices
@@ -120,4 +126,24 @@ type ChainlinkAggregatorProxy @entity {
     id: ID!
     aggregator: String!
     asset: Asset!
+}
+
+####################
+# Futures
+####################
+
+type Future @entity {
+    id: ID!
+    address: String!
+    createdAtTimestamp: BigInt!
+    expirationAtTimestamp: BigInt!
+#    daoFeeRate: BigDecimal!
+#    totalFees: BigDecimal!
+#    infoUrl: String
+    state: FutureState!
+#    ibtToUnderlyingRatio: Value
+#    manager: User!
+#    platform: Platform!
+#    ibt: Asset!
+#    pools: [Pool!]
 }
