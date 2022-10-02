@@ -17,3 +17,9 @@ export const generateAssetPriceId = (
     tokenAddress: string,
     timestamp: string
 ): string => `${tokenAddress}-${timestamp}`
+
+// Fees
+export const generateFeeClaimId = (
+    collectorAddress: string,
+    timestamp: string
+): string => `${collectorAddress}-${timestamp}`
