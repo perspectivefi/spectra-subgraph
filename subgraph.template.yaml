@@ -59,8 +59,28 @@ dataSources:
       abis:
         - name: FutureVaultFactory
           file: ./abis/FutureVaultFactory.json
-        - name: FutureVault
-          file: ./abis/FutureVault.json
       eventHandlers:
         - event: FutureVaultDeployed(address)
           handler: handleFutureVaultDeployed
+  - name: FutureVault
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: FutureVault
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      language: wasm/assemblyscript
+      apiVersion: 0.0.5
+      entities: [ ]
+      file: ./src/mappings/futures.ts
+      abis:
+        - name: FutureVault
+          file: ./abis/FutureVault.json
+      eventHandlers:
+        - event: Paused(address)
+          handler: handlePaused
+        - event: Unpaused(address)
+          handler: handleUnpaused
+        - event: FeeClaimed(indexed address,uint256)
+          handler: handleFeeClaimed

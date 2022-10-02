@@ -22,6 +22,8 @@ import { FUTURE_VAULT_FACTORY_ENTITY } from "./utils/entities"
 
 describe("handleRegistryUpdate()", () => {
     beforeEach(() => {
+        clearStore()
+
         // first event
         let registryUpdateEvent = changetype<RegistryUpdate>(newMockEvent())
 
@@ -59,9 +61,6 @@ describe("handleRegistryUpdate()", () => {
             newAddressParam,
         ]
         handleRegistryUpdate(registryUpdateEvent)
-    })
-    afterEach(() => {
-        clearStore()
     })
 
     test("Should create new FutureVaultFactory entity for every registry update with unique address", () => {
