@@ -17,7 +17,7 @@ You can also run this subgraph locally, if you wish. Instructions for that can b
 1. Install subgraph dependencies
 
 ```properties
-yarn start
+yarn
 ```
 
 2. Generate contract and schema dependencies
