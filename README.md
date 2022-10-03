@@ -29,13 +29,7 @@ You can also run this subgraph locally, if you wish. Instructions for that can b
 yarn
 ```
 
-2. Generate contract and schema dependencies
-
-```properties
-yarn codegen
-```
-
-3. Generate subgraph config per network
+2. Generate subgraph config per network
 
 -   Mainnet
 
@@ -47,6 +41,14 @@ yarn generate-config
 
 ```properties
 yarn generate-config:<NETWORK>
+```
+
+3. Generate contract and schema dependencies
+
+This step will load all contract ABIs used by our subgraph and generate the corresponding TypeScript interfaces.
+
+```properties
+yarn codegen
 ```
 
 ## Local development
