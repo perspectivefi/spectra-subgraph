@@ -204,7 +204,7 @@ Platform - IBT platform (not an enum to be able to expand list of platforms)
 _Asset:_
 
 ```properties
-AssetPrice - to connect exact token with price 
+AssetPrice - to connect exact token with price
 ```
 
 ```properties
@@ -233,7 +233,7 @@ _User:_
 FeeClaim - to store history of the fee claims with its details
 ```
 
-**3. Enums** - fixed option for a field 
+**3. Enums** - fixed option for a field
 
 ## Example queries
 
