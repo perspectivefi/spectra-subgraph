@@ -12,6 +12,15 @@ This subgraph can be found on The Graph Hosted Service for the following network
 
 You can also run this subgraph locally, if you wish. Instructions for that can be found in [The Graph Documentation](https://thegraph.com/docs/en/cookbook/quick-start/).
 
+## Prerequisites
+
+-   [Foundry](https://getfoundry.sh/), along with `anvil` (included)
+-   The [IPFS CLI](https://docs.ipfs.tech/install/command-line/)
+-   A running instance of [Postgres](https://www.postgresql.org/docs/current/server-start.html)
+    -   The quickest way to get this up and running is through the official [Docker image](https://hub.docker.com/_/postgres) (`docker run -it --rm --network some-network postgres psql -h some-postgres -U postgres`).
+-   The [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) Rust package manager
+-   The [Graph CLI](https://thegraph.com/docs/en/cookbook/quick-start/)
+
 ## Setup
 
 1. Install subgraph dependencies
