@@ -12,6 +12,7 @@ export function getUser(userAddress: string, timestamp: BigInt): User {
     user = new User(userAddress)
     user.createdAtTimestamp = timestamp
     user.collectedFees = []
+    user.transactions = []
 
     user.save()
     return user

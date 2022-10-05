@@ -84,3 +84,9 @@ dataSources:
           handler: handleUnpaused
         - event: FeeClaimed(indexed address,uint256)
           handler: handleFeeClaimed
+        - event: Deposit(indexed address,indexed address,uint256,uint256)
+          handler: handleDeposit
+        - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleWithdraw
+        - event: Redeem(indexed address,indexed address,uint256)
+          handler: handleRedeem

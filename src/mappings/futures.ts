@@ -1,9 +1,12 @@
-import { log } from "@graphprotocol/graph-ts"
+import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
 import {
+    Deposit,
     FeeClaimed,
     Paused,
+    Redeem,
     Unpaused,
+    Withdraw,
 } from "../../generated/FutureVault/FutureVault"
 import { FutureVaultDeployed } from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { FeeClaim, Future } from "../../generated/schema"
@@ -18,6 +21,7 @@ import {
     getUnderlying,
     getTotalAssets,
 } from "../entities/FutureVault"
+import { createTransaction } from "../entities/Transaction"
 import { getUser } from "../entities/User"
 import { generateFeeClaimId } from "../utils/idGenerators"
 
@@ -106,6 +110,67 @@ export function handleFeeClaimed(event: FeeClaimed): void {
         claim.save()
     } else {
         log.warning("FeeClaimed event call for not existing Future {}", [
+            event.address.toHex(),
+        ])
+    }
+}
+
+export function handleDeposit(event: Deposit): void {
+    let future = Future.load(event.address.toHex())
+
+    if (future) {
+        createTransaction({
+            transactionAddress: Address.fromBytes(event.transaction.hash),
+
+            fromAddress: event.params.caller,
+            toAddress: event.params.owner,
+
+            // futureInTransaction: event.params.caller,
+
+            // if user == 0x00000000000.... then not exists - and the same for futureInTransaction
+            userInTransaction: event.params.owner,
+
+            amountIn: event.params.assets,
+            amountOut: event.params.shares,
+
+            // assetIn: Address
+            // assetOut: Address
+
+            transaction: {
+                timestamp: event.block.timestamp,
+                block: event.block.number,
+
+                gas: event.block.gasUsed,
+                gasPrice: event.transaction.gasPrice,
+                type: "DEPOSIT",
+            },
+        })
+    } else {
+        log.warning("Deposit event call for not existing Future {}", [
+            event.address.toHex(),
+        ])
+    }
+}
+
+export function handleWithdraw(event: Withdraw): void {
+    let future = Future.load(event.address.toHex())
+
+    if (future) {
+        //
+    } else {
+        log.warning("Withdraw event call for not existing Future {}", [
+            event.address.toHex(),
+        ])
+    }
+}
+
+export function handleRedeem(event: Redeem): void {
+    let future = Future.load(event.address.toHex())
+
+    if (future) {
+        // getTransaction()
+    } else {
+        log.warning("Redeem event call for not existing Future {}", [
             event.address.toHex(),
         ])
     }

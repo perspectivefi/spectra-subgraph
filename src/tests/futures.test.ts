@@ -1,4 +1,4 @@
-import { ethereum, log } from "@graphprotocol/graph-ts"
+import { Address, BigInt, ethereum, log } from "@graphprotocol/graph-ts"
 import {
     assert,
     beforeEach,
@@ -11,12 +11,14 @@ import {
 } from "matchstick-as/assembly/index"
 
 import {
+    Deposit,
     FeeClaimed,
     Paused,
     Unpaused,
 } from "../../generated/FutureVault/FutureVault"
 import { FutureVaultDeployed } from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import {
+    handleDeposit,
     handleFeeClaimed,
     handleFutureVaultDeployed,
     handlePaused,
@@ -36,6 +38,7 @@ import {
     ASSET_ENTITY,
     FEE_CLAIM_ENTITY,
     FUTURE_ENTITY,
+    TRANSACTION_ENTITY,
     USER_ENTITY,
 } from "./utils/entities"
 
@@ -198,5 +201,66 @@ describe("handleFeeClaimed()", () => {
             "feeClaims",
             `[${feeClaimId}]`
         )
+    })
+})
+
+describe("handleDeposit()", () => {
+    test("Should create a new Transaction entity with properly assign future as well as fee collector entity", () => {
+        let depositEvent = changetype<Deposit>(newMockEvent())
+        depositEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+
+        let callerParam = new ethereum.EventParam(
+            "caller",
+            ethereum.Value.fromAddress(FEE_COLLECTOR_ADDRESS_MOCK)
+        )
+
+        let ownerParam = new ethereum.EventParam(
+            "owner",
+            ethereum.Value.fromAddress(FEE_COLLECTOR_ADDRESS_MOCK)
+        )
+
+        let assetsParam = new ethereum.EventParam(
+            "assets",
+            ethereum.Value.fromI32(15)
+        )
+
+        let sharesParam = new ethereum.EventParam(
+            "shares",
+            ethereum.Value.fromI32(51)
+        )
+
+        depositEvent.parameters = [
+            callerParam,
+            ownerParam,
+            assetsParam,
+            sharesParam,
+        ]
+
+        handleDeposit(depositEvent)
+
+        logStore()
+
+        assert.entityCount(TRANSACTION_ENTITY, 1)
+
+        // let feeClaimId = generateFeeClaimId(
+        //   FEE_COLLECTOR_ADDRESS_MOCK.toHex(),
+        //   feeClaimedEvent.block.timestamp.toString()
+        // )
+        //
+        // assert.fieldEquals(FEE_CLAIM_ENTITY, feeClaimId, "amount", "50")
+        //
+        // assert.fieldEquals(
+        //   USER_ENTITY,
+        //   FEE_COLLECTOR_ADDRESS_MOCK.toHex(),
+        //   "collectedFees",
+        //   `[${feeClaimId}]`
+        // )
+        //
+        // assert.fieldEquals(
+        //   FUTURE_ENTITY,
+        //   FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+        //   "feeClaims",
+        //   `[${feeClaimId}]`
+        // )
     })
 })

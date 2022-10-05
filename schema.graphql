@@ -151,6 +151,8 @@ type Future @entity {
     underlyingAsset: Asset!
     ibtAsset: Asset!
 
+#    transaction: [Transaction!]! @derivedFrom(field: "futureInTransaction")
+#
 #    ibtToUnderlyingRatio: Value
 
 #    platform: Platform!
@@ -175,5 +177,29 @@ type FeeClaim @entity {
 type User @entity {
     id: ID!
     createdAtTimestamp: BigInt!
+
     collectedFees: [FeeClaim!]! @derivedFrom(field: "feeCollector")
+    transactions: [Transaction!]! @derivedFrom(field: "userInTransaction")
+}
+
+type Transaction @entity {
+    id: ID!
+    address: Bytes!
+    createdAtTimestamp: BigInt!
+    block: BigInt!
+
+    gas: BigInt!
+    gasPrice: BigInt!
+
+#    fee: BigDecimal!
+    type: TransactionType!
+
+    from: Bytes!
+    to: Bytes!
+
+    userInTransaction: User
+#    futureInTransaction: Future
+
+    amountIn: BigInt!
+    amountOut: BigInt!
 }
