@@ -1,7 +1,7 @@
 import { BigInt } from "@graphprotocol/graph-ts"
 import { Address, log } from "@graphprotocol/graph-ts/index"
 
-import { FutureVault } from "../../generated/Futures/FutureVault"
+import { FutureVault } from "../../generated/FutureVault/FutureVault"
 
 export function getExpirationTimestamp(address: Address): BigInt {
     const futureContract = FutureVault.bind(address)

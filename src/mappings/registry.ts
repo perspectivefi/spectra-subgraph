@@ -1,13 +1,13 @@
 import { RegistryUpdate } from "../../generated/Registry/Registry"
-import { RegisteredTokenFactory } from "../../generated/schema"
-import { createRegisteredTokenFactory } from "../entities/RegisteredTokenFactory"
+import { FutureVaultFactory } from "../../generated/schema"
+import { createFutureVaultFactory } from "../entities/FutureVaultFactory"
 
 export function handleRegistryUpdate(event: RegistryUpdate): void {
     let contractAddress = event.params._new
-    let contract = RegisteredTokenFactory.load(contractAddress.toHex())
+    let futureVaultFactory = FutureVaultFactory.load(contractAddress.toHex())
 
-    if (!contract) {
-        contract = createRegisteredTokenFactory(
+    if (!futureVaultFactory) {
+        futureVaultFactory = createFutureVaultFactory(
             contractAddress,
             event.params._contractName,
             event.block.timestamp
@@ -15,10 +15,10 @@ export function handleRegistryUpdate(event: RegistryUpdate): void {
     }
 
     let oldAddress = event.params._old
-    let oldContract = RegisteredTokenFactory.load(oldAddress.toHex())
+    let oldContract = FutureVaultFactory.load(oldAddress.toHex())
 
     if (!oldContract) {
-        oldContract = createRegisteredTokenFactory(
+        oldContract = createFutureVaultFactory(
             oldAddress,
             event.params._contractName,
             event.block.timestamp
@@ -26,7 +26,7 @@ export function handleRegistryUpdate(event: RegistryUpdate): void {
         oldContract.save()
     }
 
-    contract.old = oldContract.address.toHex()
+    futureVaultFactory.old = oldContract.address.toHex()
 
-    contract.save()
+    futureVaultFactory.save()
 }

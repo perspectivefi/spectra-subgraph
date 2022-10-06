@@ -8,7 +8,7 @@ import {
     beforeAll,
 } from "matchstick-as/assembly/index"
 
-import { FutureVaultDeployed } from "../../generated/Futures/TokenFactory"
+import { FutureVaultDeployed } from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { handleFutureVaultDeployed } from "../mappings/futures"
 import {
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,

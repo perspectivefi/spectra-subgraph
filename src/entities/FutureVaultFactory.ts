@@ -1,13 +1,13 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 
-import { RegisteredTokenFactory } from "../../generated/schema"
+import { FutureVaultFactory } from "../../generated/schema"
 
-export function createRegisteredTokenFactory(
+export function createFutureVaultFactory(
     address: Address,
     name: string,
     timestamp: BigInt
-): RegisteredTokenFactory {
-    let newContract = new RegisteredTokenFactory(address.toHex())
+): FutureVaultFactory {
+    let newContract = new FutureVaultFactory(address.toHex())
     newContract.name = name
     newContract.address = address
     newContract.createdAtTimestamp = timestamp

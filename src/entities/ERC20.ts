@@ -5,9 +5,9 @@ import { ERC20Contract } from "../../generated/ChainlinkAggregatorDataSource/ERC
 const UNKNOWN = "Unknown"
 
 export function getERC20Name(address: Address): string {
-    let contract = ERC20Contract.bind(address)
+    let erc20Contract = ERC20Contract.bind(address)
 
-    let nameCall = contract.try_name()
+    let nameCall = erc20Contract.try_name()
 
     if (!nameCall.reverted) {
         return nameCall.value
@@ -20,9 +20,9 @@ export function getERC20Name(address: Address): string {
 }
 
 export function getERC20Symbol(address: Address): string {
-    let contract = ERC20Contract.bind(address)
+    let erc20Contract = ERC20Contract.bind(address)
 
-    let symbolCall = contract.try_symbol()
+    let symbolCall = erc20Contract.try_symbol()
 
     if (!symbolCall.reverted) {
         return symbolCall.value
@@ -35,9 +35,9 @@ export function getERC20Symbol(address: Address): string {
 }
 
 export function getERC20Decimals(address: Address): i32 {
-    let contract = ERC20Contract.bind(address)
+    let erc20Contract = ERC20Contract.bind(address)
 
-    let decimalsCall = contract.try_decimals()
+    let decimalsCall = erc20Contract.try_decimals()
 
     if (!decimalsCall.reverted) {
         return decimalsCall.value

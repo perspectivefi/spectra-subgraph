@@ -2,11 +2,11 @@
 # Registry
 ####################
 
-type RegisteredTokenFactory @entity {
+type FutureVaultFactory @entity {
     id: ID!
     createdAtTimestamp: BigInt!
     name: String!
-    old: RegisteredTokenFactory
+    old: FutureVaultFactory
     address: Bytes!
 }
 

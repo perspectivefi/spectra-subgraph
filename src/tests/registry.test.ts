@@ -18,7 +18,7 @@ import {
     OLD_ADDRESS_MOCK,
     THIRD_EVENT_ADDRESS_MOCK,
 } from "./mocks/Registry"
-import { REGISTERED_CONTRACT_ENTITY } from "./utils/entities"
+import { FUTURE_VAULT_FACTORY_ENTITY } from "./utils/entities"
 
 describe("handleRegistryUpdate()", () => {
     beforeEach(() => {
@@ -64,26 +64,26 @@ describe("handleRegistryUpdate()", () => {
         clearStore()
     })
 
-    test("Should create new RegisteredTokenFactory entity for every registry update with unique address", () => {
-        assert.entityCount(REGISTERED_CONTRACT_ENTITY, 2)
+    test("Should create new FutureVaultFactory entity for every registry update with unique address", () => {
+        assert.entityCount(FUTURE_VAULT_FACTORY_ENTITY, 2)
     })
 
     test("Should should save new address and add the old one to the entity", () => {
         assert.fieldEquals(
-            REGISTERED_CONTRACT_ENTITY,
+            FUTURE_VAULT_FACTORY_ENTITY,
             NEW_ADDRESS_MOCK.toHex(),
             "address",
             NEW_ADDRESS_MOCK.toHexString()
         )
         assert.fieldEquals(
-            REGISTERED_CONTRACT_ENTITY,
+            FUTURE_VAULT_FACTORY_ENTITY,
             NEW_ADDRESS_MOCK.toHex(),
             "old",
             OLD_ADDRESS_MOCK.toHexString()
         )
     })
 
-    test("Should create RegisteredTokenFactory entity with old address if the one has been updated but entity with the old address does not exist", () => {
+    test("Should create FutureVaultFactory entity with old address if the one has been updated but entity with the old address does not exist", () => {
         // third event
         let registryUpdateEvent = changetype<RegistryUpdate>(newMockEvent())
 
@@ -114,19 +114,19 @@ describe("handleRegistryUpdate()", () => {
         handleRegistryUpdate(registryUpdateEvent)
 
         assert.fieldEquals(
-            REGISTERED_CONTRACT_ENTITY,
+            FUTURE_VAULT_FACTORY_ENTITY,
             NEW_ADDRESS_MOCK.toHex(),
             "address",
             NEW_ADDRESS_MOCK.toHex()
         )
         assert.fieldEquals(
-            REGISTERED_CONTRACT_ENTITY,
+            FUTURE_VAULT_FACTORY_ENTITY,
             NEW_ADDRESS_MOCK.toHex(),
             "old",
             THIRD_EVENT_ADDRESS_MOCK
         )
         assert.fieldEquals(
-            REGISTERED_CONTRACT_ENTITY,
+            FUTURE_VAULT_FACTORY_ENTITY,
             THIRD_EVENT_ADDRESS_MOCK,
             "address",
             THIRD_EVENT_ADDRESS_MOCK

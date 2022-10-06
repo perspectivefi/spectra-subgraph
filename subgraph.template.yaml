@@ -44,11 +44,11 @@ dataSources:
       eventHandlers:
         - event: RegistryUpdate(string,address,address)
           handler: handleRegistryUpdate
-  - name: Futures
+  - name: FutureVaultFactory
     kind: ethereum/contract
     network: mainnet
     source:
-      abi: TokenFactory
+      abi: FutureVaultFactory
       startBlock: 0
     mapping:
       kind: ethereum/events
@@ -57,8 +57,8 @@ dataSources:
       entities: [ ]
       file: ./src/mappings/futures.ts
       abis:
-        - name: TokenFactory
-          file: ./abis/TokenFactory.json
+        - name: FutureVaultFactory
+          file: ./abis/FutureVaultFactory.json
         - name: FutureVault
           file: ./abis/FutureVault.json
       eventHandlers:

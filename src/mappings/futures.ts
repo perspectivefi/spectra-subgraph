@@ -1,4 +1,4 @@
-import { FutureVaultDeployed } from "../../generated/Futures/TokenFactory"
+import { FutureVaultDeployed } from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { Future } from "../../generated/schema"
 import { getExpirationTimestamp } from "../entities/FutureVault"
 
