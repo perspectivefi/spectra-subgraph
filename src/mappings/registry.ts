@@ -15,18 +15,18 @@ export function handleRegistryUpdate(event: RegistryUpdate): void {
     }
 
     let oldAddress = event.params._old
-    let oldContract = FutureVaultFactory.load(oldAddress.toHex())
+    let oldFutureVaultFactory = FutureVaultFactory.load(oldAddress.toHex())
 
-    if (!oldContract) {
-        oldContract = createFutureVaultFactory(
+    if (!oldFutureVaultFactory) {
+        oldFutureVaultFactory = createFutureVaultFactory(
             oldAddress,
             event.params._contractName,
             event.block.timestamp
         )
-        oldContract.save()
+        oldFutureVaultFactory.save()
     }
 
-    futureVaultFactory.old = oldContract.address.toHex()
+    futureVaultFactory.old = oldFutureVaultFactory.address.toHex()
 
     futureVaultFactory.save()
 }

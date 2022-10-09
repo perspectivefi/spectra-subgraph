@@ -18,7 +18,7 @@ export function getAsset(
         if (type === "UNDERLYING") {
             asset = createUnderlyingAsset(address, timestamp, type)
         }
-        if (type === "IBT") {
+        if (["IBT", "PT", "YT"].includes(type)) {
             asset = createAsset(address, timestamp, type)
         }
     }
@@ -57,7 +57,7 @@ export function createUnderlyingAsset(
 
 function createAsset(address: string, timestamp: BigInt, type: string): Asset {
     let asset = new Asset(address)
-    asset.address = address
+    asset.address = Address.fromString(address)
     asset.createdAtTimestamp = timestamp
     asset.type = type
 

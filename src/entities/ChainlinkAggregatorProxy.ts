@@ -20,7 +20,7 @@ export function getChainlinkAggregatorProxy(
         "UNDERLYING"
     )
 
-    proxy = createChainlinkAggregatorProxy(id, asset.address, timestamp)
+    proxy = createChainlinkAggregatorProxy(id, asset.address.toHex(), timestamp)
 
     return proxy
 }

@@ -2,6 +2,7 @@ import { BigInt } from "@graphprotocol/graph-ts"
 import { Address, log } from "@graphprotocol/graph-ts"
 
 import { FutureVault } from "../../generated/FutureVault/FutureVault"
+import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 
 export function getExpirationTimestamp(address: Address): BigInt {
     const futureContract = FutureVault.bind(address)
@@ -70,7 +71,7 @@ export function getUnderlying(address: Address): Address {
 
     log.warning("underlying() call reverted for {}", [address.toHex()])
 
-    return Address.fromString("0x0000000000000000000000000000000000000000")
+    return ZERO_ADDRESS
 }
 
 export function getIBT(address: Address): Address {
@@ -84,7 +85,21 @@ export function getIBT(address: Address): Address {
 
     log.warning("asset() call reverted for {}", [address.toHex()])
 
-    return Address.fromString("0x0000000000000000000000000000000000000000")
+    return ZERO_ADDRESS
+}
+
+export function getYT(address: Address): Address {
+    const futureContract = FutureVault.bind(address)
+
+    let ytCall = futureContract.try_yt()
+
+    if (!ytCall.reverted) {
+        return ytCall.value
+    }
+
+    log.warning("ytCall() call reverted for {}", [address.toHex()])
+
+    return ZERO_ADDRESS
 }
 
 export function getTotalAssets(address: Address): BigInt {
@@ -98,5 +113,5 @@ export function getTotalAssets(address: Address): BigInt {
 
     log.warning("totalAssets() call reverted for {}", [address.toHex()])
 
-    return BigInt.fromString("0")
+    return ZERO_BI
 }

@@ -1,4 +1,4 @@
-import { Address, BigInt, log } from "@graphprotocol/graph-ts"
+import { Address, log } from "@graphprotocol/graph-ts"
 
 import {
     Deposit,
@@ -10,8 +10,9 @@ import {
 } from "../../generated/FutureVault/FutureVault"
 import { FutureVaultDeployed } from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { FeeClaim, Future } from "../../generated/schema"
-import { ZERO_BD } from "../constants"
+import { ZERO_BD, ZERO_BI } from "../constants"
 import { getAsset } from "../entities/Asset"
+import { getAssetAmount } from "../entities/AssetAmount"
 import {
     getExpirationTimestamp,
     getMaxFeeRate,
@@ -20,9 +21,12 @@ import {
     getIBT,
     getUnderlying,
     getTotalAssets,
+    getYT,
 } from "../entities/FutureVault"
 import { createTransaction } from "../entities/Transaction"
 import { getUser } from "../entities/User"
+import { updateUserAssetBalance } from "../entities/UserAsset"
+import { logWarning } from "../utils"
 import { generateFeeClaimId } from "../utils/idGenerators"
 
 export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
@@ -56,6 +60,8 @@ export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
 
     newFuture.underlyingAsset = underlyingAddress.toHex()
     newFuture.ibtAsset = ibtAddress.toHex()
+
+    newFuture.transactions = []
 
     newFuture.save()
 }
@@ -119,22 +125,69 @@ export function handleDeposit(event: Deposit): void {
     let future = Future.load(event.address.toHex())
 
     if (future) {
+        let ibtAddress = getIBT(event.address)
+        let ptAddress = event.address
+        let ytAddress = getYT(event.address)
+
+        let amountIn = getAssetAmount(
+            event.transaction.hash,
+            ibtAddress,
+            event.params.assets,
+            "IBT",
+            event.block.timestamp
+        )
+
+        updateUserAssetBalance(
+            event.params.owner.toHex(),
+            ibtAddress.toHex(),
+            ZERO_BI.minus(event.params.assets),
+            event.block.timestamp,
+            "IBT"
+        )
+
+        let firstAmountOut = getAssetAmount(
+            event.transaction.hash,
+            ptAddress,
+            event.params.shares,
+            "PT",
+            event.block.timestamp
+        )
+
+        updateUserAssetBalance(
+            event.params.owner.toHex(),
+            ptAddress.toHex(),
+            event.params.shares,
+            event.block.timestamp,
+            "PT"
+        )
+
+        let secondAmountOut = getAssetAmount(
+            event.transaction.hash,
+            ytAddress,
+            event.params.shares,
+            "YT",
+            event.block.timestamp
+        )
+
+        updateUserAssetBalance(
+            event.params.owner.toHex(),
+            ytAddress.toHex(),
+            event.params.shares,
+            event.block.timestamp,
+            "YT"
+        )
+
         createTransaction({
             transactionAddress: Address.fromBytes(event.transaction.hash),
 
-            fromAddress: event.params.caller,
-            toAddress: event.params.owner,
+            fromAddress: event.params.owner,
+            toAddress: event.params.caller,
 
-            // futureInTransaction: event.params.caller,
-
-            // if user == 0x00000000000.... then not exists - and the same for futureInTransaction
+            futureInTransaction: event.params.caller,
             userInTransaction: event.params.owner,
 
-            amountIn: event.params.assets,
-            amountOut: event.params.shares,
-
-            // assetIn: Address
-            // assetOut: Address
+            amountsIn: [amountIn.id],
+            amountsOut: [firstAmountOut.id, secondAmountOut.id],
 
             transaction: {
                 timestamp: event.block.timestamp,
@@ -156,7 +209,79 @@ export function handleWithdraw(event: Withdraw): void {
     let future = Future.load(event.address.toHex())
 
     if (future) {
-        //
+        let ibtAddress = getIBT(event.address)
+        let ptAddress = event.address
+        let ytAddress = getYT(event.address)
+
+        let firstAmountIn = getAssetAmount(
+            event.transaction.hash,
+            ptAddress,
+            event.params.shares,
+            "PT",
+            event.block.timestamp
+        )
+
+        updateUserAssetBalance(
+            event.params.owner.toHex(),
+            ptAddress.toHex(),
+            ZERO_BI.minus(event.params.shares),
+            event.block.timestamp,
+            "PT"
+        )
+
+        let secondAmountIn = getAssetAmount(
+            event.transaction.hash,
+            ytAddress,
+            event.params.shares,
+            "YT",
+            event.block.timestamp
+        )
+
+        updateUserAssetBalance(
+            event.params.owner.toHex(),
+            ytAddress.toHex(),
+            ZERO_BI.minus(event.params.shares),
+            event.block.timestamp,
+            "YT"
+        )
+
+        let amountOut = getAssetAmount(
+            event.transaction.hash,
+            ibtAddress,
+            event.params.assets,
+            "IBT",
+            event.block.timestamp
+        )
+
+        updateUserAssetBalance(
+            event.params.receiver.toHex(),
+            ibtAddress.toHex(),
+            event.params.assets,
+            event.block.timestamp,
+            "IBT"
+        )
+
+        createTransaction({
+            transactionAddress: Address.fromBytes(event.transaction.hash),
+
+            fromAddress: event.params.caller,
+            toAddress: event.params.owner,
+
+            futureInTransaction: event.params.owner,
+            userInTransaction: event.params.receiver,
+
+            amountsIn: [firstAmountIn.id, secondAmountIn.id],
+            amountsOut: [amountOut.id],
+
+            transaction: {
+                timestamp: event.block.timestamp,
+                block: event.block.number,
+
+                gas: event.block.gasUsed,
+                gasPrice: event.transaction.gasPrice,
+                type: "WITHDRAW",
+            },
+        })
     } else {
         log.warning("Withdraw event call for not existing Future {}", [
             event.address.toHex(),
@@ -164,14 +289,15 @@ export function handleWithdraw(event: Withdraw): void {
     }
 }
 
-export function handleRedeem(event: Redeem): void {
-    let future = Future.load(event.address.toHex())
-
-    if (future) {
-        // getTransaction()
-    } else {
-        log.warning("Redeem event call for not existing Future {}", [
-            event.address.toHex(),
-        ])
-    }
-}
+// Missing `assets` param at this moment
+// export function handleRedeem(event: Redeem): void {
+//     let future = Future.load(event.address.toHex())
+//
+//     if (future) {
+//         // getTransaction()
+//     } else {
+//         log.warning("Redeem event call for not existing Future {}", [
+//             event.address.toHex(),
+//         ])
+//     }
+// }

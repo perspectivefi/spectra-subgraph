@@ -1,4 +1,4 @@
-import { BigInt } from "@graphprotocol/graph-ts"
+import { Address, BigInt } from "@graphprotocol/graph-ts"
 
 import { User } from "../../generated/schema"
 
@@ -10,6 +10,7 @@ export function getUser(userAddress: string, timestamp: BigInt): User {
     }
 
     user = new User(userAddress)
+    user.address = Address.fromString(userAddress)
     user.createdAtTimestamp = timestamp
     user.collectedFees = []
     user.transactions = []

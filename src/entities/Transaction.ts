@@ -1,22 +1,20 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 
-import { AssetAmount, Future, Transaction, User } from "../../generated/schema"
+import { Future, Transaction } from "../../generated/schema"
+import { ZERO_ADDRESS } from "../constants"
 import { getUser } from "./User"
 
-class getTransactionParams {
+class CreateTransactionParams {
     transactionAddress: Address
 
     fromAddress: Address
     toAddress: Address
 
+    futureInTransaction: Address
     userInTransaction: Address
-    // futureInTransaction: Address
 
-    amountIn: BigInt
-    amountOut: BigInt
-
-    // assetIn: Address
-    // assetOut: Address
+    amountsIn: string[]
+    amountsOut: string[]
 
     transaction: TransactionDetails
 }
@@ -31,30 +29,38 @@ class TransactionDetails {
     gasPrice: BigInt
 }
 
-export function createTransaction(params: getTransactionParams): Transaction {
+export function createTransaction(
+    params: CreateTransactionParams
+): Transaction {
     let transaction = new Transaction(params.transactionAddress.toHex())
     transaction.createdAtTimestamp = params.transaction.timestamp
     transaction.address = params.transactionAddress
     transaction.block = params.transaction.block
+    transaction.type = params.transaction.type
 
     transaction.gas = params.transaction.gas
     transaction.gasPrice = params.transaction.gasPrice
-    // // // transaction.fee: BigDecimal!
-    transaction.type = params.transaction.type
 
     transaction.from = params.fromAddress
     transaction.to = params.toAddress
 
-    transaction.amountIn = params.amountIn
-    transaction.amountOut = params.amountOut
+    transaction.amountsIn = params.amountsIn
+    transaction.amountsOut = params.amountsOut
 
-    let user = getUser(
-        params.userInTransaction.toHex(),
-        params.transaction.timestamp
-    )
+    // We have to compare it to an address as AssemblyScript do not support optional properties.
+    if (params.userInTransaction !== ZERO_ADDRESS) {
+        let user = getUser(
+            params.userInTransaction.toHex(),
+            params.transaction.timestamp
+        )
+        transaction.userInTransaction = user.id
+    }
 
-    transaction.userInTransaction = user.id
-    // transaction.futureInTransaction = params.futureInTransaction.toHex()
+    // We have to compare it to an address as AssemblyScript do not support optional properties.
+    if (params.futureInTransaction !== ZERO_ADDRESS) {
+        let future = Future.load(params.futureInTransaction.toHex())
+        transaction.futureInTransaction = future!.id
+    }
 
     transaction.save()
     return transaction

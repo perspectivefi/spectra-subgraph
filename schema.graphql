@@ -1,16 +1,4 @@
 ####################
-# Registry
-####################
-
-type FutureVaultFactory @entity {
-    id: ID!
-    createdAtTimestamp: BigInt!
-    name: String!
-    old: FutureVaultFactory
-    address: Bytes!
-}
-
-####################
 # Enums
 ####################
 
@@ -55,7 +43,7 @@ enum FutureState {
 }
 
 ####################
-# Low level event entities
+# High level detail entities
 ####################
 
 type Platform @entity {
@@ -86,8 +74,34 @@ type FYTTokenDetails @entity {
 }
 
 ####################
+# Registry
+####################
+
+type FutureVaultFactory @entity {
+    id: ID!
+    createdAtTimestamp: BigInt!
+    name: String!
+    old: FutureVaultFactory
+    address: Bytes!
+}
+
+####################
 # Assets and prices
 ####################
+
+type Asset @entity {
+    id: ID!
+    address: Bytes!
+    createdAtTimestamp: BigInt!
+    name: String!
+    symbol: String!
+    decimals: Int!
+    price: AssetPrice
+    type: AssetType!
+
+    chainlinkPriceFeed: ChainlinkAggregatorProxy
+    underlying: Asset
+}
 
 type AssetPrice @entity {
 # Asset dollar price which belongs to already created Asset entity
@@ -103,24 +117,19 @@ type AssetAmount @entity {
     id: ID!
     createdAtTimestamp: BigInt!
     amount: BigInt!
-    value: BigDecimal!
+#    value: BigDecimal!
     asset: Asset!
-#    user: User
-    fytTokenDetails: FYTTokenDetails
+#    fytTokenDetails: FYTTokenDetails
 }
 
-type Asset @entity {
+type UserAsset @entity {
     id: ID!
-    address: String!
     createdAtTimestamp: BigInt!
-    name: String!
-    symbol: String!
-    decimals: Int!
-    price: AssetPrice
-    type: AssetType!
-
-    chainlinkPriceFeed: ChainlinkAggregatorProxy
-    underlying: Asset
+    balance: BigInt!
+    #    value: BigDecimal!
+    asset: Asset!
+    user: User!
+    #    fytTokenDetails: FYTTokenDetails
 }
 
 type ChainlinkAggregatorProxy @entity {
@@ -151,7 +160,7 @@ type Future @entity {
     underlyingAsset: Asset!
     ibtAsset: Asset!
 
-#    transaction: [Transaction!]! @derivedFrom(field: "futureInTransaction")
+    transactions: [Transaction!]! @derivedFrom(field: "futureInTransaction")
 #
 #    ibtToUnderlyingRatio: Value
 
@@ -176,10 +185,12 @@ type FeeClaim @entity {
 
 type User @entity {
     id: ID!
+    address: Bytes!
     createdAtTimestamp: BigInt!
 
     collectedFees: [FeeClaim!]! @derivedFrom(field: "feeCollector")
     transactions: [Transaction!]! @derivedFrom(field: "userInTransaction")
+    portfolio: [UserAsset!]! @derivedFrom(field: "user")
 }
 
 type Transaction @entity {
@@ -197,9 +208,9 @@ type Transaction @entity {
     from: Bytes!
     to: Bytes!
 
+    futureInTransaction: Future
     userInTransaction: User
-#    futureInTransaction: Future
 
-    amountIn: BigInt!
-    amountOut: BigInt!
+    amountsIn: [AssetAmount!]!
+    amountsOut: [AssetAmount!]!
 }

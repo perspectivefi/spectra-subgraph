@@ -1,4 +1,4 @@
-import { Address, BigInt, ethereum, log } from "@graphprotocol/graph-ts"
+import { BigInt, ethereum } from "@graphprotocol/graph-ts"
 import {
     assert,
     beforeEach,
@@ -15,16 +15,23 @@ import {
     FeeClaimed,
     Paused,
     Unpaused,
+    Withdraw,
 } from "../../generated/FutureVault/FutureVault"
 import { FutureVaultDeployed } from "../../generated/FutureVaultFactory/FutureVaultFactory"
+import { ZERO_BI } from "../constants"
 import {
     handleDeposit,
     handleFeeClaimed,
     handleFutureVaultDeployed,
     handlePaused,
     handleUnpaused,
+    handleWithdraw,
 } from "../mappings/futures"
-import { generateFeeClaimId } from "../utils/idGenerators"
+import {
+    generateAssetAmountId,
+    generateFeeClaimId,
+    generateUserAssetId,
+} from "../utils/idGenerators"
 import { ETH_ADDRESS_MOCK, mockERC20Functions } from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
@@ -33,6 +40,10 @@ import {
     IBT_ADDRESS_MOCK,
     mockFutureVaultFunctions,
     SECOND_FUTURE_VAULT_ADDRESS_MOCK,
+    DEPOSIT_TRANSACTION_HASH,
+    YT_ADDRESS_MOCK,
+    FIRST_USER_MOCK,
+    WITHDRAW_TRANSACTION_HASH,
 } from "./mocks/FutureVault"
 import {
     ASSET_ENTITY,
@@ -40,13 +51,18 @@ import {
     FUTURE_ENTITY,
     TRANSACTION_ENTITY,
     USER_ENTITY,
+    ASSET_AMOUNT_ENTITY,
+    USER_ASSET_ENTITY,
 } from "./utils/entities"
+
+const IBT_DEPOSIT = 15
+const SHARES_RETURN = 51
 
 describe("handleFutureVaultDeployed()", () => {
     beforeAll(() => {
         clearStore()
-        mockFutureVaultFunctions()
         mockERC20Functions()
+        mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
     })
 
@@ -205,28 +221,29 @@ describe("handleFeeClaimed()", () => {
 })
 
 describe("handleDeposit()", () => {
-    test("Should create a new Transaction entity with properly assign future as well as fee collector entity", () => {
+    beforeAll(() => {
         let depositEvent = changetype<Deposit>(newMockEvent())
         depositEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+        depositEvent.transaction.hash = DEPOSIT_TRANSACTION_HASH
 
         let callerParam = new ethereum.EventParam(
             "caller",
-            ethereum.Value.fromAddress(FEE_COLLECTOR_ADDRESS_MOCK)
+            ethereum.Value.fromAddress(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         )
 
         let ownerParam = new ethereum.EventParam(
             "owner",
-            ethereum.Value.fromAddress(FEE_COLLECTOR_ADDRESS_MOCK)
+            ethereum.Value.fromAddress(FIRST_USER_MOCK)
         )
 
         let assetsParam = new ethereum.EventParam(
             "assets",
-            ethereum.Value.fromI32(15)
+            ethereum.Value.fromI32(IBT_DEPOSIT)
         )
 
         let sharesParam = new ethereum.EventParam(
             "shares",
-            ethereum.Value.fromI32(51)
+            ethereum.Value.fromI32(SHARES_RETURN)
         )
 
         depositEvent.parameters = [
@@ -237,30 +254,290 @@ describe("handleDeposit()", () => {
         ]
 
         handleDeposit(depositEvent)
+    })
 
-        logStore()
-
+    test("Should create a new Transaction entity with properly assigned future as well as user entity", () => {
         assert.entityCount(TRANSACTION_ENTITY, 1)
 
-        // let feeClaimId = generateFeeClaimId(
-        //   FEE_COLLECTOR_ADDRESS_MOCK.toHex(),
-        //   feeClaimedEvent.block.timestamp.toString()
-        // )
-        //
-        // assert.fieldEquals(FEE_CLAIM_ENTITY, feeClaimId, "amount", "50")
-        //
-        // assert.fieldEquals(
-        //   USER_ENTITY,
-        //   FEE_COLLECTOR_ADDRESS_MOCK.toHex(),
-        //   "collectedFees",
-        //   `[${feeClaimId}]`
-        // )
-        //
-        // assert.fieldEquals(
-        //   FUTURE_ENTITY,
-        //   FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
-        //   "feeClaims",
-        //   `[${feeClaimId}]`
-        // )
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            DEPOSIT_TRANSACTION_HASH.toHex(),
+            "futureInTransaction",
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+        )
+
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            DEPOSIT_TRANSACTION_HASH.toHex(),
+            "userInTransaction",
+            FIRST_USER_MOCK.toHex()
+        )
     })
+    test("Should create Asset entities for all the tokens in the transaction", () => {
+        // IBT
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            IBT_ADDRESS_MOCK.toHex(),
+            "address",
+            IBT_ADDRESS_MOCK.toHex()
+        )
+
+        // PT
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+            "address",
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+        )
+
+        // YT
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            YT_ADDRESS_MOCK.toHex(),
+            "address",
+            YT_ADDRESS_MOCK.toHex()
+        )
+    })
+    test("Should create three new AssetAmounts entities with properly assigned transaction relations", () => {
+        assert.entityCount(ASSET_AMOUNT_ENTITY, 3)
+
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            DEPOSIT_TRANSACTION_HASH.toHex(),
+            "amountsIn",
+            `[${generateAssetAmountId(
+                DEPOSIT_TRANSACTION_HASH.toHex(),
+                IBT_ADDRESS_MOCK.toHex()
+            )}]`
+        )
+
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            DEPOSIT_TRANSACTION_HASH.toHex(),
+            "amountsOut",
+            `[${generateAssetAmountId(
+                DEPOSIT_TRANSACTION_HASH.toHex(),
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+            )}, ${generateAssetAmountId(
+                DEPOSIT_TRANSACTION_HASH.toHex(),
+                YT_ADDRESS_MOCK.toHex()
+            )}]`
+        )
+    })
+    test("Should create Transaction entity with full of information about gas, gas price, block number, sender and receiver", () => {
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            DEPOSIT_TRANSACTION_HASH.toHex(),
+            "gas",
+            "1"
+        )
+
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            DEPOSIT_TRANSACTION_HASH.toHex(),
+            "gasPrice",
+            "1"
+        )
+
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            DEPOSIT_TRANSACTION_HASH.toHex(),
+            "from",
+            FIRST_USER_MOCK.toHex()
+        )
+
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            DEPOSIT_TRANSACTION_HASH.toHex(),
+            "to",
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+        )
+    })
+    test("Should create three UserAsset entities and reflect its balances changes", () => {
+        assert.entityCount(USER_ASSET_ENTITY, 3)
+
+        assert.fieldEquals(
+            USER_ASSET_ENTITY,
+            generateUserAssetId(
+                FIRST_USER_MOCK.toHex(),
+                IBT_ADDRESS_MOCK.toHex()
+            ),
+            "balance",
+            ZERO_BI.minus(BigInt.fromI32(IBT_DEPOSIT)).toString()
+        )
+
+        assert.fieldEquals(
+            USER_ASSET_ENTITY,
+            generateUserAssetId(
+                FIRST_USER_MOCK.toHex(),
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+            ),
+            "balance",
+            BigInt.fromI32(SHARES_RETURN).toString()
+        )
+
+        assert.fieldEquals(
+            USER_ASSET_ENTITY,
+            generateUserAssetId(
+                FIRST_USER_MOCK.toHex(),
+                YT_ADDRESS_MOCK.toHex()
+            ),
+            "balance",
+            BigInt.fromI32(SHARES_RETURN).toString()
+        )
+    })
+    test("Should assign three UserAsset entities to User entity used in the transaction", () => {
+        assert.fieldEquals(
+            USER_ENTITY,
+            FIRST_USER_MOCK.toHex(),
+            "portfolio",
+            `[${generateUserAssetId(
+                FIRST_USER_MOCK.toHex(),
+                IBT_ADDRESS_MOCK.toHex()
+            )}, ${generateUserAssetId(
+                FIRST_USER_MOCK.toHex(),
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+            )}, ${generateUserAssetId(
+                FIRST_USER_MOCK.toHex(),
+                YT_ADDRESS_MOCK.toHex()
+            )}]`
+        )
+    })
+})
+
+describe("handleWithdraw()", () => {
+    beforeAll(() => {
+        let withdrawEvent = changetype<Withdraw>(newMockEvent())
+        withdrawEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+        withdrawEvent.transaction.hash = WITHDRAW_TRANSACTION_HASH
+
+        let callerParam = new ethereum.EventParam(
+            "caller",
+            ethereum.Value.fromAddress(FIRST_USER_MOCK)
+        )
+
+        let receiverParam = new ethereum.EventParam(
+            "receiver",
+            ethereum.Value.fromAddress(FIRST_USER_MOCK)
+        )
+
+        let ownerParam = new ethereum.EventParam(
+            "owner",
+            ethereum.Value.fromAddress(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
+        )
+
+        let assetsParam = new ethereum.EventParam(
+            "assets",
+            ethereum.Value.fromI32(5)
+        )
+
+        let sharesParam = new ethereum.EventParam(
+            "shares",
+            ethereum.Value.fromI32(15)
+        )
+
+        withdrawEvent.parameters = [
+            callerParam,
+            receiverParam,
+            ownerParam,
+            assetsParam,
+            sharesParam,
+        ]
+
+        handleWithdraw(withdrawEvent)
+    })
+
+    test("Should create a new Transaction entity with properly assigned future as well as user entity", () => {
+        assert.entityCount(TRANSACTION_ENTITY, 2)
+
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            WITHDRAW_TRANSACTION_HASH.toHex(),
+            "futureInTransaction",
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+        )
+
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            WITHDRAW_TRANSACTION_HASH.toHex(),
+            "userInTransaction",
+            FIRST_USER_MOCK.toHex()
+        )
+    })
+    test("Should create three new AssetAmounts entities with properly assigned user and transaction relations", () => {
+        // 3 created by `Deposit` event + 3 created by Withdraw event
+        assert.entityCount(ASSET_AMOUNT_ENTITY, 6)
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            WITHDRAW_TRANSACTION_HASH.toHex(),
+            "amountsIn",
+            `[${generateAssetAmountId(
+                DEPOSIT_TRANSACTION_HASH.toHex(),
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+            )}, ${generateAssetAmountId(
+                DEPOSIT_TRANSACTION_HASH.toHex(),
+                YT_ADDRESS_MOCK.toHex()
+            )}]`
+            // `[${generateAssetAmountId(
+            //     DEPOSIT_TRANSACTION_HASH.toHex(),
+            //     IBT_ADDRESS_MOCK.toHex()
+            // )}]`
+        )
+
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            WITHDRAW_TRANSACTION_HASH.toHex(),
+            "amountsOut",
+            `[${generateAssetAmountId(
+                DEPOSIT_TRANSACTION_HASH.toHex(),
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+            )}, ${generateAssetAmountId(
+                DEPOSIT_TRANSACTION_HASH.toHex(),
+                YT_ADDRESS_MOCK.toHex()
+            )}]`
+        )
+
+        assert.fieldEquals(
+            ASSET_AMOUNT_ENTITY,
+            generateAssetAmountId(
+                WITHDRAW_TRANSACTION_HASH.toHex(),
+                IBT_ADDRESS_MOCK.toHex()
+            ),
+            "user",
+            FIRST_USER_MOCK.toHex()
+        )
+    })
+    // test("Should update UserAsset entities and reflect its balances changes", () => {
+    //     assert.entityCount(USER_ASSET_ENTITY, 3)
+    //
+    //     assert.fieldEquals(
+    //       USER_ASSET_ENTITY,
+    //       generateUserAssetId(
+    //         FIRST_USER_MOCK.toHex(),
+    //         IBT_ADDRESS_MOCK.toHex()
+    //       ),
+    //       "balance",
+    //       ZERO_BI.minus(BigInt.fromI32(IBT_DEPOSIT)).toString()
+    //     )
+    //
+    //     assert.fieldEquals(
+    //       USER_ASSET_ENTITY,
+    //       generateUserAssetId(
+    //         FIRST_USER_MOCK.toHex(),
+    //         FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+    //       ),
+    //       "balance",
+    //       BigInt.fromI32(SHARES_RETURN).toString()
+    //     )
+    //
+    //     assert.fieldEquals(
+    //       USER_ASSET_ENTITY,
+    //       generateUserAssetId(
+    //         FIRST_USER_MOCK.toHex(),
+    //         FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+    //       ),
+    //       "balance",
+    //       BigInt.fromI32(SHARES_RETURN).toString()
+    //     )
+    // })
 })
