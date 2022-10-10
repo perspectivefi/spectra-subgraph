@@ -3,8 +3,6 @@ description: APWine subgraph v2 config file template
 repository: https://github.com/APWine/apwine-v2-subgraph
 schema:
   file: ./schema.graphql
-features:
-  - nonFatalErrors
 dataSources:
   - name: ChainlinkAggregatorDataSource
     kind: ethereum/contract
@@ -28,3 +26,41 @@ dataSources:
       eventHandlers:
         - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
           handler: handleAnswerUpdated
+  - name: Registry
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: Registry
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      language: wasm/assemblyscript
+      apiVersion: 0.0.5
+      entities: [ ]
+      file: ./src/mappings/registry.ts
+      abis:
+        - name: Registry
+          file: ./abis/Registry.json
+      eventHandlers:
+        - event: RegistryUpdate(string,address,address)
+          handler: handleRegistryUpdate
+  - name: FutureVaultFactory
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: FutureVaultFactory
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      language: wasm/assemblyscript
+      apiVersion: 0.0.5
+      entities: [ ]
+      file: ./src/mappings/futures.ts
+      abis:
+        - name: FutureVaultFactory
+          file: ./abis/FutureVaultFactory.json
+        - name: FutureVault
+          file: ./abis/FutureVault.json
+      eventHandlers:
+        - event: FutureVaultDeployed(address)
+          handler: handleFutureVaultDeployed
