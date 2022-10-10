@@ -117,9 +117,10 @@ type Asset @entity {
     symbol: String!
     decimals: Int!
     price: AssetPrice
-    type: String
+    type: AssetType!
 
     chainlinkPriceFeed: ChainlinkAggregatorProxy
+    underlying: Asset
 }
 
 type ChainlinkAggregatorProxy @entity {
@@ -134,16 +135,45 @@ type ChainlinkAggregatorProxy @entity {
 
 type Future @entity {
     id: ID!
-    address: String!
+    address: Bytes!
     createdAtTimestamp: BigInt!
     expirationAtTimestamp: BigInt!
-#    daoFeeRate: BigDecimal!
-#    totalFees: BigDecimal!
-#    infoUrl: String
+    symbol: String!
+    name: String!
+
+    daoFeeRate: BigInt!
+    totalFees: BigDecimal!
+    feeClaims: [FeeClaim!]! @derivedFrom(field: "future")
+
+    totalAssets: BigInt!
+
     state: FutureState!
+    underlyingAsset: Asset!
+    ibtAsset: Asset!
+
 #    ibtToUnderlyingRatio: Value
-#    manager: User!
+
 #    platform: Platform!
-#    ibt: Asset!
+#    manager: User!
+#    infoUrl: String
 #    pools: [Pool!]
+}
+
+type FeeClaim @entity {
+    id: ID!
+    createdAtTimestamp: BigInt!
+    amount: BigInt!
+
+    feeCollector: User!
+    future: Future!
+}
+
+####################
+# User
+####################
+
+type User @entity {
+    id: ID!
+    createdAtTimestamp: BigInt!
+    collectedFees: [FeeClaim!]! @derivedFrom(field: "feeCollector")
 }

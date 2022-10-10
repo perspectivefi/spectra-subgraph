@@ -11,18 +11,16 @@ import {
 
 import { AnswerUpdated } from "../../generated/ChainlinkAggregatorDataSource/ChainlinkAggregatorProxyContract"
 import { handleAnswerUpdated } from "../mappings/chainlinkAggregator"
+import { generateAssetPriceId } from "../utils"
 import { ETH_ADDRESS_MOCK, mockERC20Functions } from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import { ASSET_ENTITY } from "./utils/entities"
 
 describe("handleAnswerUpdated()", () => {
     beforeAll(() => {
+        clearStore()
         mockERC20Functions()
         mockFeedRegistryInterfaceFunctions()
-    })
-
-    afterEach(() => {
-        clearStore()
     })
 
     test("Should create a new Asset Entity with AssetPrice relation", () => {
@@ -53,7 +51,10 @@ describe("handleAnswerUpdated()", () => {
             ASSET_ENTITY,
             ETH_ADDRESS_MOCK,
             "price",
-            `${ETH_ADDRESS_MOCK}-${newAnswerUpdatedEvent.block.timestamp}`
+            generateAssetPriceId(
+                ETH_ADDRESS_MOCK,
+                newAnswerUpdatedEvent.block.timestamp.toString()
+            )
         )
     })
 })
