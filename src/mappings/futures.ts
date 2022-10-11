@@ -265,9 +265,9 @@ export function handleWithdraw(event: Withdraw): void {
             transactionAddress: Address.fromBytes(event.transaction.hash),
 
             fromAddress: event.params.caller,
-            toAddress: event.params.owner,
+            toAddress: event.params.receiver,
 
-            futureInTransaction: event.params.owner,
+            futureInTransaction: event.params.caller,
             userInTransaction: event.params.receiver,
 
             amountsIn: [firstAmountIn.id, secondAmountIn.id],

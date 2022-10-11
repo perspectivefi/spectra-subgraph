@@ -413,7 +413,7 @@ describe("handleWithdraw()", () => {
 
         let callerParam = new ethereum.EventParam(
             "caller",
-            ethereum.Value.fromAddress(FIRST_USER_MOCK)
+            ethereum.Value.fromAddress(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         )
 
         let receiverParam = new ethereum.EventParam(
@@ -423,17 +423,17 @@ describe("handleWithdraw()", () => {
 
         let ownerParam = new ethereum.EventParam(
             "owner",
-            ethereum.Value.fromAddress(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
+            ethereum.Value.fromAddress(FIRST_USER_MOCK)
         )
 
         let assetsParam = new ethereum.EventParam(
             "assets",
-            ethereum.Value.fromI32(5)
+            ethereum.Value.fromI32(IBT_DEPOSIT)
         )
 
         let sharesParam = new ethereum.EventParam(
             "shares",
-            ethereum.Value.fromI32(15)
+            ethereum.Value.fromI32(SHARES_RETURN)
         )
 
         withdrawEvent.parameters = [
@@ -464,7 +464,7 @@ describe("handleWithdraw()", () => {
             FIRST_USER_MOCK.toHex()
         )
     })
-    test("Should create three new AssetAmounts entities with properly assigned user and transaction relations", () => {
+    test("Should create three new AssetAmount entities with properly assigned user and transaction relations", () => {
         // 3 created by `Deposit` event + 3 created by Withdraw event
         assert.entityCount(ASSET_AMOUNT_ENTITY, 6)
         assert.fieldEquals(
@@ -472,16 +472,12 @@ describe("handleWithdraw()", () => {
             WITHDRAW_TRANSACTION_HASH.toHex(),
             "amountsIn",
             `[${generateAssetAmountId(
-                DEPOSIT_TRANSACTION_HASH.toHex(),
+                WITHDRAW_TRANSACTION_HASH.toHex(),
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
             )}, ${generateAssetAmountId(
-                DEPOSIT_TRANSACTION_HASH.toHex(),
+                WITHDRAW_TRANSACTION_HASH.toHex(),
                 YT_ADDRESS_MOCK.toHex()
             )}]`
-            // `[${generateAssetAmountId(
-            //     DEPOSIT_TRANSACTION_HASH.toHex(),
-            //     IBT_ADDRESS_MOCK.toHex()
-            // )}]`
         )
 
         assert.fieldEquals(
@@ -489,55 +485,40 @@ describe("handleWithdraw()", () => {
             WITHDRAW_TRANSACTION_HASH.toHex(),
             "amountsOut",
             `[${generateAssetAmountId(
-                DEPOSIT_TRANSACTION_HASH.toHex(),
-                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
-            )}, ${generateAssetAmountId(
-                DEPOSIT_TRANSACTION_HASH.toHex(),
-                YT_ADDRESS_MOCK.toHex()
+                WITHDRAW_TRANSACTION_HASH.toHex(),
+                IBT_ADDRESS_MOCK.toHex()
             )}]`
+        )
+    })
+    test("Should update UserAsset entities and reflect its changes in balances", () => {
+        assert.fieldEquals(
+            USER_ASSET_ENTITY,
+            generateUserAssetId(
+                FIRST_USER_MOCK.toHex(),
+                IBT_ADDRESS_MOCK.toHex()
+            ),
+            "balance",
+            ZERO_BI.toString()
         )
 
         assert.fieldEquals(
-            ASSET_AMOUNT_ENTITY,
-            generateAssetAmountId(
-                WITHDRAW_TRANSACTION_HASH.toHex(),
-                IBT_ADDRESS_MOCK.toHex()
+            USER_ASSET_ENTITY,
+            generateUserAssetId(
+                FIRST_USER_MOCK.toHex(),
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
             ),
-            "user",
-            FIRST_USER_MOCK.toHex()
+            "balance",
+            ZERO_BI.toString()
+        )
+
+        assert.fieldEquals(
+            USER_ASSET_ENTITY,
+            generateUserAssetId(
+                FIRST_USER_MOCK.toHex(),
+                YT_ADDRESS_MOCK.toHex()
+            ),
+            "balance",
+            ZERO_BI.toString()
         )
     })
-    // test("Should update UserAsset entities and reflect its balances changes", () => {
-    //     assert.entityCount(USER_ASSET_ENTITY, 3)
-    //
-    //     assert.fieldEquals(
-    //       USER_ASSET_ENTITY,
-    //       generateUserAssetId(
-    //         FIRST_USER_MOCK.toHex(),
-    //         IBT_ADDRESS_MOCK.toHex()
-    //       ),
-    //       "balance",
-    //       ZERO_BI.minus(BigInt.fromI32(IBT_DEPOSIT)).toString()
-    //     )
-    //
-    //     assert.fieldEquals(
-    //       USER_ASSET_ENTITY,
-    //       generateUserAssetId(
-    //         FIRST_USER_MOCK.toHex(),
-    //         FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
-    //       ),
-    //       "balance",
-    //       BigInt.fromI32(SHARES_RETURN).toString()
-    //     )
-    //
-    //     assert.fieldEquals(
-    //       USER_ASSET_ENTITY,
-    //       generateUserAssetId(
-    //         FIRST_USER_MOCK.toHex(),
-    //         FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
-    //       ),
-    //       "balance",
-    //       BigInt.fromI32(SHARES_RETURN).toString()
-    //     )
-    // })
 })
