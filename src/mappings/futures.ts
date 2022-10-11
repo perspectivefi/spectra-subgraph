@@ -129,6 +129,8 @@ export function handleDeposit(event: Deposit): void {
         let ptAddress = event.address
         let ytAddress = getYT(event.address)
 
+        // we should cover both kind of deposits - Underlying andIBT deposits but at this moment
+        // there is no difference on the protocol side
         let amountIn = getAssetAmount(
             event.transaction.hash,
             ibtAddress,
@@ -245,6 +247,8 @@ export function handleWithdraw(event: Withdraw): void {
             "YT"
         )
 
+        // it should be Underlying but as part of the protocol is not ready to send this kind of information that
+        // it is Underlying or IBT token let's leave it until it will be possible to get that information
         let amountOut = getAssetAmount(
             event.transaction.hash,
             ibtAddress,
@@ -260,6 +264,7 @@ export function handleWithdraw(event: Withdraw): void {
             event.block.timestamp,
             "IBT"
         )
+        //
 
         createTransaction({
             transactionAddress: Address.fromBytes(event.transaction.hash),

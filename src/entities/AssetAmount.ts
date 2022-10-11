@@ -10,7 +10,7 @@ export function getAssetAmount(
     assetAddress: Address,
     amount: BigInt,
     type: string,
-    timestamp: BigInt,
+    timestamp: BigInt
 ): AssetAmount {
     let id = generateAssetAmountId(
         transactionAddress.toHex(),
@@ -20,12 +20,7 @@ export function getAssetAmount(
     let assetAmount = AssetAmount.load(id)
 
     if (!assetAmount) {
-        assetAmount = createAssetAmount(
-            id,
-            assetAddress,
-            type,
-            timestamp,
-        )
+        assetAmount = createAssetAmount(id, assetAddress, type, timestamp)
     }
 
     let newAmount = assetAmount.amount.plus(amount)
