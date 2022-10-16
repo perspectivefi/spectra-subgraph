@@ -7,10 +7,11 @@ import {
     Redeem,
     Unpaused,
     Withdraw,
+    YieldTransferred,
 } from "../../generated/FutureVault/FutureVault"
 import { FutureVaultDeployed } from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { FeeClaim, Future } from "../../generated/schema"
-import { ZERO_BD, ZERO_BI } from "../constants"
+import { ZERO_BI } from "../constants"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import {
@@ -22,6 +23,7 @@ import {
     getUnderlying,
     getTotalAssets,
     getYT,
+    getUnclaimedFees,
 } from "../entities/FutureVault"
 import { createTransaction } from "../entities/Transaction"
 import { getUser } from "../entities/User"
@@ -39,7 +41,8 @@ export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
     newFuture.expirationAtTimestamp = getExpirationTimestamp(futureVaultAddress)
 
     newFuture.daoFeeRate = getMaxFeeRate(futureVaultAddress)
-    newFuture.totalFees = ZERO_BD
+    newFuture.unclaimedFees = ZERO_BI
+    newFuture.totalCollectedFees = ZERO_BI
 
     newFuture.name = getName(futureVaultAddress)
     newFuture.symbol = getSymbol(futureVaultAddress)
@@ -113,6 +116,12 @@ export function handleFeeClaimed(event: FeeClaimed): void {
         claim.future = future.id
         claim.amount = event.params._fees
 
+        future.totalCollectedFees = future.totalCollectedFees.plus(
+            event.params._fees
+        )
+        future.unclaimedFees = ZERO_BI
+
+        future.save()
         claim.save()
     } else {
         log.warning("FeeClaimed event call for not existing Future {}", [
@@ -300,3 +309,16 @@ export function handleWithdraw(event: Withdraw): void {
 //         ])
 //     }
 // }
+
+export function handleYieldTransferred(event: YieldTransferred): void {
+    let future = Future.load(event.address.toHex())
+
+    if (future) {
+        future.unclaimedFees = getUnclaimedFees(event.address)
+        future.save()
+    } else {
+        log.warning("YieldTransferred event call for not existing Future {}", [
+            event.address.toHex(),
+        ])
+    }
+}

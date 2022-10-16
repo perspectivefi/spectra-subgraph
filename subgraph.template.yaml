@@ -90,3 +90,5 @@ dataSources:
           handler: handleWithdraw
         - event: Redeem(indexed address,indexed address,uint256)
           handler: handleRedeem
+        - event: YieldTransferred(indexed address,uint256)
+          handler: handleYieldTransferred

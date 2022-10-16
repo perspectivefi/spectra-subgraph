@@ -4,8 +4,8 @@ import { Address, log } from "@graphprotocol/graph-ts"
 import { FutureVault } from "../../generated/FutureVault/FutureVault"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 
-export function getExpirationTimestamp(address: Address): BigInt {
-    const futureContract = FutureVault.bind(address)
+export function getExpirationTimestamp(futureVault: Address): BigInt {
+    const futureContract = FutureVault.bind(futureVault)
 
     let expiryCall = futureContract.try_EXPIRY()
 
@@ -13,13 +13,13 @@ export function getExpirationTimestamp(address: Address): BigInt {
         return expiryCall.value
     }
 
-    log.warning("EXPIRY() call reverted for {}", [address.toHex()])
+    log.warning("EXPIRY() call reverted for {}", [futureVault.toHex()])
 
-    return BigInt.fromString("0")
+    return ZERO_BI
 }
 
-export function getMaxFeeRate(address: Address): BigInt {
-    const futureContract = FutureVault.bind(address)
+export function getMaxFeeRate(futureVault: Address): BigInt {
+    const futureContract = FutureVault.bind(futureVault)
 
     let maxProtocolFeeCall = futureContract.try_MAX_PROTOCOL_FEE()
 
@@ -27,9 +27,25 @@ export function getMaxFeeRate(address: Address): BigInt {
         return maxProtocolFeeCall.value
     }
 
-    log.warning("MAX_PROTOCOL_FEE() call reverted for {}", [address.toHex()])
+    log.warning("MAX_PROTOCOL_FEE() call reverted for {}", [
+        futureVault.toHex(),
+    ])
 
-    return BigInt.fromString("0")
+    return ZERO_BI
+}
+
+export function getUnclaimedFees(futureVault: Address): BigInt {
+    const futureContract = FutureVault.bind(futureVault)
+
+    let unclaimedFeesCall = futureContract.try_unclaimedFees()
+
+    if (!unclaimedFeesCall.reverted) {
+        return unclaimedFeesCall.value
+    }
+
+    log.warning("unclaimedFees() call reverted for {}", [futureVault.toHex()])
+
+    return ZERO_BI
 }
 
 export function getName(address: Address): string {
