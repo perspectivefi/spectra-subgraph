@@ -205,9 +205,6 @@ type Transaction @entity {
 #    fee: BigDecimal!
     type: TransactionType!
 
-    from: Bytes!
-    to: Bytes!
-
     futureInTransaction: Future
     userInTransaction: User
 
