@@ -338,20 +338,6 @@ describe("handleDeposit()", () => {
             "gasPrice",
             "1"
         )
-
-        assert.fieldEquals(
-            TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
-            "from",
-            FIRST_USER_MOCK.toHex()
-        )
-
-        assert.fieldEquals(
-            TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
-            "to",
-            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
-        )
     })
     test("Should create three UserAsset entities and reflect its balances changes", () => {
         assert.entityCount(USER_ASSET_ENTITY, 3)

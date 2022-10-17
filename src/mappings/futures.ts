@@ -182,9 +182,6 @@ export function handleDeposit(event: Deposit): void {
         createTransaction({
             transactionAddress: Address.fromBytes(event.transaction.hash),
 
-            fromAddress: event.params.owner,
-            toAddress: event.params.caller,
-
             futureInTransaction: event.params.caller,
             userInTransaction: event.params.owner,
 
@@ -268,9 +265,6 @@ export function handleWithdraw(event: Withdraw): void {
 
         createTransaction({
             transactionAddress: Address.fromBytes(event.transaction.hash),
-
-            fromAddress: event.params.caller,
-            toAddress: event.params.receiver,
 
             futureInTransaction: event.params.caller,
             userInTransaction: event.params.receiver,

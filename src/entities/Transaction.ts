@@ -7,9 +7,6 @@ import { getUser } from "./User"
 class CreateTransactionParams {
     transactionAddress: Address
 
-    fromAddress: Address
-    toAddress: Address
-
     futureInTransaction: Address
     userInTransaction: Address
 
@@ -40,9 +37,6 @@ export function createTransaction(
 
     transaction.gas = params.transaction.gas
     transaction.gasPrice = params.transaction.gasPrice
-
-    transaction.from = params.fromAddress
-    transaction.to = params.toAddress
 
     transaction.amountsIn = params.amountsIn
     transaction.amountsOut = params.amountsOut
