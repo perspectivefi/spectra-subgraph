@@ -55,16 +55,6 @@ type Platform @entity {
     infoUrl: String!
 }
 
-"LPTokenDetails entity to define token details in case it is a LP token"
-type LPTokenDetails @entity {
-    id: ID!
-    address: String!
-    createdAtTimestamp: BigInt!
-
-    supply: BigDecimal!
-    tokens: [Asset!]!
-}
-
 "FYTTokenDetails entity to define token details in case it is a FYT token"
 type FYTTokenDetails @entity {
     id: ID!
@@ -73,6 +63,23 @@ type FYTTokenDetails @entity {
 
     generatedYield: BigDecimal!
     generatedYieldValue: BigDecimal
+}
+
+"LPTokenDetails entity to define token details in case it is a LP token"
+type LPTokenDetails @entity {
+    id: ID!
+    createdAtTimestamp: BigInt!
+
+    totalSupply: BigInt!
+
+    tokens: [Asset!]!
+}
+
+"ValueInTime entity to connect a value with time for history purpose"
+type ValueInTime @entity {
+    id: ID!
+    timestamp: BigInt!
+    value: BigInt!
 }
 
 ####################
@@ -104,10 +111,11 @@ type Asset @entity {
 
     "on of the price feeds"
     chainlinkPriceFeed: ChainlinkAggregatorProxy
+
     "in the case the asset is an IBT we create relation between this IBT and its underlying asset"
     underlying: Asset
-    lpTokenDetails: LPTokenDetails
     fytTokenDetails: FYTTokenDetails
+    lpTokenDetails: LPTokenDetails
 }
 
 "AssetPrice entity to assign a price of a token to an Asset entity and its price source"
@@ -241,4 +249,42 @@ type Transaction @entity {
     amountsIn: [AssetAmount!]!
     "in case if more than one token was received"
     amountsOut: [AssetAmount!]!
+}
+
+####################
+# AMM
+####################
+
+type Pool @entity {
+    id: ID!
+    address: Bytes!
+    createdAtTimestamp: BigInt!
+
+    feeRate: BigDecimal!
+    totalFees: BigDecimal!
+
+    "it will be Curve by default but we will be able to index others as well"
+    ammProvider: AMM!
+
+    creator: User!
+    "user which is able to claim fees"
+    manager: User!
+
+    liquidityToken: Asset!
+    "how many types of assets contain that pool"
+    numberOfTokens: Int!
+    tokens: [AssetAmount!]
+
+    "to be able to follow all the future's pools"
+    futureVault: Future!
+
+    transactionCount: BigInt!
+    transactions: [Transaction!]
+
+    liquidityPositions: [AssetAmount!]
+
+    volumeHistory: [ValueInTime!]
+
+#    Asset pricing is not competed at this point
+#    valueHistory: [Value!]
 }
