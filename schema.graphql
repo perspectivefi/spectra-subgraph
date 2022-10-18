@@ -1,16 +1,4 @@
 ####################
-# Registry
-####################
-
-type FutureVaultFactory @entity {
-    id: ID!
-    createdAtTimestamp: BigInt!
-    name: String!
-    old: FutureVaultFactory
-    address: Bytes!
-}
-
-####################
 # Enums
 ####################
 
@@ -55,42 +43,75 @@ enum FutureState {
 }
 
 ####################
-# Low level event entities
+# High level detail entities
 ####################
 
+"Platform entity to define IBT/FutureVault platform"
+# possibility to add new platforms without subgraph update)
 type Platform @entity {
-# IBT platform (as entity because of permissionless pool creation process - possibility to add new platforms without subgraph update)
     id: ID!
     createdAtTimestamp: BigInt!
     name: String!
     infoUrl: String!
 }
 
+"LPTokenDetails entity to define token details in case it is a LP token"
 type LPTokenDetails @entity {
-# if an Asset is LPToken we need more details for this entity
     id: ID!
     address: String!
     createdAtTimestamp: BigInt!
+
     supply: BigDecimal!
-    numberOfTokens: Int!
     tokens: [Asset!]!
 }
 
+"FYTTokenDetails entity to define token details in case it is a FYT token"
 type FYTTokenDetails @entity {
-# if an AssetAmount describes amount of FYTToken we need more details for this entity
     id: ID!
     createdAtTimestamp: BigInt!
     expirationAtTimestamp: BigInt!
+
     generatedYield: BigDecimal!
     generatedYieldValue: BigDecimal
+}
+
+####################
+# Registry
+####################
+
+type FutureVaultFactory @entity {
+    id: ID!
+    createdAtTimestamp: BigInt!
+    name: String!
+    old: FutureVaultFactory
+    address: Bytes!
 }
 
 ####################
 # Assets and prices
 ####################
 
+"Asset entity to index all kind of details of an asset stored in the subgraph"
+type Asset @entity {
+    id: ID!
+    address: Bytes!
+    createdAtTimestamp: BigInt!
+    name: String!
+    symbol: String!
+    decimals: Int!
+    price: AssetPrice
+    type: AssetType!
+
+    "on of the price feeds"
+    chainlinkPriceFeed: ChainlinkAggregatorProxy
+    "in the case the asset is an IBT we create relation between this IBT and its underlying asset"
+    underlying: Asset
+    lpTokenDetails: LPTokenDetails
+    fytTokenDetails: FYTTokenDetails
+}
+
+"AssetPrice entity to assign a price of a token to an Asset entity and its price source"
 type AssetPrice @entity {
-# Asset dollar price which belongs to already created Asset entity
     id: ID!
     createdAtTimestamp: BigInt!
     value: BigDecimal!
@@ -98,32 +119,33 @@ type AssetPrice @entity {
     asset: Asset!
 }
 
+"AssetAmount entity to assign an amount of token (in a transaction for instance) to its dollar value and exact asset"
 type AssetAmount @entity {
-# defines amount and value of all the instances of Asset as well as entity these values belongs to
     id: ID!
     createdAtTimestamp: BigInt!
     amount: BigInt!
-    value: BigDecimal!
+#    value: BigDecimal!
     asset: Asset!
-#    user: User
-    fytTokenDetails: FYTTokenDetails
+#    fytTokenDetails: FYTTokenDetails
 }
 
-type Asset @entity {
+"UserAsset entity to assign and update user's assets balances"
+type UserAsset @entity {
     id: ID!
-    address: String!
     createdAtTimestamp: BigInt!
-    name: String!
-    symbol: String!
-    decimals: Int!
-    price: AssetPrice
-    type: String
-
-    chainlinkPriceFeed: ChainlinkAggregatorProxy
+    balance: BigInt!
+    #    value: BigDecimal!
+    "relation to the asset details"
+    asset: Asset!
+    "relation to the user details"
+    user: User!
+    #    fytTokenDetails: FYTTokenDetails
 }
 
+"ChainlinkAggregatorProxy entity to save information about Chainlink aggregator, mapper should use to fetch the price of an asset"
 type ChainlinkAggregatorProxy @entity {
     id: ID!
+    "aggregator address"
     aggregator: String!
     asset: Asset!
 }
@@ -132,18 +154,90 @@ type ChainlinkAggregatorProxy @entity {
 # Futures
 ####################
 
+"Future entity to index all the future's stats as well as its transactions, managers and other relations"
 type Future @entity {
     id: ID!
-    address: String!
+    address: Bytes!
     createdAtTimestamp: BigInt!
     expirationAtTimestamp: BigInt!
-#    daoFeeRate: BigDecimal!
-#    totalFees: BigDecimal!
-#    infoUrl: String
+    symbol: String!
+    name: String!
+
+    "how big is the fee setup for that future"
+    daoFeeRate: BigInt!
+    "sum of the collected fees"
+    totalFees: BigDecimal!
+    "list of all the claims with the details"
+    feeClaims: [FeeClaim!]! @derivedFrom(field: "future")
+
+    "sum of the assets (IBTs) allocated into future"
+    totalAssets: BigInt!
+
     state: FutureState!
+    underlyingAsset: Asset!
+    ibtAsset: Asset!
+
+    transactions: [Transaction!]! @derivedFrom(field: "futureInTransaction")
+#
 #    ibtToUnderlyingRatio: Value
-#    manager: User!
+
 #    platform: Platform!
-#    ibt: Asset!
+#    manager: User!
+#    infoUrl: String
 #    pools: [Pool!]
+}
+
+"FeeClaim entity to list claims triggered on an future by a user"
+type FeeClaim @entity {
+    id: ID!
+    createdAtTimestamp: BigInt!
+    amount: BigInt!
+
+    "claimant of the fee"
+    feeCollector: User!
+    "future used to clam the fee"
+    future: Future!
+}
+
+####################
+# User
+####################
+
+"User entity to index all kind of data related to a user of the protocol"
+type User @entity {
+    id: ID!
+    address: Bytes!
+    createdAtTimestamp: BigInt!
+
+    collectedFees: [FeeClaim!]! @derivedFrom(field: "feeCollector")
+    transactions: [Transaction!]! @derivedFrom(field: "userInTransaction")
+    portfolio: [UserAsset!]! @derivedFrom(field: "user")
+}
+
+####################
+# Transaction
+####################
+
+"Transaction entity for all kind of the transactions"
+type Transaction @entity {
+    id: ID!
+    address: Bytes!
+    createdAtTimestamp: BigInt!
+    block: BigInt!
+
+    gas: BigInt!
+    gasPrice: BigInt!
+
+#    fee: BigDecimal!
+    type: TransactionType!
+
+    "if there is any future on any side of the transaction to be able to list this future's transactions"
+    futureInTransaction: Future
+    "if there is any user on any side of the transaction to be able to list this user's transactions"
+    userInTransaction: User
+
+    "in case if more than one token was sent"
+    amountsIn: [AssetAmount!]!
+    "in case if more than one token was received"
+    amountsOut: [AssetAmount!]!
 }
