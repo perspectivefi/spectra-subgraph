@@ -16,6 +16,7 @@ import {
     Paused,
     Unpaused,
     Withdraw,
+    YieldTransferred,
 } from "../../generated/FutureVault/FutureVault"
 import { FutureVaultDeployed } from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { ZERO_BI } from "../constants"
@@ -26,6 +27,7 @@ import {
     handlePaused,
     handleUnpaused,
     handleWithdraw,
+    handleYieldTransferred,
 } from "../mappings/futures"
 import {
     generateAssetAmountId,
@@ -44,6 +46,7 @@ import {
     YT_ADDRESS_MOCK,
     FIRST_USER_MOCK,
     WITHDRAW_TRANSACTION_HASH,
+    FEE_MOCK,
 } from "./mocks/FutureVault"
 import {
     ASSET_ENTITY,
@@ -57,6 +60,7 @@ import {
 
 const IBT_DEPOSIT = 15
 const SHARES_RETURN = 51
+const COLLECTED_FEE = 50
 
 describe("handleFutureVaultDeployed()", () => {
     beforeAll(() => {
@@ -103,7 +107,7 @@ describe("handleFutureVaultDeployed()", () => {
         assert.fieldEquals(
             FUTURE_ENTITY,
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
-            "totalFees",
+            "totalCollectedFees",
             "0"
         )
         assert.fieldEquals(
@@ -178,6 +182,34 @@ describe("handleUnpaused()", () => {
     })
 })
 
+describe("handleYieldTransferred()", () => {
+    test("Should add unclaimed fees to the right future entity", () => {
+        let yieldTransferredEvent = changetype<YieldTransferred>(newMockEvent())
+        yieldTransferredEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+
+        let receiverParam = new ethereum.EventParam(
+            "receiver",
+            ethereum.Value.fromAddress(FEE_COLLECTOR_ADDRESS_MOCK)
+        )
+
+        let yieldParam = new ethereum.EventParam(
+            "yield",
+            ethereum.Value.fromI32(COLLECTED_FEE)
+        )
+
+        yieldTransferredEvent.parameters = [receiverParam, yieldParam]
+
+        handleYieldTransferred(yieldTransferredEvent)
+
+        assert.fieldEquals(
+            FUTURE_ENTITY,
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+            "unclaimedFees",
+            FEE_MOCK.toString()
+        )
+    })
+})
+
 describe("handleFeeClaimed()", () => {
     test("Should create a new FeeClam entity with properly assign future as well as fee collector entity", () => {
         let feeClaimedEvent = changetype<FeeClaimed>(newMockEvent())
@@ -190,7 +222,7 @@ describe("handleFeeClaimed()", () => {
 
         let feesParam = new ethereum.EventParam(
             "_fees",
-            ethereum.Value.fromI32(50)
+            ethereum.Value.fromI32(COLLECTED_FEE)
         )
 
         feeClaimedEvent.parameters = [feeCollectorParam, feesParam]
@@ -202,7 +234,12 @@ describe("handleFeeClaimed()", () => {
             feeClaimedEvent.block.timestamp.toString()
         )
 
-        assert.fieldEquals(FEE_CLAIM_ENTITY, feeClaimId, "amount", "50")
+        assert.fieldEquals(
+            FEE_CLAIM_ENTITY,
+            feeClaimId,
+            "amount",
+            COLLECTED_FEE.toString()
+        )
 
         assert.fieldEquals(
             USER_ENTITY,
@@ -216,6 +253,22 @@ describe("handleFeeClaimed()", () => {
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
             "feeClaims",
             `[${feeClaimId}]`
+        )
+    })
+    test("Should reflect collected fees in the future stats", () => {
+        assert.fieldEquals(
+            FUTURE_ENTITY,
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+            "totalCollectedFees",
+            COLLECTED_FEE.toString()
+        )
+    })
+    test("Should reset unclaimed fees", () => {
+        assert.fieldEquals(
+            FUTURE_ENTITY,
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+            "unclaimedFees",
+            ZERO_BI.toString()
         )
     })
 })

@@ -165,8 +165,9 @@ type Future @entity {
 
     "how big is the fee setup for that future"
     daoFeeRate: BigInt!
+    unclaimedFees: BigInt!
     "sum of the collected fees"
-    totalFees: BigDecimal!
+    totalCollectedFees: BigInt!
     "list of all the claims with the details"
     feeClaims: [FeeClaim!]! @derivedFrom(field: "future")
 
@@ -195,7 +196,7 @@ type FeeClaim @entity {
 
     "claimant of the fee"
     feeCollector: User!
-    "future used to clam the fee"
+    "future that collector claimed the fee from"
     future: Future!
 }
 
