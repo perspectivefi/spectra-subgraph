@@ -8,3 +8,5 @@ export let TRANSACTION_ENTITY = "Transaction"
 export let ASSET_ENTITY = "Asset"
 export let ASSET_AMOUNT_ENTITY = "AssetAmount"
 export let USER_ASSET_ENTITY = "UserAsset"
+
+export let POOL_ENTITY = "Pool"

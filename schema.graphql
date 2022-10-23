@@ -187,7 +187,9 @@ type Future @entity {
     ibtAsset: Asset!
 
     transactions: [Transaction!]! @derivedFrom(field: "futureInTransaction")
-#
+    pools: [Pool!]! @derivedFrom(field: "futureVault")
+
+    curveFactoryAddress: Bytes
 #    ibtToUnderlyingRatio: Value
 
 #    platform: Platform!
@@ -260,25 +262,27 @@ type Pool @entity {
     address: Bytes!
     createdAtTimestamp: BigInt!
 
-    feeRate: BigDecimal!
-    totalFees: BigDecimal!
+    feeRate: BigInt!
+    totalFees: BigInt!
+    adminFeeRate: BigInt!
+    totalAdminFees: BigInt!
 
     "it will be Curve by default but we will be able to index others as well"
     ammProvider: AMM!
 
-    creator: User!
+#    TODO: on protocol side
+#    creator: User!
     "user which is able to claim fees"
     manager: User!
 
-    liquidityToken: Asset!
-    "how many types of assets contain that pool"
-    numberOfTokens: Int!
+#    liquidityToken: Asset!
     tokens: [AssetAmount!]
+
 
     "to be able to follow all the future's pools"
     futureVault: Future!
 
-    transactionCount: BigInt!
+    transactionCount: Int!
     transactions: [Transaction!]
 
     liquidityPositions: [AssetAmount!]
