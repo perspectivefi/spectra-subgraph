@@ -7,6 +7,7 @@ import {
     IBT_ADDRESS_MOCK,
     YT_ADDRESS_MOCK,
 } from "./FutureVault"
+import { POOL_IBT_ADDRESS_MOCK, POOL_PT_ADDRESS_MOCK } from "./MetaPoolFactory"
 
 export const ETH_ADDRESS_MOCK = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 const ETH_NAME = ethereum.Value.fromString("Ethereum")
@@ -20,6 +21,8 @@ export function mockERC20Functions(): void {
         SECOND_FUTURE_VAULT_ADDRESS_MOCK,
         IBT_ADDRESS_MOCK,
         YT_ADDRESS_MOCK,
+        POOL_IBT_ADDRESS_MOCK,
+        POOL_PT_ADDRESS_MOCK,
     ].forEach((addressMock) => {
         createMockedFunction(addressMock, "name", "name():(string)").returns([
             ETH_NAME,

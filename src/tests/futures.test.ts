@@ -1,4 +1,4 @@
-import { BigInt, ethereum } from "@graphprotocol/graph-ts"
+import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
 import {
     assert,
     beforeEach,
@@ -18,9 +18,15 @@ import {
     Withdraw,
     YieldTransferred,
 } from "../../generated/FutureVault/FutureVault"
-import { FutureVaultDeployed } from "../../generated/FutureVaultFactory/FutureVaultFactory"
+import {
+    CurveFactoryChanged,
+    CurvePoolDeployed,
+    FutureVaultDeployed,
+} from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { ZERO_BI } from "../constants"
 import {
+    handleCurveFactoryChanged,
+    handleCurvePoolDeployed,
     handleDeposit,
     handleFeeClaimed,
     handleFutureVaultDeployed,
@@ -49,6 +55,15 @@ import {
     FEE_MOCK,
 } from "./mocks/FutureVault"
 import {
+    FIRST_POOL_ADDRESS_MOCK,
+    mockMetaPoolFactoryFunctions,
+    POOL_ADMIN_FEE_MOCK,
+    POOL_FACTORY_ADDRESS_MOCK,
+    POOL_FEE_MOCK,
+    POOL_IBT_ADDRESS_MOCK,
+    POOL_PT_ADDRESS_MOCK,
+} from "./mocks/MetaPoolFactory"
+import {
     ASSET_ENTITY,
     FEE_CLAIM_ENTITY,
     FUTURE_ENTITY,
@@ -56,6 +71,7 @@ import {
     USER_ENTITY,
     ASSET_AMOUNT_ENTITY,
     USER_ASSET_ENTITY,
+    POOL_ENTITY,
 } from "./utils/entities"
 
 const IBT_DEPOSIT = 15
@@ -558,6 +574,116 @@ describe("handleWithdraw()", () => {
             ),
             "balance",
             ZERO_BI.toString()
+        )
+    })
+})
+
+describe("handleCurvePoolDeployed()", () => {
+    beforeAll(() => {
+        mockMetaPoolFactoryFunctions()
+
+        let curvePoolDeployedEvent = changetype<CurvePoolDeployed>(
+            newMockEvent()
+        )
+
+        curvePoolDeployedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+
+        let poolAddressParam = new ethereum.EventParam(
+            "poolAddress",
+            ethereum.Value.fromAddress(FIRST_POOL_ADDRESS_MOCK)
+        )
+
+        let ibtParam = new ethereum.EventParam(
+            "ibt",
+            ethereum.Value.fromAddress(POOL_IBT_ADDRESS_MOCK)
+        )
+        let ptParam = new ethereum.EventParam(
+            "pt",
+            ethereum.Value.fromAddress(POOL_PT_ADDRESS_MOCK)
+        )
+
+        curvePoolDeployedEvent.parameters = [
+            poolAddressParam,
+            ibtParam,
+            ptParam,
+        ]
+
+        handleCurvePoolDeployed(curvePoolDeployedEvent)
+    })
+    test("Should create new pool entity", () => {
+        assert.entityCount(POOL_ENTITY, 1)
+    })
+    test("Should set manager, and fee rates for created pool", () => {
+        assert.fieldEquals(
+            POOL_ENTITY,
+            FIRST_POOL_ADDRESS_MOCK.toHex(),
+            "manager",
+            FIRST_USER_MOCK.toHex()
+        )
+
+        assert.fieldEquals(
+            POOL_ENTITY,
+            FIRST_POOL_ADDRESS_MOCK.toHex(),
+            "feeRate",
+            POOL_FEE_MOCK.toString()
+        )
+
+        assert.fieldEquals(
+            POOL_ENTITY,
+            FIRST_POOL_ADDRESS_MOCK.toHex(),
+            "adminFeeRate",
+            POOL_ADMIN_FEE_MOCK.toString()
+        )
+    })
+    test("Should create Asset entity for ibt token used in the pool", () => {
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            POOL_IBT_ADDRESS_MOCK.toHex(),
+            "address",
+            POOL_IBT_ADDRESS_MOCK.toHex()
+        )
+    })
+    test("Should create Asset entity for pt token used in the pool", () => {
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            POOL_PT_ADDRESS_MOCK.toHex(),
+            "address",
+            POOL_PT_ADDRESS_MOCK.toHex()
+        )
+    })
+    test("Should assign created pool to correct future vault", () => {
+        assert.fieldEquals(
+            FUTURE_ENTITY,
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+            "pools",
+            `[${FIRST_POOL_ADDRESS_MOCK.toHex()}]`
+        )
+    })
+})
+
+describe("handleCurveFactoryChanged()", () => {
+    beforeAll(() => {
+        let curveFactoryChangedEvent = changetype<CurveFactoryChanged>(
+            newMockEvent()
+        )
+
+        curveFactoryChangedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+
+        let newFactoryParam = new ethereum.EventParam(
+            "newFactory",
+            ethereum.Value.fromAddress(POOL_FACTORY_ADDRESS_MOCK)
+        )
+
+        curveFactoryChangedEvent.parameters = [newFactoryParam]
+
+        handleCurveFactoryChanged(curveFactoryChangedEvent)
+    })
+    test("Should set new curve factory address for the future vault", () => {
+        assert.fieldEquals(
+            FUTURE_ENTITY,
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+            "curveFactoryAddress",
+            POOL_FACTORY_ADDRESS_MOCK.toHex()
         )
     })
 })

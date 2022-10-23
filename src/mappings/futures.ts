@@ -9,9 +9,13 @@ import {
     Withdraw,
     YieldTransferred,
 } from "../../generated/FutureVault/FutureVault"
-import { FutureVaultDeployed } from "../../generated/FutureVaultFactory/FutureVaultFactory"
-import { FeeClaim, Future } from "../../generated/schema"
-import { ZERO_BI } from "../constants"
+import {
+    CurveFactoryChanged,
+    CurvePoolDeployed,
+    FutureVaultDeployed,
+} from "../../generated/FutureVaultFactory/FutureVaultFactory"
+import { FeeClaim, Future, Pool } from "../../generated/schema"
+import { ZERO_BD, ZERO_BI } from "../constants"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import {
@@ -25,6 +29,11 @@ import {
     getYT,
     getUnclaimedFees,
 } from "../entities/FutureVault"
+import {
+    getPoolFeeReceiver,
+    getPoolAdminFee,
+    getPoolFee,
+} from "../entities/MetaPoolFactory"
 import { createTransaction } from "../entities/Transaction"
 import { getUser } from "../entities/User"
 import { updateUserAssetBalance } from "../entities/UserAsset"
@@ -320,5 +329,66 @@ export function handleYieldTransferred(event: YieldTransferred): void {
         log.warning("YieldTransferred event call for not existing Future {}", [
             event.address.toHex(),
         ])
+    }
+}
+
+export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
+    let poolAddress = event.params.poolAddress
+    let pool = new Pool(poolAddress.toHex())
+
+    let ibtAsset = getAsset(
+        event.params.ibt.toHex(),
+        event.block.timestamp,
+        "IBT"
+    )
+
+    let ptAsset = getAsset(event.params.pt.toHex(), event.block.timestamp, "PT")
+
+    pool.address = poolAddress
+    pool.createdAtTimestamp = event.block.timestamp
+
+    // TODO on the protocol side
+    // pool.creator = getPoolAdmin(poolAddress).toHex()
+    pool.manager = getPoolFeeReceiver(poolAddress).toHex()
+
+    pool.feeRate = getPoolFee(poolAddress)
+    pool.adminFeeRate = getPoolAdminFee(poolAddress)
+    pool.totalFees = ZERO_BI
+    pool.totalAdminFees = ZERO_BI
+
+    pool.tokens = [ibtAsset.id, ptAsset.id]
+
+    pool.transactionCount = 0
+    pool.transactions = []
+
+    // liquidityToken: Asset!
+
+    pool.volumeHistory = []
+
+    let future = Future.load(event.address.toHex())!
+
+    pool.futureVault = future.address.toHex()
+
+    pool.ammProvider = "CURVE"
+    pool.liquidityPositions = []
+
+    pool.save()
+
+    // TODO on the protocol side
+    // future.curveFactoryAddress = getCurveFactory(future.address)
+    // future.save()
+}
+
+export function handleCurveFactoryChanged(event: CurveFactoryChanged): void {
+    let future = Future.load(event.address.toHex())
+
+    if (future) {
+        future.curveFactoryAddress = event.params.newFactory
+        future.save()
+    } else {
+        log.warning(
+            "CurveFactoryChanged event call for not existing Future {}",
+            [event.address.toHex()]
+        )
     }
 }
