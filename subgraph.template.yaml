@@ -100,7 +100,7 @@ dataSources:
     kind: ethereum/contract
     network: mainnet
     source:
-      abi: PlainPool
+      abi: MetaPoolZap
       startBlock: 0
     mapping:
       kind: ethereum/events
@@ -109,10 +109,8 @@ dataSources:
       entities: [ ]
       file: ./src/mappings/amm.ts
       abis:
-        - name: PlainPool
-          file: ./abis/PlainPool.json
-        - name: MetaPoolDeposit
-          file: ./abis/MetaPoolDeposit.json
+        - name: MetaPoolZap
+          file: ./abis/MetaPoolZap.json
         - name: MetaPoolFactory
           file: ./abis/MetaPoolFactory.json
       eventHandlers:

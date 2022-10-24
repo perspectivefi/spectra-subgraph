@@ -13,10 +13,10 @@ enum AssetType {
 }
 
 enum TransactionType {
-    DEPOSIT
-    WITHDRAW
-    CLAIM
-    SWAP
+    FUTURE_VAULT_DEPOSIT
+    FUTURE_VAULT_WITHDRAW
+    AMM_DEPOSIT
+    AMM_WITHDRAW
 }
 
 enum FutureStatus {
@@ -239,13 +239,17 @@ type Transaction @entity {
     gas: BigInt!
     gasPrice: BigInt!
 
-#    fee: BigDecimal!
+    fee: BigInt
+    adminFee: BigInt
+
     type: TransactionType!
 
     "if there is any future on any side of the transaction to be able to list this future's transactions"
     futureInTransaction: Future
     "if there is any user on any side of the transaction to be able to list this user's transactions"
     userInTransaction: User
+    "if there is any pool on any side of the transaction to be able to list this pool's transactions"
+    poolInTransaction: Pool
 
     "in case if more than one token was sent"
     amountsIn: [AssetAmount!]!
@@ -276,7 +280,7 @@ type Pool @entity {
     manager: User!
 
 #    liquidityToken: Asset!
-    tokens: [AssetAmount!]
+    assets: [AssetAmount!]
 
 
     "to be able to follow all the future's pools"

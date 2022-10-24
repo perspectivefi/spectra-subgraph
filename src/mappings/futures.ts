@@ -15,7 +15,7 @@ import {
     FutureVaultDeployed,
 } from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { FeeClaim, Future, Pool } from "../../generated/schema"
-import { ZERO_BD, ZERO_BI } from "../constants"
+import { ZERO_ADDRESS, ZERO_BD, ZERO_BI } from "../constants";
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import {
@@ -202,6 +202,7 @@ export function handleDeposit(event: Deposit): void {
 
             futureInTransaction: event.params.caller,
             userInTransaction: event.params.owner,
+            poolInTransaction: ZERO_ADDRESS,
 
             amountsIn: [amountIn.id],
             amountsOut: [firstAmountOut.id, secondAmountOut.id],
@@ -212,7 +213,10 @@ export function handleDeposit(event: Deposit): void {
 
                 gas: event.block.gasUsed,
                 gasPrice: event.transaction.gasPrice,
-                type: "DEPOSIT",
+                type: "FUTURE_VAULT_DEPOSIT",
+
+                fee: ZERO_BI,
+                adminFee: ZERO_BI,
             },
         })
     } else {
@@ -286,6 +290,7 @@ export function handleWithdraw(event: Withdraw): void {
 
             futureInTransaction: event.params.caller,
             userInTransaction: event.params.receiver,
+            poolInTransaction: ZERO_ADDRESS,
 
             amountsIn: [firstAmountIn.id, secondAmountIn.id],
             amountsOut: [amountOut.id],
@@ -296,7 +301,10 @@ export function handleWithdraw(event: Withdraw): void {
 
                 gas: event.block.gasUsed,
                 gasPrice: event.transaction.gasPrice,
-                type: "WITHDRAW",
+                type: "FUTURE_VAULT_WITHDRAW",
+
+                fee: ZERO_BI,
+                adminFee: ZERO_BI,
             },
         })
     } else {
@@ -356,7 +364,7 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     pool.totalFees = ZERO_BI
     pool.totalAdminFees = ZERO_BI
 
-    pool.tokens = [ibtAsset.id, ptAsset.id]
+    pool.assets = [ibtAsset.id, ptAsset.id]
 
     pool.transactionCount = 0
     pool.transactions = []
