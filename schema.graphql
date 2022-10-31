@@ -13,10 +13,10 @@ enum AssetType {
 }
 
 enum TransactionType {
-    DEPOSIT
-    WITHDRAW
-    CLAIM
-    SWAP
+    FUTURE_VAULT_DEPOSIT
+    FUTURE_VAULT_WITHDRAW
+    AMM_ADD_LIQUIDITY
+    AMM_REMOVE_LIQUIDITY
 }
 
 enum FutureStatus {
@@ -147,6 +147,8 @@ type UserAsset @entity {
     asset: Asset!
     "relation to the user details"
     user: User!
+    "if lp position"
+    pool: Pool
     #    fytTokenDetails: FYTTokenDetails
 }
 
@@ -186,16 +188,15 @@ type Future @entity {
     underlyingAsset: Asset!
     ibtAsset: Asset!
 
-    transactions: [Transaction!]! @derivedFrom(field: "futureInTransaction")
+    poolFactory: PoolFactory
     pools: [Pool!]! @derivedFrom(field: "futureVault")
 
-    curveFactoryAddress: Bytes
+    transactions: [Transaction!]! @derivedFrom(field: "futureInTransaction")
+
 #    ibtToUnderlyingRatio: Value
 
 #    platform: Platform!
-#    manager: User!
 #    infoUrl: String
-#    pools: [Pool!]
 }
 
 "FeeClaim entity to list claims triggered on an future by a user"
@@ -239,6 +240,8 @@ type Transaction @entity {
     gas: BigInt!
     gasPrice: BigInt!
 
+    fee: BigInt
+    adminFee: BigInt
 #    fee: BigDecimal!
     type: TransactionType!
 
@@ -246,6 +249,8 @@ type Transaction @entity {
     futureInTransaction: Future
     "if there is any user on any side of the transaction to be able to list this user's transactions"
     userInTransaction: User
+    "if there is any pool on any side of the transaction to be able to list this pool's transactions"
+    poolInTransaction: Pool
 
     "in case if more than one token was sent"
     amountsIn: [AssetAmount!]!
@@ -257,6 +262,21 @@ type Transaction @entity {
 # AMM
 ####################
 
+type PoolFactory @entity {
+    id: ID!
+    address: Bytes!
+    createdAtTimestamp: BigInt!
+
+    "it will be Curve by default but we will be able to index others as well"
+    ammProvider: AMM!
+    feeReceiver: User!
+    admin: Bytes!
+
+    future: Future!
+
+    pools: [Pool!]! @derivedFrom(field: "factory")
+}
+
 type Pool @entity {
     id: ID!
     address: Bytes!
@@ -267,25 +287,19 @@ type Pool @entity {
     adminFeeRate: BigInt!
     totalAdminFees: BigInt!
 
-    "it will be Curve by default but we will be able to index others as well"
-    ammProvider: AMM!
-
-#    TODO: on protocol side
-#    creator: User!
-    "user which is able to claim fees"
-    manager: User!
-
-#    liquidityToken: Asset!
-    tokens: [AssetAmount!]
-
-
     "to be able to follow all the future's pools"
     futureVault: Future!
+    "to be able to follow all the pools created by a factory"
+    factory: PoolFactory!
+
+    liquidityToken: Asset!
+    assets: [AssetAmount!]
 
     transactionCount: Int!
     transactions: [Transaction!]
 
-    liquidityPositions: [AssetAmount!]
+    totalLPSupply: BigInt!
+    liquidityPositions: [UserAsset!]! @derivedFrom(field: "pool")
 
     volumeHistory: [ValueInTime!]
 

@@ -59,6 +59,8 @@ dataSources:
       abis:
         - name: FutureVaultFactory
           file: ./abis/FutureVaultFactory.json
+        - name: CurvePoolFactory
+          file: ./abis/CurvePoolFactory.json
       eventHandlers:
         - event: FutureVaultDeployed(address)
           handler: handleFutureVaultDeployed
@@ -100,7 +102,7 @@ dataSources:
     kind: ethereum/contract
     network: mainnet
     source:
-      abi: PlainPool
+      abi: CurvePool
       startBlock: 0
     mapping:
       kind: ethereum/events
@@ -109,24 +111,14 @@ dataSources:
       entities: [ ]
       file: ./src/mappings/amm.ts
       abis:
-        - name: PlainPool
-          file: ./abis/PlainPool.json
-        - name: MetaPoolDeposit
-          file: ./abis/MetaPoolDeposit.json
-        - name: MetaPoolFactory
-          file: ./abis/MetaPoolFactory.json
+        - name: CurvePool
+          file: ./abis/CurvePool.json
+        - name: CurvePoolFactory
+          file: ./abis/CurvePoolFactory.json
       eventHandlers:
-        - event: AddLiquidity(indexed address,uint256[2],uint256[2],uint256,uint256)
+        - event: AddLiquidity(indexed address,uint256[2],uint256,uint256)
           handler: handleAddLiquidity
-        - event: RemoveLiquidity(indexed address,uint256[2],uint256[2],uint256)
+        - event: RemoveLiquidity(indexed address,uint256[2],uint256)
           handler: handleRemoveLiquidity
-        - event: RemoveLiquidityImbalance(indexed address,uint256[2],uint256[2],uint256,uint256)
-          handler: handleRemoveLiquidityImbalance
         - event: RemoveLiquidityOne(indexed address,uint256,uint256,uint256)
           handler: handleRemoveLiquidityOne
-        - event: NewFee(uint256,uint256)
-          handler: handleNewFee
-        - event: NewAdmin(indexed address)
-          handler: handleNewAdmin
-        - event: Approval(indexed address,indexed address,uint256)
-          handler: handleApproval

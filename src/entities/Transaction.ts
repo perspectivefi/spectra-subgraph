@@ -1,7 +1,7 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 
 import { Future, Transaction } from "../../generated/schema"
-import { ZERO_ADDRESS } from "../constants"
+import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 import { getUser } from "./User"
 
 class CreateTransactionParams {
@@ -9,6 +9,7 @@ class CreateTransactionParams {
 
     futureInTransaction: Address
     userInTransaction: Address
+    poolInTransaction: Address
 
     amountsIn: string[]
     amountsOut: string[]
@@ -24,6 +25,9 @@ class TransactionDetails {
 
     gas: BigInt
     gasPrice: BigInt
+
+    fee: BigInt
+    adminFee: BigInt
 }
 
 export function createTransaction(
@@ -50,10 +54,21 @@ export function createTransaction(
         transaction.userInTransaction = user.id
     }
 
-    // We have to compare it to an address as AssemblyScript do not support optional properties.
     if (params.futureInTransaction !== ZERO_ADDRESS) {
         let future = Future.load(params.futureInTransaction.toHex())
         transaction.futureInTransaction = future!.id
+    }
+
+    if (params.poolInTransaction !== ZERO_ADDRESS) {
+        transaction.poolInTransaction = params.poolInTransaction.toHex()
+    }
+
+    if (params.transaction.fee !== ZERO_BI) {
+        transaction.fee = params.transaction.fee
+    }
+
+    if (params.transaction.adminFee !== ZERO_BI) {
+        transaction.adminFee = params.transaction.adminFee
     }
 
     transaction.save()

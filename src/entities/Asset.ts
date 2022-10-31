@@ -18,7 +18,7 @@ export function getAsset(
         if (type === "UNDERLYING") {
             asset = createUnderlyingAsset(address, timestamp, type)
         }
-        if (["IBT", "PT", "YT"].includes(type)) {
+        if (["IBT", "PT", "YT", "LP"].includes(type)) {
             asset = createAsset(address, timestamp, type)
         }
     }

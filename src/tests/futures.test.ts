@@ -11,25 +11,15 @@ import {
 } from "matchstick-as/assembly/index"
 
 import {
-    Deposit,
     FeeClaimed,
     Paused,
     Unpaused,
     Withdraw,
     YieldTransferred,
 } from "../../generated/FutureVault/FutureVault"
-import {
-    CurveFactoryChanged,
-    CurvePoolDeployed,
-    FutureVaultDeployed,
-} from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { ZERO_BI } from "../constants"
 import {
-    handleCurveFactoryChanged,
-    handleCurvePoolDeployed,
-    handleDeposit,
     handleFeeClaimed,
-    handleFutureVaultDeployed,
     handlePaused,
     handleUnpaused,
     handleWithdraw,
@@ -40,20 +30,15 @@ import {
     generateFeeClaimId,
     generateUserAssetId,
 } from "../utils/idGenerators"
-import { ETH_ADDRESS_MOCK, mockERC20Functions } from "./mocks/ERC20"
-import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
-    FEE_COLLECTOR_ADDRESS_MOCK,
-    FIRST_FUTURE_VAULT_ADDRESS_MOCK,
-    IBT_ADDRESS_MOCK,
-    mockFutureVaultFunctions,
-    SECOND_FUTURE_VAULT_ADDRESS_MOCK,
-    DEPOSIT_TRANSACTION_HASH,
-    YT_ADDRESS_MOCK,
-    FIRST_USER_MOCK,
-    WITHDRAW_TRANSACTION_HASH,
-    FEE_MOCK,
-} from "./mocks/FutureVault"
+    emiCurveFactoryChanged,
+    emitCurvePoolDeployed,
+    emitDeposit,
+    emitFutureVaultDeployed,
+    IBT_DEPOSIT,
+    SHARES_RETURN,
+} from "./events/FutureVault"
+import { mockCurvePoolFunctions, POOL_LP_ADDRESS_MOCK } from "./mocks/CurvePool"
 import {
     FIRST_POOL_ADDRESS_MOCK,
     mockMetaPoolFactoryFunctions,
@@ -62,7 +47,20 @@ import {
     POOL_FEE_MOCK,
     POOL_IBT_ADDRESS_MOCK,
     POOL_PT_ADDRESS_MOCK,
-} from "./mocks/MetaPoolFactory"
+} from "./mocks/CurvePoolFactory"
+import { ETH_ADDRESS_MOCK, mockERC20Functions } from "./mocks/ERC20"
+import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
+import {
+    FEE_COLLECTOR_ADDRESS_MOCK,
+    FIRST_FUTURE_VAULT_ADDRESS_MOCK,
+    IBT_ADDRESS_MOCK,
+    mockFutureVaultFunctions,
+    DEPOSIT_TRANSACTION_HASH,
+    YT_ADDRESS_MOCK,
+    FIRST_USER_MOCK,
+    WITHDRAW_TRANSACTION_HASH,
+    FEE_MOCK,
+} from "./mocks/FutureVault"
 import {
     ASSET_ENTITY,
     FEE_CLAIM_ENTITY,
@@ -72,10 +70,9 @@ import {
     ASSET_AMOUNT_ENTITY,
     USER_ASSET_ENTITY,
     POOL_ENTITY,
+    POOL_FACTORY_ENTITY,
 } from "./utils/entities"
 
-const IBT_DEPOSIT = 15
-const SHARES_RETURN = 51
 const COLLECTED_FEE = 50
 
 describe("handleFutureVaultDeployed()", () => {
@@ -87,23 +84,7 @@ describe("handleFutureVaultDeployed()", () => {
     })
 
     beforeEach(() => {
-        let futureVaultDeployedEvent = changetype<FutureVaultDeployed>(
-            newMockEvent()
-        )
-
-        let futureVaultParam = new ethereum.EventParam(
-            "_futureVault",
-            ethereum.Value.fromAddress(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
-        )
-        futureVaultDeployedEvent.parameters = [futureVaultParam]
-        handleFutureVaultDeployed(futureVaultDeployedEvent)
-
-        futureVaultParam = new ethereum.EventParam(
-            "_futureVault",
-            ethereum.Value.fromAddress(SECOND_FUTURE_VAULT_ADDRESS_MOCK)
-        )
-        futureVaultDeployedEvent.parameters = [futureVaultParam]
-        handleFutureVaultDeployed(futureVaultDeployedEvent)
+        emitFutureVaultDeployed()
     })
 
     test("Should create new Future on every deployment", () => {
@@ -291,38 +272,7 @@ describe("handleFeeClaimed()", () => {
 
 describe("handleDeposit()", () => {
     beforeAll(() => {
-        let depositEvent = changetype<Deposit>(newMockEvent())
-        depositEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
-        depositEvent.transaction.hash = DEPOSIT_TRANSACTION_HASH
-
-        let callerParam = new ethereum.EventParam(
-            "caller",
-            ethereum.Value.fromAddress(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
-        )
-
-        let ownerParam = new ethereum.EventParam(
-            "owner",
-            ethereum.Value.fromAddress(FIRST_USER_MOCK)
-        )
-
-        let assetsParam = new ethereum.EventParam(
-            "assets",
-            ethereum.Value.fromI32(IBT_DEPOSIT)
-        )
-
-        let sharesParam = new ethereum.EventParam(
-            "shares",
-            ethereum.Value.fromI32(SHARES_RETURN)
-        )
-
-        depositEvent.parameters = [
-            callerParam,
-            ownerParam,
-            assetsParam,
-            sharesParam,
-        ]
-
-        handleDeposit(depositEvent)
+        emitDeposit()
     })
 
     test("Should create a new Transaction entity with properly assigned future as well as user entity", () => {
@@ -578,47 +528,68 @@ describe("handleWithdraw()", () => {
     })
 })
 
-describe("handleCurvePoolDeployed()", () => {
+describe("handleCurveFactoryChanged()", () => {
     beforeAll(() => {
         mockMetaPoolFactoryFunctions()
+        mockCurvePoolFunctions()
 
-        let curvePoolDeployedEvent = changetype<CurvePoolDeployed>(
-            newMockEvent()
-        )
-
-        curvePoolDeployedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
-
-        let poolAddressParam = new ethereum.EventParam(
-            "poolAddress",
-            ethereum.Value.fromAddress(FIRST_POOL_ADDRESS_MOCK)
-        )
-
-        let ibtParam = new ethereum.EventParam(
-            "ibt",
-            ethereum.Value.fromAddress(POOL_IBT_ADDRESS_MOCK)
-        )
-        let ptParam = new ethereum.EventParam(
-            "pt",
-            ethereum.Value.fromAddress(POOL_PT_ADDRESS_MOCK)
-        )
-
-        curvePoolDeployedEvent.parameters = [
-            poolAddressParam,
-            ibtParam,
-            ptParam,
-        ]
-
-        handleCurvePoolDeployed(curvePoolDeployedEvent)
+        emiCurveFactoryChanged()
     })
+
+    test("Should create new pool factory entity", () => {
+        assert.entityCount(POOL_FACTORY_ENTITY, 1)
+    })
+
+    test("Should set 'CURVE' as AMM provide", () => {
+        assert.fieldEquals(
+            POOL_FACTORY_ENTITY,
+            POOL_FACTORY_ADDRESS_MOCK.toHex(),
+            "ammProvider",
+            "CURVE"
+        )
+    })
+
+    test("Should set correct admin and fee receiver for the factory", () => {
+        assert.fieldEquals(
+            POOL_FACTORY_ENTITY,
+            POOL_FACTORY_ADDRESS_MOCK.toHex(),
+            "admin",
+            FIRST_USER_MOCK.toHex()
+        )
+
+        assert.fieldEquals(
+            POOL_FACTORY_ENTITY,
+            POOL_FACTORY_ADDRESS_MOCK.toHex(),
+            "feeReceiver",
+            FIRST_USER_MOCK.toHex()
+        )
+    })
+
+    test("Should set new curve factory address for the future vault", () => {
+        assert.fieldEquals(
+            FUTURE_ENTITY,
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+            "poolFactory",
+            POOL_FACTORY_ADDRESS_MOCK.toHex()
+        )
+    })
+})
+
+describe("handleCurvePoolDeployed()", () => {
+    beforeAll(() => {
+        emitCurvePoolDeployed()
+    })
+
     test("Should create new pool entity", () => {
         assert.entityCount(POOL_ENTITY, 1)
     })
-    test("Should set manager, and fee rates for created pool", () => {
+
+    test("Should set factory and fee rates for created pool", () => {
         assert.fieldEquals(
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
-            "manager",
-            FIRST_USER_MOCK.toHex()
+            "factory",
+            POOL_FACTORY_ADDRESS_MOCK.toHex()
         )
 
         assert.fieldEquals(
@@ -635,6 +606,23 @@ describe("handleCurvePoolDeployed()", () => {
             POOL_ADMIN_FEE_MOCK.toString()
         )
     })
+
+    test("Should create new Asset entity for liquidity token and assign that token to the pool", () => {
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            POOL_LP_ADDRESS_MOCK.toHex(),
+            "address",
+            POOL_LP_ADDRESS_MOCK.toHex()
+        )
+
+        assert.fieldEquals(
+            POOL_ENTITY,
+            FIRST_POOL_ADDRESS_MOCK.toHex(),
+            "liquidityToken",
+            POOL_LP_ADDRESS_MOCK.toHex()
+        )
+    })
+
     test("Should create Asset entity for ibt token used in the pool", () => {
         assert.fieldEquals(
             ASSET_ENTITY,
@@ -643,6 +631,7 @@ describe("handleCurvePoolDeployed()", () => {
             POOL_IBT_ADDRESS_MOCK.toHex()
         )
     })
+
     test("Should create Asset entity for pt token used in the pool", () => {
         assert.fieldEquals(
             ASSET_ENTITY,
@@ -651,39 +640,19 @@ describe("handleCurvePoolDeployed()", () => {
             POOL_PT_ADDRESS_MOCK.toHex()
         )
     })
+
     test("Should assign created pool to correct future vault", () => {
+        assert.fieldEquals(
+            POOL_ENTITY,
+            FIRST_POOL_ADDRESS_MOCK.toHex(),
+            "futureVault",
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+        )
         assert.fieldEquals(
             FUTURE_ENTITY,
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
             "pools",
             `[${FIRST_POOL_ADDRESS_MOCK.toHex()}]`
-        )
-    })
-})
-
-describe("handleCurveFactoryChanged()", () => {
-    beforeAll(() => {
-        let curveFactoryChangedEvent = changetype<CurveFactoryChanged>(
-            newMockEvent()
-        )
-
-        curveFactoryChangedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
-
-        let newFactoryParam = new ethereum.EventParam(
-            "newFactory",
-            ethereum.Value.fromAddress(POOL_FACTORY_ADDRESS_MOCK)
-        )
-
-        curveFactoryChangedEvent.parameters = [newFactoryParam]
-
-        handleCurveFactoryChanged(curveFactoryChangedEvent)
-    })
-    test("Should set new curve factory address for the future vault", () => {
-        assert.fieldEquals(
-            FUTURE_ENTITY,
-            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
-            "curveFactoryAddress",
-            POOL_FACTORY_ADDRESS_MOCK.toHex()
         )
     })
 })
