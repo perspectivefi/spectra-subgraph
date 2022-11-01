@@ -1,6 +1,5 @@
-import { Address, BigInt, Bytes, log } from "@graphprotocol/graph-ts"
+import { Address, log } from "@graphprotocol/graph-ts"
 
-import { CurveFactory } from "../../generated/AMM/CurveFactory"
 import {
     Deposit,
     FeeClaimed,
@@ -16,7 +15,7 @@ import {
     FutureVaultDeployed,
 } from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { FeeClaim, Future, Pool, PoolFactory } from "../../generated/schema"
-import { ZERO_ADDRESS, ZERO_BD, ZERO_BI } from "../constants"
+import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import {
@@ -42,7 +41,6 @@ import {
 import { createTransaction } from "../entities/Transaction"
 import { getUser } from "../entities/User"
 import { updateUserAssetBalance } from "../entities/UserAsset"
-import { logWarning } from "../utils"
 import { generateFeeClaimId } from "../utils/idGenerators"
 
 export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
