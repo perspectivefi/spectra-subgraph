@@ -1,18 +1,15 @@
-import { BigInt } from "@graphprotocol/graph-ts";
-import { Address } from "@graphprotocol/graph-ts/index";
+import { BigInt } from "@graphprotocol/graph-ts"
+import { Address } from "@graphprotocol/graph-ts/index"
 
-
-
-import { AddLiquidity, RemoveLiquidity } from "../../generated/AMM/CurvePool";
-import { AssetAmount, Pool } from "../../generated/schema";
-import { ZERO_ADDRESS, ZERO_BI } from "../constants";
-import { getAsset } from "../entities/Asset";
-import { getAssetAmount } from "../entities/AssetAmount";
-import { getPoolLPToken } from "../entities/CurvePool";
-import { createTransaction } from "../entities/Transaction";
-import { getUser } from "../entities/User";
-import { updateUserAssetBalance } from "../entities/UserAsset";
-
+import { AddLiquidity, RemoveLiquidity } from "../../generated/AMM/CurvePool"
+import { AssetAmount, Pool } from "../../generated/schema"
+import { ZERO_ADDRESS, ZERO_BI } from "../constants"
+import { getAsset } from "../entities/Asset"
+import { getAssetAmount } from "../entities/AssetAmount"
+import { getPoolLPToken } from "../entities/CurvePool"
+import { createTransaction } from "../entities/Transaction"
+import { getUser } from "../entities/User"
+import { updateUserAssetBalance } from "../entities/UserAsset"
 
 export function handleAddLiquidity(event: AddLiquidity): void {
     let eventTimestamp = event.block.timestamp
@@ -136,25 +133,25 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
 
     let user = getUser(event.params.provider.toHex(), eventTimestamp)
     let pool = Pool.load(event.address.toHex())
-    
+
     if (pool) {
         let lpTokenDiff = pool.totalLPSupply.minus(event.params.token_supply)
         let lpTokenAddress = getPoolLPToken(event.address)
 
         let lpAmountIn = getAssetAmount(
-          event.transaction.hash,
-          lpTokenAddress,
-          lpTokenDiff,
-          "LP",
-          eventTimestamp
+            event.transaction.hash,
+            lpTokenAddress,
+            lpTokenDiff,
+            "LP",
+            eventTimestamp
         )
 
         let lpPosition = updateUserAssetBalance(
-          user.address.toHex(),
-          lpTokenAddress.toHex(),
-          ZERO_BI.minus(lpTokenDiff),
-          eventTimestamp,
-          "LP"
+            user.address.toHex(),
+            lpTokenAddress.toHex(),
+            ZERO_BI.minus(lpTokenDiff),
+            eventTimestamp,
+            "LP"
         )
 
         if (!lpPosition.pool) {
@@ -172,35 +169,35 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
         let ptAddress = poolPTAssetAmount.asset
 
         let ibtAmountOut = getAssetAmount(
-          event.transaction.hash,
-          Address.fromString(ibtAddress),
-          event.params.token_amounts[0],
-          "IBT",
-          eventTimestamp
+            event.transaction.hash,
+            Address.fromString(ibtAddress),
+            event.params.token_amounts[0],
+            "IBT",
+            eventTimestamp
         )
 
         updateUserAssetBalance(
-          user.address.toHex(),
-          ibtAddress,
-          event.params.token_amounts[0],
-          event.block.timestamp,
-          "IBT"
+            user.address.toHex(),
+            ibtAddress,
+            event.params.token_amounts[0],
+            event.block.timestamp,
+            "IBT"
         )
 
         let ptAmountOut = getAssetAmount(
-          event.transaction.hash,
-          Address.fromString(ptAddress),
-          event.params.token_amounts[1],
-          "PT",
-          eventTimestamp
+            event.transaction.hash,
+            Address.fromString(ptAddress),
+            event.params.token_amounts[1],
+            "PT",
+            eventTimestamp
         )
 
         updateUserAssetBalance(
-          user.address.toHex(),
-          ptAddress,
-          event.params.token_amounts[1],
-          event.block.timestamp,
-          "PT"
+            user.address.toHex(),
+            ptAddress,
+            event.params.token_amounts[1],
+            event.block.timestamp,
+            "PT"
         )
 
         createTransaction({
@@ -235,8 +232,8 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
         poolIBTAssetAmount.save()
 
         poolPTAssetAmount.amount = poolPTAssetAmount.amount.minus(
-          event.params.token_amounts[1]
+            event.params.token_amounts[1]
         )
-        poolPTAssetAmount.save()   
+        poolPTAssetAmount.save()
     }
 }
