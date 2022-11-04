@@ -33,6 +33,8 @@ export const FIRST_USER_MOCK = Address.fromString(
     "0x1010000000000000000000000000000000000000"
 )
 
+export const FEE_MOCK = 150
+
 export function mockFutureVaultFunctions(): void {
     ;[
         FIRST_FUTURE_VAULT_ADDRESS_MOCK,
@@ -82,5 +84,11 @@ export function mockFutureVaultFunctions(): void {
             "totalAssets",
             "totalAssets():(uint256)"
         ).returns([ethereum.Value.fromI32(100)])
+
+        createMockedFunction(
+            addressMock,
+            "unclaimedFees",
+            "unclaimedFees():(uint256)"
+        ).returns([ethereum.Value.fromI32(FEE_MOCK)])
     })
 }

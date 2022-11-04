@@ -13,10 +13,10 @@ enum AssetType {
 }
 
 enum TransactionType {
-    DEPOSIT
-    WITHDRAW
-    CLAIM
-    SWAP
+    FUTURE_VAULT_DEPOSIT
+    FUTURE_VAULT_WITHDRAW
+    AMM_ADD_LIQUIDITY
+    AMM_REMOVE_LIQUIDITY
 }
 
 enum FutureStatus {
@@ -55,16 +55,6 @@ type Platform @entity {
     infoUrl: String!
 }
 
-"LPTokenDetails entity to define token details in case it is a LP token"
-type LPTokenDetails @entity {
-    id: ID!
-    address: String!
-    createdAtTimestamp: BigInt!
-
-    supply: BigDecimal!
-    tokens: [Asset!]!
-}
-
 "FYTTokenDetails entity to define token details in case it is a FYT token"
 type FYTTokenDetails @entity {
     id: ID!
@@ -73,6 +63,23 @@ type FYTTokenDetails @entity {
 
     generatedYield: BigDecimal!
     generatedYieldValue: BigDecimal
+}
+
+"LPTokenDetails entity to define token details in case it is a LP token"
+type LPTokenDetails @entity {
+    id: ID!
+    createdAtTimestamp: BigInt!
+
+    totalSupply: BigInt!
+
+    tokens: [Asset!]!
+}
+
+"ValueInTime entity to connect a value with time for history purpose"
+type ValueInTime @entity {
+    id: ID!
+    timestamp: BigInt!
+    value: BigInt!
 }
 
 ####################
@@ -104,10 +111,11 @@ type Asset @entity {
 
     "on of the price feeds"
     chainlinkPriceFeed: ChainlinkAggregatorProxy
+
     "in the case the asset is an IBT we create relation between this IBT and its underlying asset"
     underlying: Asset
-    lpTokenDetails: LPTokenDetails
     fytTokenDetails: FYTTokenDetails
+    lpTokenDetails: LPTokenDetails
 }
 
 "AssetPrice entity to assign a price of a token to an Asset entity and its price source"
@@ -139,6 +147,8 @@ type UserAsset @entity {
     asset: Asset!
     "relation to the user details"
     user: User!
+    "if lp position"
+    pool: Pool
     #    fytTokenDetails: FYTTokenDetails
 }
 
@@ -165,8 +175,9 @@ type Future @entity {
 
     "how big is the fee setup for that future"
     daoFeeRate: BigInt!
+    unclaimedFees: BigInt!
     "sum of the collected fees"
-    totalFees: BigDecimal!
+    totalCollectedFees: BigInt!
     "list of all the claims with the details"
     feeClaims: [FeeClaim!]! @derivedFrom(field: "future")
 
@@ -177,14 +188,15 @@ type Future @entity {
     underlyingAsset: Asset!
     ibtAsset: Asset!
 
+    poolFactory: PoolFactory
+    pools: [Pool!]! @derivedFrom(field: "futureVault")
+
     transactions: [Transaction!]! @derivedFrom(field: "futureInTransaction")
-#
+
 #    ibtToUnderlyingRatio: Value
 
 #    platform: Platform!
-#    manager: User!
 #    infoUrl: String
-#    pools: [Pool!]
 }
 
 "FeeClaim entity to list claims triggered on an future by a user"
@@ -195,7 +207,7 @@ type FeeClaim @entity {
 
     "claimant of the fee"
     feeCollector: User!
-    "future used to clam the fee"
+    "future that collector claimed the fee from"
     future: Future!
 }
 
@@ -228,6 +240,8 @@ type Transaction @entity {
     gas: BigInt!
     gasPrice: BigInt!
 
+    fee: BigInt
+    adminFee: BigInt
 #    fee: BigDecimal!
     type: TransactionType!
 
@@ -235,9 +249,60 @@ type Transaction @entity {
     futureInTransaction: Future
     "if there is any user on any side of the transaction to be able to list this user's transactions"
     userInTransaction: User
+    "if there is any pool on any side of the transaction to be able to list this pool's transactions"
+    poolInTransaction: Pool
 
     "in case if more than one token was sent"
     amountsIn: [AssetAmount!]!
     "in case if more than one token was received"
     amountsOut: [AssetAmount!]!
+}
+
+####################
+# AMM
+####################
+
+type PoolFactory @entity {
+    id: ID!
+    address: Bytes!
+    createdAtTimestamp: BigInt!
+
+    "it will be Curve by default but we will be able to index others as well"
+    ammProvider: AMM!
+    feeReceiver: User!
+    admin: Bytes!
+
+    future: Future!
+
+    pools: [Pool!]! @derivedFrom(field: "factory")
+}
+
+type Pool @entity {
+    id: ID!
+    address: Bytes!
+    createdAtTimestamp: BigInt!
+
+    feeRate: BigInt!
+    totalFees: BigInt!
+    adminFeeRate: BigInt!
+    totalAdminFees: BigInt!
+
+    "to be able to follow all the future's pools"
+    futureVault: Future!
+    "to be able to follow all the pools created by a factory"
+    factory: PoolFactory!
+
+    liquidityToken: Asset!
+    assets: [AssetAmount!]
+
+    transactionCount: Int!
+    transactions: [Transaction!]
+
+    totalLPSupply: BigInt!
+    liquidityPositions: [UserAsset!]! @derivedFrom(field: "pool")
+
+    volumeHistory: [ValueInTime!]
+
+#    Asset pricing is not competed at this point
+#    valueHistory: [Value!]
 }

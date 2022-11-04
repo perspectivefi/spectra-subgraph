@@ -7,12 +7,26 @@ import {
     Redeem,
     Unpaused,
     Withdraw,
+    YieldTransferred,
 } from "../../generated/FutureVault/FutureVault"
-import { FutureVaultDeployed } from "../../generated/FutureVaultFactory/FutureVaultFactory"
-import { FeeClaim, Future } from "../../generated/schema"
-import { ZERO_BD, ZERO_BI } from "../constants"
+import {
+    CurveFactoryChanged,
+    CurvePoolDeployed,
+    FutureVaultDeployed,
+} from "../../generated/FutureVaultFactory/FutureVaultFactory"
+import { FeeClaim, Future, Pool, PoolFactory } from "../../generated/schema"
+import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
+import {
+    getPoolAdminFee,
+    getPoolFee,
+    getPoolLPToken,
+} from "../entities/CurvePool"
+import {
+    getPoolFactoryAdmin,
+    getPoolFactoryFeeReceiver,
+} from "../entities/CurvePoolFactory"
 import {
     getExpirationTimestamp,
     getMaxFeeRate,
@@ -22,11 +36,11 @@ import {
     getUnderlying,
     getTotalAssets,
     getYT,
+    getUnclaimedFees,
 } from "../entities/FutureVault"
 import { createTransaction } from "../entities/Transaction"
 import { getUser } from "../entities/User"
 import { updateUserAssetBalance } from "../entities/UserAsset"
-import { logWarning } from "../utils"
 import { generateFeeClaimId } from "../utils/idGenerators"
 
 export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
@@ -39,7 +53,8 @@ export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
     newFuture.expirationAtTimestamp = getExpirationTimestamp(futureVaultAddress)
 
     newFuture.daoFeeRate = getMaxFeeRate(futureVaultAddress)
-    newFuture.totalFees = ZERO_BD
+    newFuture.unclaimedFees = ZERO_BI
+    newFuture.totalCollectedFees = ZERO_BI
 
     newFuture.name = getName(futureVaultAddress)
     newFuture.symbol = getSymbol(futureVaultAddress)
@@ -113,6 +128,12 @@ export function handleFeeClaimed(event: FeeClaimed): void {
         claim.future = future.id
         claim.amount = event.params._fees
 
+        future.totalCollectedFees = future.totalCollectedFees.plus(
+            event.params._fees
+        )
+        future.unclaimedFees = ZERO_BI
+
+        future.save()
         claim.save()
     } else {
         log.warning("FeeClaimed event call for not existing Future {}", [
@@ -184,6 +205,7 @@ export function handleDeposit(event: Deposit): void {
 
             futureInTransaction: event.params.caller,
             userInTransaction: event.params.owner,
+            poolInTransaction: ZERO_ADDRESS,
 
             amountsIn: [amountIn.id],
             amountsOut: [firstAmountOut.id, secondAmountOut.id],
@@ -194,7 +216,10 @@ export function handleDeposit(event: Deposit): void {
 
                 gas: event.block.gasUsed,
                 gasPrice: event.transaction.gasPrice,
-                type: "DEPOSIT",
+                type: "FUTURE_VAULT_DEPOSIT",
+
+                fee: ZERO_BI,
+                adminFee: ZERO_BI,
             },
         })
     } else {
@@ -244,8 +269,6 @@ export function handleWithdraw(event: Withdraw): void {
             "YT"
         )
 
-        // it should be Underlying but as part of the protocol is not ready to send this kind of information that
-        // it is Underlying or IBT token let's leave it until it will be possible to get that information
         let amountOut = getAssetAmount(
             event.transaction.hash,
             ibtAddress,
@@ -261,13 +284,13 @@ export function handleWithdraw(event: Withdraw): void {
             event.block.timestamp,
             "IBT"
         )
-        //
 
         createTransaction({
             transactionAddress: Address.fromBytes(event.transaction.hash),
 
             futureInTransaction: event.params.caller,
             userInTransaction: event.params.receiver,
+            poolInTransaction: ZERO_ADDRESS,
 
             amountsIn: [firstAmountIn.id, secondAmountIn.id],
             amountsOut: [amountOut.id],
@@ -278,7 +301,10 @@ export function handleWithdraw(event: Withdraw): void {
 
                 gas: event.block.gasUsed,
                 gasPrice: event.transaction.gasPrice,
-                type: "WITHDRAW",
+                type: "FUTURE_VAULT_WITHDRAW",
+
+                fee: ZERO_BI,
+                adminFee: ZERO_BI,
             },
         })
     } else {
@@ -300,3 +326,96 @@ export function handleWithdraw(event: Withdraw): void {
 //         ])
 //     }
 // }
+
+export function handleYieldTransferred(event: YieldTransferred): void {
+    let future = Future.load(event.address.toHex())
+
+    if (future) {
+        future.unclaimedFees = getUnclaimedFees(event.address)
+        future.save()
+    } else {
+        log.warning("YieldTransferred event call for not existing Future {}", [
+            event.address.toHex(),
+        ])
+    }
+}
+
+export function handleCurveFactoryChanged(event: CurveFactoryChanged): void {
+    let future = Future.load(event.address.toHex())
+
+    if (future) {
+        let curveFactoryAddress = event.params.newFactory
+        let curveFactory = new PoolFactory(curveFactoryAddress.toHex())
+        curveFactory.createdAtTimestamp = event.block.timestamp
+        curveFactory.address = curveFactoryAddress
+        curveFactory.future = future.id
+        curveFactory.ammProvider = "CURVE"
+        curveFactory.admin = getPoolFactoryAdmin(curveFactoryAddress)
+        let factoryFeeReceiver = getUser(
+            getPoolFactoryFeeReceiver(curveFactoryAddress).toHex(),
+            event.block.timestamp
+        )
+        curveFactory.feeReceiver = factoryFeeReceiver.id
+        curveFactory.save()
+
+        future.poolFactory = curveFactory.id
+        future.save()
+    } else {
+        log.warning(
+            "CurveFactoryChanged event call for not existing Future {}",
+            [event.address.toHex()]
+        )
+    }
+}
+
+export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
+    let poolAddress = event.params.poolAddress
+    let pool = new Pool(poolAddress.toHex())
+
+    let ibtAsset = getAssetAmount(
+        event.transaction.hash,
+        event.params.ibt,
+        ZERO_BI,
+        "IBT",
+        event.block.timestamp
+    )
+
+    let ptAsset = getAssetAmount(
+        event.transaction.hash,
+        event.params.pt,
+        ZERO_BI,
+        "PT",
+        event.block.timestamp
+    )
+
+    pool.address = poolAddress
+    pool.createdAtTimestamp = event.block.timestamp
+
+    pool.feeRate = getPoolFee(poolAddress)
+    pool.adminFeeRate = getPoolAdminFee(poolAddress)
+    pool.totalFees = ZERO_BI
+    pool.totalAdminFees = ZERO_BI
+
+    pool.assets = [ibtAsset.id, ptAsset.id]
+
+    pool.transactionCount = 0
+    pool.transactions = []
+
+    let lpToken = getAsset(
+        getPoolLPToken(poolAddress).toHex(),
+        event.block.timestamp,
+        "LP"
+    )
+    pool.liquidityToken = lpToken.id
+
+    pool.volumeHistory = []
+
+    let future = Future.load(event.address.toHex())!
+    pool.factory = future.poolFactory!
+    pool.futureVault = future.address.toHex()
+
+    pool.totalLPSupply = ZERO_BI
+    pool.liquidityPositions = []
+
+    pool.save()
+}

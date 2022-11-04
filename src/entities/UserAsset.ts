@@ -52,7 +52,7 @@ export function updateUserAssetBalance(
     balanceDiff: BigInt,
     timestamp: BigInt,
     assetType: string
-): void {
+): UserAsset {
     let user = getUser(userId, timestamp)
     let asset = getAsset(assetId, timestamp, assetType)
 
@@ -65,4 +65,5 @@ export function updateUserAssetBalance(
 
     userAsset.balance = userAsset.balance.plus(balanceDiff)
     userAsset.save()
+    return userAsset
 }
