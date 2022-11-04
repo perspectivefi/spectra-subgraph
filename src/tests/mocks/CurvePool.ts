@@ -1,8 +1,6 @@
 import { Address, ethereum } from "@graphprotocol/graph-ts"
 import { createMockedFunction } from "matchstick-as/assembly/index"
 
-import { FIRST_USER_MOCK } from "./FutureVault"
-
 export const POOL_FACTORY_ADDRESS_MOCK = Address.fromString(
     "0x0000000000000000000000555550000000000000"
 )

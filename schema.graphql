@@ -301,7 +301,7 @@ type Pool @entity {
     totalLPSupply: BigInt!
     liquidityPositions: [UserAsset!]! @derivedFrom(field: "pool")
 
-    volumeHistory: [ValueInTime!]
+#    volumeHistory: [ValueInTime!]
 
 #    Asset pricing is not competed at this point
 #    valueHistory: [Value!]

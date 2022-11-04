@@ -226,6 +226,8 @@ describe("handleFeeClaimed()", () => {
 
         handleFeeClaimed(feeClaimedEvent)
 
+        logStore()
+
         let feeClaimId = generateFeeClaimId(
             FEE_COLLECTOR_ADDRESS_MOCK.toHex(),
             feeClaimedEvent.block.timestamp.toString()

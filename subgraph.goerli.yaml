@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.4
 description: APWine Subgraph
 repository: https://github.com/APWine/apwine-v2-subgraph
 schema:
@@ -8,10 +8,10 @@ features:
 dataSources:
   - name: ChainlinkAggregatorDataSource
     kind: ethereum/contract
-    network: {{ network }}
+    network: goerli
     source:
       abi: ChainlinkAggregatorProxyContract
-      startBlock: {{ startBlock }}
+      startBlock: 7589842
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -30,11 +30,11 @@ dataSources:
           handler: handleAnswerUpdated
   - name: Registry
     kind: ethereum/contract
-    network: {{ network }}
+    network: goerli
     source:
       abi: Registry
-      address: '{{ registry }}'
-      startBlock: {{ startBlock }}
+      address: '0x7d590853ba8099706da75f4a1b9147f711d7fccd'
+      startBlock: 7589842
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
@@ -49,11 +49,11 @@ dataSources:
           handler: handleRegistryUpdate
   - name: FutureVaultFactory
     kind: ethereum/contract
-    network: {{ network }}
+    network: goerli
     source:
       abi: FutureVaultFactory
-      address: '{{ futureVaultFactory }}'
-      startBlock: {{ startBlock }}
+      address: '0x7D6833bCfa7Fa5c526D543882bEA84122a384aB1'
+      startBlock: 7589842
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
@@ -80,11 +80,11 @@ dataSources:
           handler: handleCurvePoolDeployed
   - name: FutureVault
     kind: ethereum/contract
-    network: {{ network }}
+    network: goerli
     source:
       abi: FutureVault
-      address: '{{ futureVault }}'
-      startBlock: {{ startBlock }}
+      address: '0xe8af640d1ec749d7c64468c552e87079d971a5b3'
+      startBlock: 7589842
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
@@ -111,10 +111,10 @@ dataSources:
           handler: handleYieldTransferred
   - name: AMM
     kind: ethereum/contract
-    network: {{ network }}
+    network: goerli
     source:
       abi: CurvePool
-      startBlock: {{ startBlock }}
+      startBlock: 7589842
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
