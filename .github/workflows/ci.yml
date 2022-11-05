@@ -23,7 +23,7 @@ jobs:
       - name: Install modules
         run: yarn
       - name: Generate default config file
-        run: yarn generate-config
+        run: yarn generate-config:local
       - name: Build subgraph schema classes
         run: yarn codegen
       - name: Run unit tests

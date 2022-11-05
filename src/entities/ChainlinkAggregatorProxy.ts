@@ -1,7 +1,6 @@
 import { BigInt } from "@graphprotocol/graph-ts"
 
 import { ChainlinkAggregatorProxy } from "../../generated/schema"
-import { ETH_ADDRESS_MOCK } from "../tests/mocks/ERC20"
 import { getAsset } from "./Asset"
 
 export function getChainlinkAggregatorProxy(
@@ -15,7 +14,7 @@ export function getChainlinkAggregatorProxy(
 
     let asset = getAsset(
         // Mocked ETH as we have no pool creation event = no asset entity creation flow
-        ETH_ADDRESS_MOCK,
+        "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
         timestamp,
         "UNDERLYING"
     )

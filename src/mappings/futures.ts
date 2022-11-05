@@ -76,8 +76,6 @@ export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
     newFuture.underlyingAsset = underlyingAddress.toHex()
     newFuture.ibtAsset = ibtAddress.toHex()
 
-    newFuture.transactions = []
-
     newFuture.save()
 }
 
@@ -399,7 +397,6 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     pool.assets = [ibtAsset.id, ptAsset.id]
 
     pool.transactionCount = 0
-    pool.transactions = []
 
     let lpToken = getAsset(
         getPoolLPToken(poolAddress).toHex(),
@@ -408,14 +405,13 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     )
     pool.liquidityToken = lpToken.id
 
-    pool.volumeHistory = []
+    // pool.volumeHistory = []
 
     let future = Future.load(event.address.toHex())!
     pool.factory = future.poolFactory!
     pool.futureVault = future.address.toHex()
 
     pool.totalLPSupply = ZERO_BI
-    pool.liquidityPositions = []
 
     pool.save()
 }
