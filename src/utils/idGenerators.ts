@@ -1,3 +1,4 @@
+
 // FYTTokenDetails
 export const generateFYTInfoId = (tokenAddress: string): string =>
     `${tokenAddress}-FYT`
@@ -35,3 +36,9 @@ export const generateTransferId = (
     transactionHash: string,
     timestamp: string
 ): string => `${timestamp}-${transactionHash}`
+
+// FutureDayData
+export const generateFutureDayDataId = (
+    futureAddress: string,
+    dayId: string
+): string => `${futureAddress}-${dayId}`

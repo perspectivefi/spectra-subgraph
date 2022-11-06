@@ -32,12 +32,14 @@ import {
     generateAccountAssetId,
     generateFeeClaimId,
 } from "../utils"
+import { generateFutureDayDataId } from "../utils/idGenerators"
 import { toPrecision } from "../utils/toPrecision"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
+import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
 import {
     mockCurvePoolFunctions,
     POOL_ADD_LIQUIDITY_TRANSACTION_HASH,
@@ -58,7 +60,9 @@ import { STANDARD_DECIMALS_MOCK, mockERC20Functions } from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
     FEE_COLLECTOR_ADDRESS_MOCK,
+    FIRST_FUTURE_VAULT_ADDRESS_MOCK,
     FIRST_USER_MOCK,
+    IBT_ADDRESS_MOCK,
     mockFutureVaultFunctions,
 } from "./mocks/FutureVault"
 import {
@@ -68,6 +72,7 @@ import {
     TRANSACTION_ENTITY,
     ACCOUNT_ASSET_ENTITY,
     ACCOUNT_ENTITY,
+    FUTURE_DAY_DATA_ENTITY,
 } from "./utils/entities"
 
 const LP_TOTAL_SUPPLY = toPrecision(
@@ -100,7 +105,7 @@ describe("handleAddLiquidity()", () => {
         mockFeedRegistryInterfaceFunctions()
         mockMetaPoolFactoryFunctions()
         mockCurvePoolFunctions()
-
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
         emitFutureVaultDeployed()
         emiCurveFactoryChanged()
         emitCurvePoolDeployed()
@@ -291,6 +296,50 @@ describe("handleAddLiquidity()", () => {
             "20000000000000000"
         )
     })
+
+    test("Should create/update FutureDayData with the correct details", () => {
+        const day0Id = "0"
+        assert.entityCount(FUTURE_DAY_DATA_ENTITY, 1)
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "future",
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "dailyAddLiquidity",
+            "1"
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "date",
+            day0Id
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "ibtRate",
+            "1"
+        )
+    })
 })
 
 describe("handleRemoveLiquidity()", () => {
@@ -324,7 +373,7 @@ describe("handleRemoveLiquidity()", () => {
             tokenAmountsParam,
             tokenSupplyParam,
         ]
-
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
         handleRemoveLiquidity(removeLiquidityEvent)
     })
 
@@ -488,6 +537,50 @@ describe("handleRemoveLiquidity()", () => {
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "totalAdminFees",
             "20000000000000000"
+        )
+    })
+
+    test("Should create/update FutureDayData with the correct details", () => {
+        const day0Id = "0"
+        assert.entityCount(FUTURE_DAY_DATA_ENTITY, 1)
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "future",
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "dailyRemoveLiquidity",
+            "1"
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "date",
+            day0Id
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "ibtRate",
+            "1"
         )
     })
 })
@@ -701,6 +794,50 @@ describe("handleTokenExchange()", () => {
             "24003202562049639"
         )
     })
+
+    test("Should create/update FutureDayData with the correct details", () => {
+        const day0Id = "0"
+        assert.entityCount(FUTURE_DAY_DATA_ENTITY, 1)
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "future",
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "dailySwaps",
+            "1"
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "date",
+            day0Id
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "ibtRate",
+            "1"
+        )
+    })
 })
 
 describe("handleRemoveLiquidityOne()", () => {
@@ -877,6 +1014,50 @@ describe("handleRemoveLiquidityOne()", () => {
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "totalAdminFees",
             "44019215372297837"
+        )
+    })
+
+    test("Should create/update FutureDayData with the correct details", () => {
+        const day0Id = "0"
+        assert.entityCount(FUTURE_DAY_DATA_ENTITY, 1)
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "future",
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "dailyRemoveLiquidity",
+            "2"
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "date",
+            day0Id
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAY_DATA_ENTITY,
+            generateFutureDayDataId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
+            "ibtRate",
+            "1"
         )
     })
 })

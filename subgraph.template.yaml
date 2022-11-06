@@ -94,6 +94,8 @@ dataSources:
       abis:
         - name: FutureVault
           file: ./abis/FutureVault.json
+        - name: ERC4626Contract
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
       eventHandlers:
         - event: Paused(address)
           handler: handlePaused
