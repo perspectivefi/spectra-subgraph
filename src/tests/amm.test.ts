@@ -10,15 +10,27 @@ import {
     beforeAll,
 } from "matchstick-as/assembly/index"
 
-import { AddLiquidity, RemoveLiquidity } from "../../generated/AMM/CurvePool"
-import { handleAddLiquidity, handleRemoveLiquidity } from "../mappings/amm"
+import {
+    AddLiquidity,
+    RemoveLiquidity,
+    TokenExchange,
+} from "../../generated/AMM/CurvePool"
+import {
+    handleAddLiquidity,
+    handleRemoveLiquidity,
+    handleTokenExchange,
+} from "../mappings/amm"
 import { generateAssetAmountId, generateUserAssetId } from "../utils"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
-import { mockCurvePoolFunctions, POOL_LP_ADDRESS_MOCK } from "./mocks/CurvePool"
+import {
+    mockCurvePoolFunctions,
+    POOL_EXCHANGE_TRANSACTION_HASH,
+    POOL_LP_ADDRESS_MOCK,
+} from "./mocks/CurvePool"
 import {
     POOL_DEPLOY_TRANSACTION_HASH,
     FIRST_POOL_ADDRESS_MOCK,
@@ -350,5 +362,156 @@ describe("handleRemoveLiquidity()", () => {
         assert.fieldEquals(USER_ASSET_ENTITY, userIBTId, "balance", "-10")
         assert.fieldEquals(USER_ASSET_ENTITY, userPTId, "balance", "-5")
         assert.fieldEquals(USER_ASSET_ENTITY, userLPId, "balance", "20")
+    })
+})
+
+describe("handleTokenExchange()", () => {
+    beforeAll(() => {
+        let tokenExchangeEvent = changetype<TokenExchange>(newMockEvent())
+        tokenExchangeEvent.address = FIRST_POOL_ADDRESS_MOCK
+        tokenExchangeEvent.transaction.hash = POOL_EXCHANGE_TRANSACTION_HASH
+
+        let buyerParam = new ethereum.EventParam(
+            "buyer",
+            ethereum.Value.fromAddress(FIRST_USER_MOCK)
+        )
+
+        let soldIdParam = new ethereum.EventParam(
+            "sold_id",
+            ethereum.Value.fromI32(1)
+        )
+
+        let tokensSoldParam = new ethereum.EventParam(
+            "tokens_sold",
+            ethereum.Value.fromI32(5)
+        )
+
+        let boughtIdParam = new ethereum.EventParam(
+            "bought_id",
+            ethereum.Value.fromI32(0)
+        )
+
+        let tokensBoughtParam = new ethereum.EventParam(
+            "tokens_bought",
+            ethereum.Value.fromI32(10)
+        )
+
+        tokenExchangeEvent.parameters = [
+            buyerParam,
+            soldIdParam,
+            tokensSoldParam,
+            boughtIdParam,
+            tokensBoughtParam,
+        ]
+
+        handleTokenExchange(tokenExchangeEvent)
+    })
+
+    test("Should create new transaction entity with 'AMM_EXCHANGE' as type", () => {
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+            "type",
+            "AMM_EXCHANGE"
+        )
+    })
+
+    test("Should reflect the exchange transaction in the pool asset amounts", () => {
+        assert.fieldEquals(
+            ASSET_AMOUNT_ENTITY,
+            generateAssetAmountId(
+                POOL_DEPLOY_TRANSACTION_HASH.toHex(),
+                POOL_IBT_ADDRESS_MOCK.toHex()
+            ),
+            "amount",
+            "0"
+        )
+
+        assert.fieldEquals(
+            ASSET_AMOUNT_ENTITY,
+            generateAssetAmountId(
+                POOL_DEPLOY_TRANSACTION_HASH.toHex(),
+                POOL_PT_ADDRESS_MOCK.toHex()
+            ),
+            "amount",
+            "10"
+        )
+    })
+
+    test("Should create new asset amount entities for all the in and out tokens of the transaction", () => {
+        assert.fieldEquals(
+            ASSET_AMOUNT_ENTITY,
+            generateAssetAmountId(
+                POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+                POOL_IBT_ADDRESS_MOCK.toHex()
+            ),
+            "amount",
+            "10"
+        )
+        assert.fieldEquals(
+            ASSET_AMOUNT_ENTITY,
+            generateAssetAmountId(
+                POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+                POOL_PT_ADDRESS_MOCK.toHex()
+            ),
+            "amount",
+            "5"
+        )
+    })
+
+    test("Should create new transaction entity with properly assigned input and outputs", () => {
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+            "amountsIn",
+            `[${generateAssetAmountId(
+                POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+                POOL_PT_ADDRESS_MOCK.toHex()
+            )}]`
+        )
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+            "amountsOut",
+            `[${generateAssetAmountId(
+                POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+                POOL_IBT_ADDRESS_MOCK.toHex()
+            )}]`
+        )
+    })
+
+    test("Should reflect the exchange transaction in the user portfolio", () => {
+        let userIBTId = generateUserAssetId(
+            FIRST_USER_MOCK.toHex(),
+            POOL_IBT_ADDRESS_MOCK.toHex()
+        )
+        let userPTId = generateUserAssetId(
+            FIRST_USER_MOCK.toHex(),
+            POOL_PT_ADDRESS_MOCK.toHex()
+        )
+        let userLPId = generateUserAssetId(
+            FIRST_USER_MOCK.toHex(),
+            POOL_LP_ADDRESS_MOCK.toHex()
+        )
+
+        assert.fieldEquals(USER_ASSET_ENTITY, userIBTId, "balance", "0")
+        assert.fieldEquals(USER_ASSET_ENTITY, userPTId, "balance", "-10")
+        assert.fieldEquals(USER_ASSET_ENTITY, userLPId, "balance", "20")
+    })
+
+    test("Should assign user and pool relation to the transaction", () => {
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+            "userInTransaction",
+            FIRST_USER_MOCK.toHex()
+        )
+
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+            "poolInTransaction",
+            FIRST_POOL_ADDRESS_MOCK.toHex()
+        )
     })
 })

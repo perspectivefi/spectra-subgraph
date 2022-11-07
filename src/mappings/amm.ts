@@ -1,7 +1,11 @@
 import { BigInt } from "@graphprotocol/graph-ts"
 import { Address } from "@graphprotocol/graph-ts/index"
 
-import { AddLiquidity, RemoveLiquidity } from "../../generated/AMM/CurvePool"
+import {
+    AddLiquidity,
+    RemoveLiquidity,
+    TokenExchange,
+} from "../../generated/AMM/CurvePool"
 import { AssetAmount, Pool } from "../../generated/schema"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 import { getAsset } from "../entities/Asset"
@@ -235,5 +239,85 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             event.params.token_amounts[1]
         )
         poolPTAssetAmount.save()
+    }
+}
+
+export function handleTokenExchange(event: TokenExchange): void {
+    let eventTimestamp = event.block.timestamp
+
+    let user = getUser(event.params.buyer.toHex(), eventTimestamp)
+    let pool = Pool.load(event.address.toHex())
+
+    if (pool) {
+        let assetSoldAddress = pool.assets![event.params.sold_id.toI32()]
+        let assetBoughtAddress = pool.assets![event.params.bought_id.toI32()]
+
+        let poolAssetInAmount = AssetAmount.load(assetSoldAddress)!
+        let poolAssetOutAmount = AssetAmount.load(assetBoughtAddress)!
+
+        let amountIn = getAssetAmount(
+            event.transaction.hash,
+            Address.fromString(poolAssetInAmount.asset),
+            event.params.tokens_sold,
+            event.params.sold_id.equals(ZERO_BI) ? "IBT" : "PT",
+            eventTimestamp
+        )
+
+        updateUserAssetBalance(
+            user.address.toHex(),
+            poolAssetInAmount.asset,
+            ZERO_BI.minus(event.params.tokens_sold),
+            event.block.timestamp,
+            event.params.sold_id.equals(ZERO_BI) ? "IBT" : "PT"
+        )
+
+        let amountOut = getAssetAmount(
+            event.transaction.hash,
+            Address.fromString(poolAssetOutAmount.asset),
+            event.params.tokens_bought,
+            event.params.bought_id.equals(ZERO_BI) ? "PT" : "IBT",
+            eventTimestamp
+        )
+
+        updateUserAssetBalance(
+            user.address.toHex(),
+            poolAssetOutAmount.asset,
+            event.params.tokens_bought,
+            event.block.timestamp,
+            event.params.bought_id.equals(ZERO_BI) ? "PT" : "IBT"
+        )
+
+        createTransaction({
+            transactionAddress: Address.fromBytes(event.transaction.hash),
+
+            futureInTransaction: ZERO_ADDRESS,
+            userInTransaction: Address.fromBytes(user.address),
+            poolInTransaction: Address.fromBytes(pool.address),
+
+            amountsIn: [amountIn.id],
+            amountsOut: [amountOut.id],
+
+            transaction: {
+                timestamp: event.block.timestamp,
+                block: event.block.number,
+
+                gas: event.block.gasUsed,
+                gasPrice: event.transaction.gasPrice,
+                type: "AMM_EXCHANGE",
+
+                fee: ZERO_BI,
+                adminFee: ZERO_BI,
+            },
+        })
+
+        poolAssetInAmount.amount = poolAssetInAmount.amount.plus(
+            event.params.tokens_sold
+        )
+        poolAssetInAmount.save()
+
+        poolAssetOutAmount.amount = poolAssetOutAmount.amount.minus(
+            event.params.tokens_bought
+        )
+        poolAssetOutAmount.save()
     }
 }
