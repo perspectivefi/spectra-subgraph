@@ -71,6 +71,7 @@ typings/
 subgraph.yaml
 subgraph.polygon.yaml
 subgraph.arbitrum.yaml
+subgraph.goerli.yaml
 
 # Tests
 src/tests/.bin/

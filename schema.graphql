@@ -17,6 +17,7 @@ enum TransactionType {
     FUTURE_VAULT_WITHDRAW
     AMM_ADD_LIQUIDITY
     AMM_REMOVE_LIQUIDITY
+    AMM_EXCHANGE
 }
 
 enum FutureStatus {
@@ -300,8 +301,6 @@ type Pool @entity {
 
     totalLPSupply: BigInt!
     liquidityPositions: [UserAsset!]! @derivedFrom(field: "pool")
-
-#    volumeHistory: [ValueInTime!]
 
 #    Asset pricing is not competed at this point
 #    valueHistory: [Value!]
