@@ -4,6 +4,7 @@ import { Address } from "@graphprotocol/graph-ts/index"
 import {
     AddLiquidity,
     RemoveLiquidity,
+    RemoveLiquidityOne,
     TokenExchange,
 } from "../../generated/AMM/CurvePool"
 import { AssetAmount, Pool } from "../../generated/schema"
@@ -319,5 +320,96 @@ export function handleTokenExchange(event: TokenExchange): void {
             event.params.tokens_bought
         )
         poolAssetOutAmount.save()
+    }
+}
+
+export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
+    let eventTimestamp = event.block.timestamp
+
+    let userAddress = event.transaction.from.toHex()
+    // there is a rick that provider will not exist and in that case the caller will become receiver
+    if (event.params.provider) userAddress = event.params.provider.toHex()
+
+    let user = getUser(userAddress, eventTimestamp)
+    let pool = Pool.load(event.address.toHex())
+
+    if (pool) {
+        let lpTokenAddress = getPoolLPToken(event.address)
+
+        let lpAmountIn = getAssetAmount(
+            event.transaction.hash,
+            lpTokenAddress,
+            event.params.token_amount,
+            "LP",
+            eventTimestamp
+        )
+
+        let lpPosition = updateUserAssetBalance(
+            user.address.toHex(),
+            lpTokenAddress.toHex(),
+            ZERO_BI.minus(event.params.token_amount),
+            eventTimestamp,
+            "LP"
+        )
+
+        if (!lpPosition.pool) {
+            lpPosition.pool = pool.id
+            lpPosition.save()
+        }
+
+        let withdrawnCoin = pool.assets![event.params.coin_index.toI32()]
+        let poolWithdrawnAssetAmount = AssetAmount.load(withdrawnCoin)!
+        let withdrawnTokenAddress = poolWithdrawnAssetAmount.asset
+
+        let withdrawnAssetType = event.params.coin_index.equals(ZERO_BI)
+            ? "IBT"
+            : "PT"
+
+        let withdrawnAmountOut = getAssetAmount(
+            event.transaction.hash,
+            Address.fromString(withdrawnTokenAddress),
+            event.params.coin_amount,
+            withdrawnAssetType,
+            eventTimestamp
+        )
+
+        updateUserAssetBalance(
+            user.address.toHex(),
+            withdrawnTokenAddress,
+            event.params.coin_amount,
+            event.block.timestamp,
+            withdrawnAssetType
+        )
+
+        createTransaction({
+            transactionAddress: Address.fromBytes(event.transaction.hash),
+
+            futureInTransaction: ZERO_ADDRESS,
+            userInTransaction: Address.fromString(userAddress),
+            poolInTransaction: event.address,
+
+            amountsIn: [lpAmountIn.id],
+            amountsOut: [withdrawnAmountOut.id],
+
+            transaction: {
+                timestamp: event.block.timestamp,
+                block: event.block.number,
+
+                gas: event.block.gasUsed,
+                gasPrice: event.transaction.gasPrice,
+                type: "AMM_REMOVE_LIQUIDITY_ONE",
+
+                fee: ZERO_BI,
+                adminFee: ZERO_BI,
+            },
+        })
+
+        pool.totalLPSupply = pool.totalLPSupply.minus(event.params.token_amount)
+        pool.save()
+
+        poolWithdrawnAssetAmount.amount = poolWithdrawnAssetAmount.amount.minus(
+            event.params.coin_amount
+        )
+        poolWithdrawnAssetAmount.save()
     }
 }
