@@ -327,7 +327,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
     let eventTimestamp = event.block.timestamp
 
     let userAddress = event.transaction.from.toHex()
-    // there is a rick that provider will not exist and in that case the caller will become receiver
+    // there is a risc that provider will not exist and in that case the caller will become receiver - https://curve.readthedocs.io/factory-deposits.html
     if (event.params.provider) userAddress = event.params.provider.toHex()
 
     let user = getUser(userAddress, eventTimestamp)
