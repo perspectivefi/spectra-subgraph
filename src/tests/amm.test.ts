@@ -1,4 +1,4 @@
-import { Address, BigInt, ethereum, Value } from "@graphprotocol/graph-ts"
+import { ethereum } from "@graphprotocol/graph-ts"
 import {
     describe,
     test,
@@ -13,11 +13,13 @@ import {
 import {
     AddLiquidity,
     RemoveLiquidity,
+    RemoveLiquidityOne,
     TokenExchange,
 } from "../../generated/AMM/CurvePool"
 import {
     handleAddLiquidity,
     handleRemoveLiquidity,
+    handleRemoveLiquidityOne,
     handleTokenExchange,
 } from "../mappings/amm"
 import { generateAssetAmountId, generateUserAssetId } from "../utils"
@@ -28,8 +30,11 @@ import {
 } from "./events/FutureVault"
 import {
     mockCurvePoolFunctions,
+    POOL_ADD_LIQUIDITY_TRANSACTION_HASH,
+    POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH,
     POOL_EXCHANGE_TRANSACTION_HASH,
     POOL_LP_ADDRESS_MOCK,
+    POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH,
 } from "./mocks/CurvePool"
 import {
     POOL_DEPLOY_TRANSACTION_HASH,
@@ -40,12 +45,7 @@ import {
 } from "./mocks/CurvePoolFactory"
 import { mockERC20Functions } from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
-import {
-    DEPOSIT_TRANSACTION_HASH,
-    FIRST_USER_MOCK,
-    mockFutureVaultFunctions,
-    WITHDRAW_TRANSACTION_HASH,
-} from "./mocks/FutureVault"
+import { FIRST_USER_MOCK, mockFutureVaultFunctions } from "./mocks/FutureVault"
 import {
     ASSET_AMOUNT_ENTITY,
     POOL_ENTITY,
@@ -72,7 +72,7 @@ describe("handleAddLiquidity()", () => {
 
         let addLiquidityEvent = changetype<AddLiquidity>(newMockEvent())
         addLiquidityEvent.address = FIRST_POOL_ADDRESS_MOCK
-        addLiquidityEvent.transaction.hash = DEPOSIT_TRANSACTION_HASH
+        addLiquidityEvent.transaction.hash = POOL_ADD_LIQUIDITY_TRANSACTION_HASH
 
         let providerParam = new ethereum.EventParam(
             "provider",
@@ -104,7 +104,7 @@ describe("handleAddLiquidity()", () => {
     test("Should create new transaction entity with 'AMM_REMOVE_LIQUIDITY' as type", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
+            POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
             "type",
             "AMM_ADD_LIQUIDITY"
         )
@@ -135,22 +135,22 @@ describe("handleAddLiquidity()", () => {
     test("Should create new transaction entity with properly assigned input and outputs", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
+            POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
             "amountsIn",
             `[${generateAssetAmountId(
-                DEPOSIT_TRANSACTION_HASH.toHex(),
+                POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_IBT_ADDRESS_MOCK.toHex()
             )}, ${generateAssetAmountId(
-                DEPOSIT_TRANSACTION_HASH.toHex(),
+                POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex()
             )}]`
         )
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
+            POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
             "amountsOut",
             `[${generateAssetAmountId(
-                DEPOSIT_TRANSACTION_HASH.toHex(),
+                POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_LP_ADDRESS_MOCK.toHex()
             )}]`
         )
@@ -160,7 +160,7 @@ describe("handleAddLiquidity()", () => {
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
             generateAssetAmountId(
-                DEPOSIT_TRANSACTION_HASH.toHex(),
+                POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_IBT_ADDRESS_MOCK.toHex()
             ),
             "amount",
@@ -169,7 +169,7 @@ describe("handleAddLiquidity()", () => {
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
             generateAssetAmountId(
-                DEPOSIT_TRANSACTION_HASH.toHex(),
+                POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex()
             ),
             "amount",
@@ -178,7 +178,7 @@ describe("handleAddLiquidity()", () => {
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
             generateAssetAmountId(
-                DEPOSIT_TRANSACTION_HASH.toHex(),
+                POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_LP_ADDRESS_MOCK.toHex()
             ),
             "amount",
@@ -234,7 +234,8 @@ describe("handleRemoveLiquidity()", () => {
     beforeAll(() => {
         let removeLiquidityEvent = changetype<RemoveLiquidity>(newMockEvent())
         removeLiquidityEvent.address = FIRST_POOL_ADDRESS_MOCK
-        removeLiquidityEvent.transaction.hash = WITHDRAW_TRANSACTION_HASH
+        removeLiquidityEvent.transaction.hash =
+            POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH
 
         let providerParam = new ethereum.EventParam(
             "provider",
@@ -263,13 +264,13 @@ describe("handleRemoveLiquidity()", () => {
     test("Should create new transaction entity with 'AMM_REMOVE_LIQUIDITY' as type", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            WITHDRAW_TRANSACTION_HASH.toHex(),
+            POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
             "type",
             "AMM_REMOVE_LIQUIDITY"
         )
     })
 
-    test("Should reflect the liquidity adding transaction in the pool asset amounts", () => {
+    test("Should reflect the liquidity removing transaction in the pool asset amounts", () => {
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
             generateAssetAmountId(
@@ -294,22 +295,22 @@ describe("handleRemoveLiquidity()", () => {
     test("Should create new transaction entity with properly assigned input and outputs", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            WITHDRAW_TRANSACTION_HASH.toHex(),
+            POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
             "amountsIn",
             `[${generateAssetAmountId(
-                WITHDRAW_TRANSACTION_HASH.toHex(),
+                POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_LP_ADDRESS_MOCK.toHex()
             )}]`
         )
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            WITHDRAW_TRANSACTION_HASH.toHex(),
+            POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
             "amountsOut",
             `[${generateAssetAmountId(
-                WITHDRAW_TRANSACTION_HASH.toHex(),
+                POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_IBT_ADDRESS_MOCK.toHex()
             )}, ${generateAssetAmountId(
-                WITHDRAW_TRANSACTION_HASH.toHex(),
+                POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex()
             )}]`
         )
@@ -319,7 +320,7 @@ describe("handleRemoveLiquidity()", () => {
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
             generateAssetAmountId(
-                WITHDRAW_TRANSACTION_HASH.toHex(),
+                POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_IBT_ADDRESS_MOCK.toHex()
             ),
             "amount",
@@ -328,7 +329,7 @@ describe("handleRemoveLiquidity()", () => {
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
             generateAssetAmountId(
-                WITHDRAW_TRANSACTION_HASH.toHex(),
+                POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex()
             ),
             "amount",
@@ -337,7 +338,7 @@ describe("handleRemoveLiquidity()", () => {
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
             generateAssetAmountId(
-                WITHDRAW_TRANSACTION_HASH.toHex(),
+                POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_LP_ADDRESS_MOCK.toHex()
             ),
             "amount",
@@ -513,5 +514,123 @@ describe("handleTokenExchange()", () => {
             "poolInTransaction",
             FIRST_POOL_ADDRESS_MOCK.toHex()
         )
+    })
+
+    describe("handleRemoveLiquidityOne()", () => {
+        beforeAll(() => {
+            let removeLiquidityOneEvent = changetype<RemoveLiquidityOne>(
+                newMockEvent()
+            )
+            removeLiquidityOneEvent.address = FIRST_POOL_ADDRESS_MOCK
+            removeLiquidityOneEvent.transaction.hash =
+                POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH
+            removeLiquidityOneEvent.transaction.from = FIRST_USER_MOCK
+
+            let providerParam = new ethereum.EventParam(
+                "providerParam",
+                ethereum.Value.fromAddress(FIRST_USER_MOCK)
+            )
+
+            let tokenAmountParam = new ethereum.EventParam(
+                "token_amount",
+                ethereum.Value.fromI32(5)
+            )
+
+            let coinIndexParam = new ethereum.EventParam(
+                "coin_index",
+                ethereum.Value.fromI32(1)
+            )
+
+            let coinAmountParam = new ethereum.EventParam(
+                "coin_amount",
+                ethereum.Value.fromI32(50)
+            )
+
+            removeLiquidityOneEvent.parameters = [
+                providerParam,
+                tokenAmountParam,
+                coinIndexParam,
+                coinAmountParam,
+            ]
+
+            handleRemoveLiquidityOne(removeLiquidityOneEvent)
+        })
+
+        test("Should create new transaction entity with 'AMM_REMOVE_LIQUIDITY_ONE' as type", () => {
+            assert.fieldEquals(
+                TRANSACTION_ENTITY,
+                POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
+                "type",
+                "AMM_REMOVE_LIQUIDITY_ONE"
+            )
+        })
+
+        test("Should reflect the liquidity removing transaction in the pool asset amounts", () => {
+            assert.fieldEquals(
+                ASSET_AMOUNT_ENTITY,
+                generateAssetAmountId(
+                    POOL_DEPLOY_TRANSACTION_HASH.toHex(),
+                    POOL_PT_ADDRESS_MOCK.toHex()
+                ),
+                "amount",
+                "-40"
+            )
+        })
+
+        test("Should create new transaction entity with properly assigned input and outputs", () => {
+            assert.fieldEquals(
+                TRANSACTION_ENTITY,
+                POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
+                "amountsIn",
+                `[${generateAssetAmountId(
+                    POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
+                    POOL_LP_ADDRESS_MOCK.toHex()
+                )}]`
+            )
+            assert.fieldEquals(
+                TRANSACTION_ENTITY,
+                POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
+                "amountsOut",
+                `[${generateAssetAmountId(
+                    POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
+                    POOL_PT_ADDRESS_MOCK.toHex()
+                )}]`
+            )
+        })
+
+        test("Should create new asset amount entities for all the in and out tokens of the transaction", () => {
+            assert.fieldEquals(
+                ASSET_AMOUNT_ENTITY,
+                generateAssetAmountId(
+                    POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
+                    POOL_PT_ADDRESS_MOCK.toHex()
+                ),
+                "amount",
+                "50"
+            )
+            assert.fieldEquals(
+                ASSET_AMOUNT_ENTITY,
+                generateAssetAmountId(
+                    POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
+                    POOL_LP_ADDRESS_MOCK.toHex()
+                ),
+                "amount",
+                "5"
+            )
+        })
+
+        test("Should reflect the liquidity transaction in the user portfolio", () => {
+            let userPTId = generateUserAssetId(
+                FIRST_USER_MOCK.toHex(),
+                POOL_PT_ADDRESS_MOCK.toHex()
+            )
+            let userLPId = generateUserAssetId(
+                FIRST_USER_MOCK.toHex(),
+                POOL_LP_ADDRESS_MOCK.toHex()
+            )
+
+            assert.fieldEquals(USER_ASSET_ENTITY, userPTId, "balance", "40")
+            assert.fieldEquals(USER_ASSET_ENTITY, userLPId, "balance", "15")
+        })
     })
 })

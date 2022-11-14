@@ -17,6 +17,8 @@ enum TransactionType {
     FUTURE_VAULT_WITHDRAW
     AMM_ADD_LIQUIDITY
     AMM_REMOVE_LIQUIDITY
+    # if only one coin has been withdrawn
+    AMM_REMOVE_LIQUIDITY_ONE
     AMM_EXCHANGE
 }
 
