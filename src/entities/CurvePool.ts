@@ -45,6 +45,41 @@ export const getPoolAdminFee = (poolAddress: Address): BigInt => {
     return ZERO_BI
 }
 
+export const getPoolFutureAdminFee = (poolAddress: Address): BigInt => {
+    let curvePoolContract = CurvePool.bind(poolAddress)
+
+    let adminFeeCall = curvePoolContract.try_future_admin_fee()
+
+    if (!adminFeeCall.reverted) {
+        return adminFeeCall.value
+    }
+
+    log.warning("future_admin_fee() call reverted for {}", [
+        poolAddress.toHex(),
+    ])
+
+    return ZERO_BI
+}
+
+export const getPoolFutureAdminFeeChangeDeadline = (
+    poolAddress: Address
+): BigInt => {
+    let curvePoolContract = CurvePool.bind(poolAddress)
+
+    let adminFeeChangeDeadlineCall =
+        curvePoolContract.try_admin_actions_deadline()
+
+    if (!adminFeeChangeDeadlineCall.reverted) {
+        return adminFeeChangeDeadlineCall.value
+    }
+
+    log.warning("admin_actions_deadline() call reverted for {}", [
+        poolAddress.toHex(),
+    ])
+
+    return ZERO_BI
+}
+
 export const getPoolBalances = (poolAddress: Address): Array<BigInt> => {
     let curvePoolContract = CurvePool.bind(poolAddress)
 
@@ -55,7 +90,7 @@ export const getPoolBalances = (poolAddress: Address): Array<BigInt> => {
         return [ibtBalanceCall.value, ptBalanceCall.value]
     }
 
-    log.warning("one of balances() call reverted for {}", [poolAddress.toHex()])
+    log.warning("balances() call reverted for {}", [poolAddress.toHex()])
 
     return [ZERO_BI, ZERO_BI]
 }

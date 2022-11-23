@@ -3,11 +3,14 @@ import { Address } from "@graphprotocol/graph-ts/index"
 
 import {
     AddLiquidity,
+    ClaimAdminFee,
+    CommitNewParameters,
+    NewParameters,
     RemoveLiquidity,
     RemoveLiquidityOne,
     TokenExchange,
 } from "../../generated/AMM/CurvePool"
-import { AssetAmount, Pool } from "../../generated/schema"
+import { AssetAmount, FeeClaim, Pool } from "../../generated/schema"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
@@ -15,6 +18,9 @@ import { getPoolLPToken } from "../entities/CurvePool"
 import { createTransaction } from "../entities/Transaction"
 import { getUser } from "../entities/User"
 import { updateUserAssetBalance } from "../entities/UserAsset"
+import { logWarning } from "../utils"
+import { generateFeeClaimId } from "../utils/idGenerators"
+import { toPrecision } from "../utils/toPrecision"
 
 export function handleAddLiquidity(event: AddLiquidity): void {
     let eventTimestamp = event.block.timestamp
@@ -82,18 +88,15 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             eventTimestamp,
             "LP"
         )
+
         lpPosition.pool = pool.id
         lpPosition.save()
 
-        let ibtAsset = getAsset(ibtAmountIn.asset, eventTimestamp, "IBT")
-        let underlyingAsset = getAsset(
-            ibtAsset.underlying!,
-            eventTimestamp,
-            "UNDERLYING"
-        )
-        let adminFee = event.params.fee
-            .times(pool.adminFeeRate)
-            .div(BigInt.fromI32(10).pow(underlyingAsset.decimals as u8))
+        let fee = toPrecision(event.params.fee, 10, 18)
+
+        let adminFee = fee
+            .times(toPrecision(pool.adminFeeRate, 10, 18))
+            .div(BigInt.fromI32(10).pow(18 as u8))
 
         createTransaction({
             transactionAddress: Address.fromBytes(event.transaction.hash),
@@ -113,10 +116,13 @@ export function handleAddLiquidity(event: AddLiquidity): void {
                 gasPrice: event.transaction.gasPrice,
                 type: "AMM_ADD_LIQUIDITY",
 
-                fee: event.params.fee,
+                fee,
                 adminFee,
             },
         })
+
+        pool.totalFees = pool.totalFees.plus(fee)
+        pool.totalAdminFees = pool.totalAdminFees.plus(adminFee)
 
         pool.totalLPSupply = event.params.token_supply
         pool.save()
@@ -288,6 +294,38 @@ export function handleTokenExchange(event: TokenExchange): void {
             event.params.bought_id.equals(ZERO_BI) ? "PT" : "IBT"
         )
 
+        let assetOut = getAsset(
+            poolAssetInAmount.asset,
+            eventTimestamp,
+            event.params.bought_id.equals(ZERO_BI) ? "PT" : "IBT"
+        )
+
+        let feeWithBoughtTokenPrecision = toPrecision(
+            pool.feeRate,
+            10,
+            assetOut.decimals
+        )
+
+        let amountOutWithFee = event.params.tokens_bought
+            .times(BigInt.fromI32(10).pow(assetOut.decimals as u8))
+            .div(
+                BigInt.fromI32(10)
+                    .pow(assetOut.decimals as u8)
+                    .minus(feeWithBoughtTokenPrecision)
+            )
+
+        let fee = amountOutWithFee.minus(event.params.tokens_bought)
+
+        let adminFeeWithBoughtTokenPrecision = toPrecision(
+            pool.adminFeeRate,
+            10,
+            assetOut.decimals
+        )
+
+        let adminFee = fee
+            .times(adminFeeWithBoughtTokenPrecision)
+            .div(BigInt.fromI32(10).pow(assetOut.decimals as u8))
+
         createTransaction({
             transactionAddress: Address.fromBytes(event.transaction.hash),
 
@@ -306,10 +344,14 @@ export function handleTokenExchange(event: TokenExchange): void {
                 gasPrice: event.transaction.gasPrice,
                 type: "AMM_EXCHANGE",
 
-                fee: ZERO_BI,
-                adminFee: ZERO_BI,
+                fee,
+                adminFee,
             },
         })
+
+        pool.totalFees = pool.totalFees.plus(fee)
+        pool.totalAdminFees = pool.totalAdminFees.plus(adminFee)
+        pool.save()
 
         poolAssetInAmount.amount = poolAssetInAmount.amount.plus(
             event.params.tokens_sold
@@ -381,6 +423,38 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             withdrawnAssetType
         )
 
+        let assetOut = getAsset(
+            withdrawnAmountOut.asset,
+            eventTimestamp,
+            withdrawnAssetType
+        )
+
+        let feeWithWithdrawnTokenPrecision = toPrecision(
+            pool.feeRate,
+            10,
+            assetOut.decimals
+        )
+
+        let amountOutWithFee = event.params.coin_amount
+            .times(BigInt.fromI32(10).pow(assetOut.decimals as u8))
+            .div(
+                BigInt.fromI32(10)
+                    .pow(assetOut.decimals as u8)
+                    .minus(feeWithWithdrawnTokenPrecision)
+            )
+
+        let fee = amountOutWithFee.minus(event.params.coin_amount)
+
+        let adminFeeWithBoughtTokenPrecision = toPrecision(
+            pool.adminFeeRate,
+            10,
+            assetOut.decimals
+        )
+
+        let adminFee = fee
+            .times(adminFeeWithBoughtTokenPrecision)
+            .div(BigInt.fromI32(10).pow(assetOut.decimals as u8))
+
         createTransaction({
             transactionAddress: Address.fromBytes(event.transaction.hash),
 
@@ -399,10 +473,13 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
                 gasPrice: event.transaction.gasPrice,
                 type: "AMM_REMOVE_LIQUIDITY_ONE",
 
-                fee: ZERO_BI,
-                adminFee: ZERO_BI,
+                fee,
+                adminFee,
             },
         })
+
+        pool.totalFees = pool.totalFees.plus(fee)
+        pool.totalAdminFees = pool.totalAdminFees.plus(adminFee)
 
         pool.totalLPSupply = pool.totalLPSupply.minus(event.params.token_amount)
         pool.save()
@@ -411,5 +488,52 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             event.params.coin_amount
         )
         poolWithdrawnAssetAmount.save()
+    }
+}
+
+export function handleClaimAdminFee(event: ClaimAdminFee): void {
+    let pool = Pool.load(event.address.toHex())
+
+    if (pool) {
+        let feeClaim = new FeeClaim(
+            generateFeeClaimId(
+                event.params.admin.toHex(),
+                event.block.timestamp.toString()
+            )
+        )
+
+        let user = getUser(event.params.admin.toHex(), event.block.timestamp)
+
+        feeClaim.createdAtTimestamp = event.block.timestamp
+        feeClaim.pool = pool.id
+        feeClaim.feeCollector = user.id
+        feeClaim.amount = event.params.tokens
+        feeClaim.save()
+
+        pool.totalClaimedAdminFees = pool.totalClaimedAdminFees.plus(
+            event.params.tokens
+        )
+        pool.save()
+    }
+}
+
+export function handleCommitNewParameters(event: CommitNewParameters): void {
+    let pool = Pool.load(event.address.toHex())
+
+    if (pool) {
+        pool.futureAdminFeeRate = event.params.admin_fee
+        // as fee rate can change in depend of time when it reaches the deadline
+        // we should check current admin fee rate before every transaction
+        pool.futureAdminFeeDeadline = event.params.deadline
+        pool.save()
+    }
+}
+
+export function handleNewParameters(event: NewParameters): void {
+    let pool = Pool.load(event.address.toHex())
+
+    if (pool) {
+        pool.adminFeeRate = event.params.admin_fee
+        pool.save()
     }
 }

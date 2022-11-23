@@ -1,4 +1,4 @@
-import { Address, ethereum, log } from "@graphprotocol/graph-ts"
+import { Address, BigInt, ethereum, log } from "@graphprotocol/graph-ts";
 import { createMockedFunction } from "matchstick-as/assembly/index"
 
 import { POOL_LP_ADDRESS_MOCK } from "./CurvePool"
@@ -14,6 +14,8 @@ export const ETH_ADDRESS_MOCK = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 const ETH_NAME = ethereum.Value.fromString("Ethereum")
 const ETH_SYMBOL = ethereum.Value.fromString("ETH")
 const ETH_DECIMALS = ethereum.Value.fromI32(18)
+
+export const DECIMALS_MOCK = 18 as u8
 
 const createNameCallMock = (addressMock: Address): void => {
     createMockedFunction(addressMock, "name", "name():(string)").returns([

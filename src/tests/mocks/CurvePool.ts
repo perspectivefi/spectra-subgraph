@@ -1,5 +1,7 @@
-import { Address, ethereum } from "@graphprotocol/graph-ts"
+import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
 import { createMockedFunction } from "matchstick-as/assembly/index"
+
+import { DECIMALS_MOCK } from "./ERC20"
 
 export const POOL_FACTORY_ADDRESS_MOCK = Address.fromString(
     "0x0000000000000000000000555550000000000000"
@@ -37,8 +39,15 @@ export const POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH = Address.fromString(
     "0x1700000000000000000000000000000000000000"
 )
 
-export const POOL_FEE_MOCK = 555
-export const POOL_ADMIN_FEE_MOCK = 55
+export const POOL_FEE_MOCK = BigInt.fromI32(8).times(
+    BigInt.fromI32(10).pow(6)
+)
+export const POOL_ADMIN_FEE_MOCK = BigInt.fromI32(5).times(
+    BigInt.fromI32(10).pow(9)
+)
+export const POOL_FUTURE_ADMIN_FEE_MOCK = BigInt.fromI32(3).times(
+    BigInt.fromI32(10).pow(9)
+)
 
 const createLPTokenCallMack = (addressMock: Address): void => {
     createMockedFunction(addressMock, "token", "token():(address)").returns([
@@ -48,7 +57,7 @@ const createLPTokenCallMack = (addressMock: Address): void => {
 
 const createFeeCallMock = (addressMock: Address): void => {
     createMockedFunction(addressMock, "fee", "fee():(uint256)").returns([
-        ethereum.Value.fromI32(POOL_FEE_MOCK),
+        ethereum.Value.fromSignedBigInt(POOL_FEE_MOCK),
     ])
 }
 
@@ -57,7 +66,25 @@ const createAdminFeeCallMock = (addressMock: Address): void => {
         addressMock,
         "admin_fee",
         "admin_fee():(uint256)"
-    ).returns([ethereum.Value.fromI32(POOL_ADMIN_FEE_MOCK)])
+    ).returns([ethereum.Value.fromSignedBigInt(POOL_ADMIN_FEE_MOCK)])
+}
+
+const createFutureAdminFeeCallMock = (addressMock: Address): void => {
+    createMockedFunction(
+        addressMock,
+        "future_admin_fee",
+        "future_admin_fee():(uint256)"
+    ).returns([ethereum.Value.fromSignedBigInt(POOL_FUTURE_ADMIN_FEE_MOCK)])
+}
+
+const createFutureAdminFeeChangeDeadlineCallMock = (
+    addressMock: Address
+): void => {
+    createMockedFunction(
+        addressMock,
+        "admin_actions_deadline",
+        "admin_actions_deadline():(uint256)"
+    ).returns([ethereum.Value.fromSignedBigInt(BigInt.fromI32(5))])
 }
 
 export function mockCurvePoolFunctions(): void {
@@ -65,5 +92,7 @@ export function mockCurvePoolFunctions(): void {
         createLPTokenCallMack(addressMock)
         createFeeCallMock(addressMock)
         createAdminFeeCallMock(addressMock)
+        createFutureAdminFeeCallMock(addressMock)
+        createFutureAdminFeeChangeDeadlineCallMock(addressMock)
     })
 }

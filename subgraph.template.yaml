@@ -135,3 +135,9 @@ dataSources:
           handler: handleTokenExchange
         - event: RemoveLiquidityOne(indexed address,uint256,uint256,uint256)
           handler: handleRemoveLiquidityOne
+        - event: ClaimAdminFee(indexed address,uint256)
+          handler: handleClaimAdminFee
+        - event: CommitNewParameters(indexed uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleCommitNewParameters
+        - event: NewParameters(uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleNewParameters

@@ -210,8 +210,10 @@ type FeeClaim @entity {
 
     "claimant of the fee"
     feeCollector: User!
-    "future that collector claimed the fee from"
-    future: Future!
+    "future that collector claimed the fees from"
+    future: Future
+    "pool that collector claimed the fees from"
+    pool: Pool
 }
 
 ####################
@@ -285,10 +287,15 @@ type Pool @entity {
     address: Bytes!
     createdAtTimestamp: BigInt!
 
+    "pool fees details"
     feeRate: BigInt!
     totalFees: BigInt!
     adminFeeRate: BigInt!
     totalAdminFees: BigInt!
+    totalClaimedAdminFees: BigInt!
+    feeClaims: [FeeClaim!]! @derivedFrom(field: "pool")
+    futureAdminFeeRate: BigInt!
+    futureAdminFeeDeadline: BigInt!
 
     "to be able to follow all the future's pools"
     futureVault: Future!
@@ -303,6 +310,7 @@ type Pool @entity {
 
     totalLPSupply: BigInt!
     liquidityPositions: [UserAsset!]! @derivedFrom(field: "pool")
+
 
 #    Asset pricing is not competed at this point
 #    valueHistory: [Value!]

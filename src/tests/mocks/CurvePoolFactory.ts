@@ -1,4 +1,4 @@
-import { Address, ethereum } from "@graphprotocol/graph-ts"
+import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
 import { createMockedFunction } from "matchstick-as/assembly/index"
 
 import { FIRST_USER_MOCK } from "./FutureVault"
@@ -23,8 +23,11 @@ export const POOL_DEPLOY_TRANSACTION_HASH = Address.fromString(
     "0x0000000000000000000000000000000001112222"
 )
 
-export const POOL_FEE_MOCK = 555
-export const POOL_ADMIN_FEE_MOCK = 55
+export const POOL_FEE_MOCK = BigInt.fromString("80").times(
+    BigInt.fromString("10").pow(8 as u8)
+)
+export const POOL_ADMIN_FEE_MOCK = BigInt.fromString("40").times(
+  BigInt.fromString("10").pow(8 as u8))
 
 const createFeeReceiverCallMack = (addressMock: Address): void => {
     createMockedFunction(
