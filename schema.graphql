@@ -22,12 +22,6 @@ enum TransactionType {
     AMM_EXCHANGE
 }
 
-enum FutureStatus {
-    ACTIVE
-    PAUSED
-    EXPIRED
-}
-
 enum AMM {
     CURVE
     UNISWAP_V3
@@ -247,7 +241,7 @@ type Transaction @entity {
 
     fee: BigInt
     adminFee: BigInt
-#    fee: BigDecimal!
+
     type: TransactionType!
 
     "if there is any future on any side of the transaction to be able to list this future's transactions"
