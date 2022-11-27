@@ -177,74 +177,7 @@ yarn deploy:<NETWORK>
 #### IMPORTANT: If your network is not supported you have to go to `src/configs` and add new config file.
 
 ## Schema
-
-1. Major subgraph entities
-2. Sub entities (extensions for main entities)
-3. Enums
-
-**1. Major subgraph entities**
-
-```properties
-Future - all the FutureVault details and its relations to other entities
-```
-
-```properties
-Asset - details of an any token seen in the indexed protocol
-```
-
-```properties
-User - wallet seen in any indexed protocol (except FutureVaults) and its relations to other subgraph entities
-```
-
-```properties
-Transaction - to store history of all the transactions with relations to Future, User and Assets
-```
-
-**2. Sub entities for**
-
-_Future:_
-
-```properties
-FutureVaultFactory - TODO
-```
-
-```properties
-Platform - IBT platform (not an enum to be able to expand list of platforms)
-```
-
-_Asset:_
-
-```properties
-AssetPrice - to connect exact token with price
-```
-
-```properties
-AssetAmount - to define amount of token in relation to indexed asset
-```
-
-```properties
-UserAsset - to store and update user portfolio of assets
-```
-
-```properties
-ChainlinkAggregatorProxy - to connect an asseet to its Chainlink aggregator
-```
-
-```properties
-LPTokenDetails - to store LP token detais if asset is LP
-```
-
-```properties
-FYTTokenDetails - to store FYT token detais if asset is FYT
-```
-
-_User:_
-
-```properties
-FeeClaim - to store history of the fee claims with its details
-```
-
-**3. Enums** - fixed option for a field
+Graph definition written in PlantUML framework -  [schema.puml](schema.puml)
 
 ## Example queries
 

@@ -5,5 +5,5 @@ export {
     generateAssetPriceId,
     generateFYTInfoId,
     generateLPInfoId,
-    generateUserAssetId,
+    generateAccountAssetId,
 } from "./idGenerators"

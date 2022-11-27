@@ -103,7 +103,7 @@ class Pool {
     + factory
 }
 
-class User {
+class Account {
     id
     address
     createdAtTimestamp
@@ -147,7 +147,7 @@ class Asset {
     + lpTokenDetails
 }
 
-class UserAsset {
+class AccountAsset {
     id
     createdAtTimestamp
     balance
@@ -202,7 +202,7 @@ TransactionType -> Transaction : type
 
 FutureState -> Future : state
 
-FeeClaim::feeCollector <---> User : collectedFees
+FeeClaim::feeCollector <---> Account : collectedFees
 FeeClaim::future ---> Future::feeClaims : feeClaims
 FeeClaim::pool ---> Pool : feeClaims
 
@@ -212,22 +212,22 @@ PoolFactory::pools --> Pool::factory : factory
 Future ---> Pool::futureVault : futureVault
 
 Pool --> Future::pools : pools
-Pool ---> UserAsset : pool
+Pool ---> AccountAsset : pool
 
-User ---> PoolFactory::feeReceiver : feeReceiver
+Account ---> PoolFactory::feeReceiver : feeReceiver
 
 Transaction::future <---> Future::transactions : transactions
-Transaction::userInTransaction <--> User::transactions : transactions
+Transaction::userInTransaction <--> Account::transactions : transactions
 Transaction::poolInTransaction <---> Pool::transactions : transactions
 
 Asset ---> Future::underlyingAsset : underlyingAsset
 Asset ---> Future::ibtAsset : ibtAsset
-Asset ---> UserAsset : asset
+Asset ---> AccountAsset : asset
 Asset --> AssetAmount : asset
 Asset <--> AssetPrice : asset
 Asset --> LPTokenDetails : tokens
 
-UserAsset <-> User::portfolio : portfolio
+AccountAsset <-> Account::portfolio : portfolio
 
 AssetAmount --> Transaction::amountsIn : amountsIn
 AssetAmount --> Transaction::amountsOut : amountsOut

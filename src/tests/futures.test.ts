@@ -28,7 +28,7 @@ import {
 import {
     generateAssetAmountId,
     generateFeeClaimId,
-    generateUserAssetId,
+    generateAccountAssetId,
 } from "../utils/idGenerators"
 import {
     emiCurveFactoryChanged,
@@ -66,9 +66,9 @@ import {
     FEE_CLAIM_ENTITY,
     FUTURE_ENTITY,
     TRANSACTION_ENTITY,
-    USER_ENTITY,
+    ACCOUNT_ENTITY,
     ASSET_AMOUNT_ENTITY,
-    USER_ASSET_ENTITY,
+    ACCOUNT_ASSET_ENTITY,
     POOL_ENTITY,
     POOL_FACTORY_ENTITY,
 } from "./utils/entities"
@@ -239,7 +239,7 @@ describe("handleFeeClaimed()", () => {
         )
 
         assert.fieldEquals(
-            USER_ENTITY,
+            ACCOUNT_ENTITY,
             FEE_COLLECTOR_ADDRESS_MOCK.toHex(),
             "collectedFees",
             `[${feeClaimId}]`
@@ -275,7 +275,7 @@ describe("handleDeposit()", () => {
         emitDeposit()
     })
 
-    test("Should create a new Transaction entity with properly assigned future as well as user entity", () => {
+    test("Should create a new Transaction entity with properly assigned future as well as account entity", () => {
         assert.entityCount(TRANSACTION_ENTITY, 1)
 
         assert.fieldEquals(
@@ -358,12 +358,12 @@ describe("handleDeposit()", () => {
             "1"
         )
     })
-    test("Should create three UserAsset entities and reflect its balances changes", () => {
-        assert.entityCount(USER_ASSET_ENTITY, 3)
+    test("Should create three AccountAsset entities and reflect its balances changes", () => {
+        assert.entityCount(ACCOUNT_ASSET_ENTITY, 3)
 
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            generateUserAssetId(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
                 IBT_ADDRESS_MOCK.toHex()
             ),
@@ -372,8 +372,8 @@ describe("handleDeposit()", () => {
         )
 
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            generateUserAssetId(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
             ),
@@ -382,8 +382,8 @@ describe("handleDeposit()", () => {
         )
 
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            generateUserAssetId(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
                 YT_ADDRESS_MOCK.toHex()
             ),
@@ -391,18 +391,18 @@ describe("handleDeposit()", () => {
             BigInt.fromI32(SHARES_RETURN).toString()
         )
     })
-    test("Should assign three UserAsset entities to User entity used in the transaction", () => {
+    test("Should assign three AccountAsset entities to Account entity used in the transaction", () => {
         assert.fieldEquals(
-            USER_ENTITY,
+            ACCOUNT_ENTITY,
             FIRST_USER_MOCK.toHex(),
             "portfolio",
-            `[${generateUserAssetId(
+            `[${generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
                 IBT_ADDRESS_MOCK.toHex()
-            )}, ${generateUserAssetId(
+            )}, ${generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
-            )}, ${generateUserAssetId(
+            )}, ${generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
                 YT_ADDRESS_MOCK.toHex()
             )}]`
@@ -452,7 +452,7 @@ describe("handleWithdraw()", () => {
         handleWithdraw(withdrawEvent)
     })
 
-    test("Should create a new Transaction entity with properly assigned future as well as user entity", () => {
+    test("Should create a new Transaction entity with properly assigned future as well as Account entity", () => {
         assert.entityCount(TRANSACTION_ENTITY, 2)
 
         assert.fieldEquals(
@@ -495,10 +495,10 @@ describe("handleWithdraw()", () => {
             )}]`
         )
     })
-    test("Should update UserAsset entities and reflect its changes in balances", () => {
+    test("Should update createAccountAsset entities and reflect its changes in balances", () => {
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            generateUserAssetId(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
                 IBT_ADDRESS_MOCK.toHex()
             ),
@@ -507,8 +507,8 @@ describe("handleWithdraw()", () => {
         )
 
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            generateUserAssetId(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
             ),
@@ -517,8 +517,8 @@ describe("handleWithdraw()", () => {
         )
 
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            generateUserAssetId(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
                 YT_ADDRESS_MOCK.toHex()
             ),

@@ -13,13 +13,13 @@ import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import { getPoolLPToken } from "../entities/CurvePool"
 import { createTransaction } from "../entities/Transaction"
-import { getUser } from "../entities/User"
-import { updateUserAssetBalance } from "../entities/UserAsset"
+import { getAccount } from "../entities/Account"
+import { updateAccountAssetBalance } from "../entities/AccountAsset"
 
 export function handleAddLiquidity(event: AddLiquidity): void {
     let eventTimestamp = event.block.timestamp
 
-    let user = getUser(event.params.provider.toHex(), eventTimestamp)
+    let account = getAccount(event.params.provider.toHex(), eventTimestamp)
     let pool = Pool.load(event.address.toHex())
 
     if (pool) {
@@ -40,8 +40,8 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             eventTimestamp
         )
 
-        updateUserAssetBalance(
-            user.address.toHex(),
+        updateAccountAssetBalance(
+            account.address.toHex(),
             ibtAddress,
             ZERO_BI.minus(event.params.token_amounts[0]),
             eventTimestamp,
@@ -56,8 +56,8 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             eventTimestamp
         )
 
-        updateUserAssetBalance(
-            user.address.toHex(),
+        updateAccountAssetBalance(
+            account.address.toHex(),
             ptAddress,
             ZERO_BI.minus(event.params.token_amounts[1]),
             eventTimestamp,
@@ -75,8 +75,8 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             eventTimestamp
         )
 
-        let lpPosition = updateUserAssetBalance(
-            user.address.toHex(),
+        let lpPosition = updateAccountAssetBalance(
+            account.address.toHex(),
             lpTokenAddress.toHex(),
             lpTokenDiff,
             eventTimestamp,
@@ -136,7 +136,7 @@ export function handleAddLiquidity(event: AddLiquidity): void {
 export function handleRemoveLiquidity(event: RemoveLiquidity): void {
     let eventTimestamp = event.block.timestamp
 
-    let user = getUser(event.params.provider.toHex(), eventTimestamp)
+    let account = getAccount(event.params.provider.toHex(), eventTimestamp)
     let pool = Pool.load(event.address.toHex())
 
     if (pool) {
@@ -151,8 +151,8 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             eventTimestamp
         )
 
-        let lpPosition = updateUserAssetBalance(
-            user.address.toHex(),
+        let lpPosition = updateAccountAssetBalance(
+            account.address.toHex(),
             lpTokenAddress.toHex(),
             ZERO_BI.minus(lpTokenDiff),
             eventTimestamp,
@@ -181,8 +181,8 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             eventTimestamp
         )
 
-        updateUserAssetBalance(
-            user.address.toHex(),
+        updateAccountAssetBalance(
+            account.address.toHex(),
             ibtAddress,
             event.params.token_amounts[0],
             event.block.timestamp,
@@ -197,8 +197,8 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             eventTimestamp
         )
 
-        updateUserAssetBalance(
-            user.address.toHex(),
+        updateAccountAssetBalance(
+            account.address.toHex(),
             ptAddress,
             event.params.token_amounts[1],
             event.block.timestamp,
@@ -246,7 +246,7 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
 export function handleTokenExchange(event: TokenExchange): void {
     let eventTimestamp = event.block.timestamp
 
-    let user = getUser(event.params.buyer.toHex(), eventTimestamp)
+    let account = getAccount(event.params.buyer.toHex(), eventTimestamp)
     let pool = Pool.load(event.address.toHex())
 
     if (pool) {
@@ -264,8 +264,8 @@ export function handleTokenExchange(event: TokenExchange): void {
             eventTimestamp
         )
 
-        updateUserAssetBalance(
-            user.address.toHex(),
+        updateAccountAssetBalance(
+            account.address.toHex(),
             poolAssetInAmount.asset,
             ZERO_BI.minus(event.params.tokens_sold),
             event.block.timestamp,
@@ -280,8 +280,8 @@ export function handleTokenExchange(event: TokenExchange): void {
             eventTimestamp
         )
 
-        updateUserAssetBalance(
-            user.address.toHex(),
+        updateAccountAssetBalance(
+            account.address.toHex(),
             poolAssetOutAmount.asset,
             event.params.tokens_bought,
             event.block.timestamp,
@@ -292,7 +292,7 @@ export function handleTokenExchange(event: TokenExchange): void {
             transactionAddress: Address.fromBytes(event.transaction.hash),
 
             futureInTransaction: ZERO_ADDRESS,
-            userInTransaction: Address.fromBytes(user.address),
+            userInTransaction: Address.fromBytes(account.address),
             poolInTransaction: Address.fromBytes(pool.address),
 
             amountsIn: [amountIn.id],
@@ -326,11 +326,11 @@ export function handleTokenExchange(event: TokenExchange): void {
 export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
     let eventTimestamp = event.block.timestamp
 
-    let userAddress = event.transaction.from.toHex()
+    let accountAddress = event.transaction.from.toHex()
     // there is a risc that provider will not exist and in that case the caller will become receiver - https://curve.readthedocs.io/factory-deposits.html
-    if (event.params.provider) userAddress = event.params.provider.toHex()
+    if (event.params.provider) accountAddress = event.params.provider.toHex()
 
-    let user = getUser(userAddress, eventTimestamp)
+    let account = getAccount(accountAddress, eventTimestamp)
     let pool = Pool.load(event.address.toHex())
 
     if (pool) {
@@ -344,8 +344,8 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             eventTimestamp
         )
 
-        let lpPosition = updateUserAssetBalance(
-            user.address.toHex(),
+        let lpPosition = updateAccountAssetBalance(
+            account.address.toHex(),
             lpTokenAddress.toHex(),
             ZERO_BI.minus(event.params.token_amount),
             eventTimestamp,
@@ -373,8 +373,8 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             eventTimestamp
         )
 
-        updateUserAssetBalance(
-            user.address.toHex(),
+        updateAccountAssetBalance(
+            account.address.toHex(),
             withdrawnTokenAddress,
             event.params.coin_amount,
             event.block.timestamp,
@@ -385,7 +385,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             transactionAddress: Address.fromBytes(event.transaction.hash),
 
             futureInTransaction: ZERO_ADDRESS,
-            userInTransaction: Address.fromString(userAddress),
+            userInTransaction: Address.fromString(accountAddress),
             poolInTransaction: event.address,
 
             amountsIn: [lpAmountIn.id],

@@ -134,16 +134,16 @@ type AssetAmount @entity {
 #    fytTokenDetails: FYTTokenDetails
 }
 
-"UserAsset entity to assign and update user's assets balances"
-type UserAsset @entity {
+"AccountAsset entity to assign and update account's assets balances"
+type AccountAsset @entity {
     id: ID!
     createdAtTimestamp: BigInt!
     balance: BigInt!
     #    value: BigDecimal!
     "relation to the asset details"
     asset: Asset!
-    "relation to the user details"
-    user: User!
+    "relation to the account details"
+    account: Account!
     "if lp position"
     pool: Pool
     #    fytTokenDetails: FYTTokenDetails
@@ -196,31 +196,31 @@ type Future @entity {
 #    infoUrl: String
 }
 
-"FeeClaim entity to list claims triggered on an future by a user"
+"FeeClaim entity to list claims triggered on an future by a account"
 type FeeClaim @entity {
     id: ID!
     createdAtTimestamp: BigInt!
     amount: BigInt!
 
     "claimant of the fee"
-    feeCollector: User!
+    feeCollector: Account!
     "future that collector claimed the fee from"
     future: Future!
 }
 
 ####################
-# User
+# Account
 ####################
 
-"User entity to index all kind of data related to a user of the protocol"
-type User @entity {
+"Account entity to index all kind of data related to a user of the protocol"
+type Account @entity {
     id: ID!
     address: Bytes!
     createdAtTimestamp: BigInt!
 
     collectedFees: [FeeClaim!]! @derivedFrom(field: "feeCollector")
     transactions: [Transaction!]! @derivedFrom(field: "userInTransaction")
-    portfolio: [UserAsset!]! @derivedFrom(field: "user")
+    portfolio: [AccountAsset!]! @derivedFrom(field: "account")
 }
 
 ####################
@@ -245,7 +245,7 @@ type Transaction @entity {
     "if there is any future on any side of the transaction to be able to list this future's transactions"
     futureInTransaction: Future
     "if there is any user on any side of the transaction to be able to list this user's transactions"
-    userInTransaction: User
+    userInTransaction: Account
     "if there is any pool on any side of the transaction to be able to list this pool's transactions"
     poolInTransaction: Pool
 
@@ -266,7 +266,7 @@ type PoolFactory @entity {
 
     "it will be Curve by default but we will be able to index others as well"
     ammProvider: AMM!
-    feeReceiver: User!
+    feeReceiver: Account!
     admin: Bytes!
 
     future: Future!
@@ -296,7 +296,7 @@ type Pool @entity {
     transactions: [Transaction!]
 
     totalLPSupply: BigInt!
-    liquidityPositions: [UserAsset!]! @derivedFrom(field: "pool")
+    liquidityPositions: [AccountAsset!]! @derivedFrom(field: "pool")
 
 #    Asset pricing is not competed at this point
 #    valueHistory: [Value!]
