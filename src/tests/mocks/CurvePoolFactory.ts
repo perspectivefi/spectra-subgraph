@@ -23,8 +23,8 @@ export const POOL_DEPLOY_TRANSACTION_HASH = Address.fromString(
     "0x0000000000000000000000000000000001112222"
 )
 
-export const POOL_FEE_MOCK = BigInt.fromString("80").times(
-    BigInt.fromString("10").pow(8 as u8)
+export const POOL_FEE_MOCK = BigInt.fromString("8").times(
+    BigInt.fromString("10").pow(6 as u8)
 )
 export const POOL_ADMIN_FEE_MOCK = BigInt.fromString("40").times(
     BigInt.fromString("10").pow(8 as u8)

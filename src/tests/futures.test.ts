@@ -596,14 +596,14 @@ describe("handleCurvePoolDeployed()", () => {
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "feeRate",
-            POOL_FEE_MOCK.toString()
+            "8000000"
         )
 
         assert.fieldEquals(
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "adminFeeRate",
-            POOL_ADMIN_FEE_MOCK.toString()
+            "5000000000"
         )
     })
 
