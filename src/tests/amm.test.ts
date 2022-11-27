@@ -29,10 +29,9 @@ import {
 } from "../mappings/amm"
 import {
     generateAssetAmountId,
-    generateUserAssetId,
-    logWarning,
+    generateAccountAssetId,
+    generateFeeClaimId,
 } from "../utils"
-import { generateFeeClaimId } from "../utils/idGenerators"
 import { toPrecision } from "../utils/toPrecision"
 import {
     emiCurveFactoryChanged,
@@ -67,8 +66,8 @@ import {
     FEE_CLAIM_ENTITY,
     POOL_ENTITY,
     TRANSACTION_ENTITY,
-    USER_ASSET_ENTITY,
-    USER_ENTITY,
+    ACCOUNT_ASSET_ENTITY,
+    ACCOUNT_ENTITY,
 } from "./utils/entities"
 
 const LP_TOTAL_SUPPLY = toPrecision(
@@ -225,42 +224,41 @@ describe("handleAddLiquidity()", () => {
         )
     })
 
-    test("Should reflect the liquidity transaction in the user portfolio", () => {
-        let userIBTId = generateUserAssetId(
+    test("Should reflect the liquidity transaction in the account portfolio", () => {
+        let accountIBTId = generateAccountAssetId(
             FIRST_USER_MOCK.toHex(),
             POOL_IBT_ADDRESS_MOCK.toHex()
         )
-        let userPTId = generateUserAssetId(
+        let accountPTId = generateAccountAssetId(
             FIRST_USER_MOCK.toHex(),
             POOL_PT_ADDRESS_MOCK.toHex()
         )
-        let userLPId = generateUserAssetId(
+        let accountLPId = generateAccountAssetId(
             FIRST_USER_MOCK.toHex(),
             POOL_LP_ADDRESS_MOCK.toHex()
         )
 
         assert.fieldEquals(
-            USER_ENTITY,
+            ACCOUNT_ENTITY,
             FIRST_USER_MOCK.toHex(),
             "portfolio",
-            `[${userIBTId}, ${userPTId}, ${userLPId}]`
+            `[${accountIBTId}, ${accountPTId}, ${accountLPId}]`
         )
-
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            userIBTId,
+            ACCOUNT_ASSET_ENTITY,
+            accountIBTId,
             "balance",
             ADD_LIQUIDITY_TOKEN_AMOUNTS[0].neg().toString()
         )
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            userPTId,
+            ACCOUNT_ASSET_ENTITY,
+            accountPTId,
             "balance",
             ADD_LIQUIDITY_TOKEN_AMOUNTS[1].neg().toString()
         )
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            userLPId,
+            ACCOUNT_ASSET_ENTITY,
+            accountLPId,
             "balance",
             LP_TOTAL_SUPPLY.toString()
         )
@@ -271,7 +269,7 @@ describe("handleAddLiquidity()", () => {
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "liquidityPositions",
-            `[${generateUserAssetId(
+            `[${generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
                 POOL_LP_ADDRESS_MOCK.toHex()
             )}]`
@@ -435,39 +433,39 @@ describe("handleRemoveLiquidity()", () => {
         )
     })
 
-    test("Should reflect the liquidity transaction in the user portfolio", () => {
-        let userIBTId = generateUserAssetId(
+    test("Should reflect the liquidity transaction in the account portfolio", () => {
+        let accountIBTId = generateAccountAssetId(
             FIRST_USER_MOCK.toHex(),
             POOL_IBT_ADDRESS_MOCK.toHex()
         )
-        let userPTId = generateUserAssetId(
+        let accountPTId = generateAccountAssetId(
             FIRST_USER_MOCK.toHex(),
             POOL_PT_ADDRESS_MOCK.toHex()
         )
-        let userLPId = generateUserAssetId(
+        let accountLPId = generateAccountAssetId(
             FIRST_USER_MOCK.toHex(),
             POOL_LP_ADDRESS_MOCK.toHex()
         )
 
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            userIBTId,
+            ACCOUNT_ASSET_ENTITY,
+            accountIBTId,
             "balance",
             toPrecision(BigInt.fromI32(10), 0, STANDARD_DECIMALS_MOCK)
                 .neg()
                 .toString()
         )
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            userPTId,
+            ACCOUNT_ASSET_ENTITY,
+            accountPTId,
             "balance",
             toPrecision(BigInt.fromI32(5), 0, STANDARD_DECIMALS_MOCK)
                 .neg()
                 .toString()
         )
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            userLPId,
+            ACCOUNT_ASSET_ENTITY,
+            accountLPId,
             "balance",
             toPrecision(
                 BigInt.fromI32(20),
@@ -621,32 +619,32 @@ describe("handleTokenExchange()", () => {
         )
     })
 
-    test("Should reflect the exchange transaction in the user portfolio", () => {
-        let userIBTId = generateUserAssetId(
+    test("Should reflect the exchange transaction in the account portfolio", () => {
+        let accountIBTId = generateAccountAssetId(
             FIRST_USER_MOCK.toHex(),
             POOL_IBT_ADDRESS_MOCK.toHex()
         )
-        let userPTId = generateUserAssetId(
+        let accountPTId = generateAccountAssetId(
             FIRST_USER_MOCK.toHex(),
             POOL_PT_ADDRESS_MOCK.toHex()
         )
-        let userLPId = generateUserAssetId(
+        let accountLPId = generateAccountAssetId(
             FIRST_USER_MOCK.toHex(),
             POOL_LP_ADDRESS_MOCK.toHex()
         )
 
-        assert.fieldEquals(USER_ASSET_ENTITY, userIBTId, "balance", "0")
+        assert.fieldEquals(ACCOUNT_ASSET_ENTITY, accountIBTId, "balance", "0")
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            userPTId,
+            ACCOUNT_ASSET_ENTITY,
+            accountPTId,
             "balance",
             toPrecision(BigInt.fromI32(10), 0, STANDARD_DECIMALS_MOCK)
                 .neg()
                 .toString()
         )
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            userLPId,
+            ACCOUNT_ASSET_ENTITY,
+            accountLPId,
             "balance",
             toPrecision(
                 BigInt.fromI32(20),
@@ -656,7 +654,7 @@ describe("handleTokenExchange()", () => {
         )
     })
 
-    test("Should assign user and pool relation to the transaction", () => {
+    test("Should assign account and pool relation to the transaction", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
             POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
@@ -819,18 +817,18 @@ describe("handleRemoveLiquidityOne()", () => {
     })
 
     test("Should reflect the liquidity transaction in the user portfolio", () => {
-        let userPTId = generateUserAssetId(
+        let accountPTId = generateAccountAssetId(
             FIRST_USER_MOCK.toHex(),
             POOL_PT_ADDRESS_MOCK.toHex()
         )
-        let userLPId = generateUserAssetId(
+        let accountLPId = generateAccountAssetId(
             FIRST_USER_MOCK.toHex(),
             POOL_LP_ADDRESS_MOCK.toHex()
         )
 
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            userPTId,
+            ACCOUNT_ASSET_ENTITY,
+            accountPTId,
             "balance",
             toPrecision(
                 BigInt.fromI32(40),
@@ -839,8 +837,8 @@ describe("handleRemoveLiquidityOne()", () => {
             ).toString()
         )
         assert.fieldEquals(
-            USER_ASSET_ENTITY,
-            userLPId,
+            ACCOUNT_ASSET_ENTITY,
+            accountLPId,
             "balance",
             toPrecision(
                 BigInt.fromI32(15),
