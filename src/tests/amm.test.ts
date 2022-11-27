@@ -629,8 +629,18 @@ describe("handleTokenExchange()", () => {
                 POOL_LP_ADDRESS_MOCK.toHex()
             )
 
-            assert.fieldEquals(ACCOUNT_ASSET_ENTITY, accountPTId, "balance", "40")
-            assert.fieldEquals(ACCOUNT_ASSET_ENTITY, accountLPId, "balance", "15")
+            assert.fieldEquals(
+                ACCOUNT_ASSET_ENTITY,
+                accountPTId,
+                "balance",
+                "40"
+            )
+            assert.fieldEquals(
+                ACCOUNT_ASSET_ENTITY,
+                accountLPId,
+                "balance",
+                "15"
+            )
         })
     })
 })

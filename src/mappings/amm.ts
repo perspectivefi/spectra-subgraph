@@ -9,12 +9,12 @@ import {
 } from "../../generated/AMM/CurvePool"
 import { AssetAmount, Pool } from "../../generated/schema"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
+import { getAccount } from "../entities/Account"
+import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import { getPoolLPToken } from "../entities/CurvePool"
 import { createTransaction } from "../entities/Transaction"
-import { getAccount } from "../entities/Account"
-import { updateAccountAssetBalance } from "../entities/AccountAsset"
 
 export function handleAddLiquidity(event: AddLiquidity): void {
     let eventTimestamp = event.block.timestamp

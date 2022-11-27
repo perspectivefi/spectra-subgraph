@@ -1,10 +1,10 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 
-import { AccountAsset } from "../../generated/schema";
+import { AccountAsset } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
 import { generateAccountAssetId } from "../utils"
-import { getAsset } from "./Asset"
 import { getAccount } from "./Account"
+import { getAsset } from "./Asset"
 
 export function createAccountAsset(
     accountAddress: Address,
@@ -12,7 +12,10 @@ export function createAccountAsset(
     type: string,
     timestamp: BigInt
 ): AccountAsset {
-    let id = generateAccountAssetId(accountAddress.toHex(), assetAddress.toHex())
+    let id = generateAccountAssetId(
+        accountAddress.toHex(),
+        assetAddress.toHex()
+    )
 
     let accountAsset = new AccountAsset(id)
 
@@ -35,12 +38,20 @@ export function getAccountAsset(
     timestamp: BigInt,
     type: string
 ): AccountAsset {
-    let id = generateAccountAssetId(accountAddress.toHex(), assetAddress.toHex())
+    let id = generateAccountAssetId(
+        accountAddress.toHex(),
+        assetAddress.toHex()
+    )
 
     let accountAsset = AccountAsset.load(id)
 
     if (!accountAsset) {
-        accountAsset = createAccountAsset(accountAddress, assetAddress, type, timestamp)
+        accountAsset = createAccountAsset(
+            accountAddress,
+            assetAddress,
+            type,
+            timestamp
+        )
     }
 
     return accountAsset as AccountAsset
