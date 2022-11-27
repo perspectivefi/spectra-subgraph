@@ -39,9 +39,7 @@ export const POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH = Address.fromString(
     "0x1700000000000000000000000000000000000000"
 )
 
-export const POOL_FEE_MOCK = BigInt.fromI32(8).times(
-    BigInt.fromI32(10).pow(6)
-)
+export const POOL_FEE_MOCK = BigInt.fromI32(8).times(BigInt.fromI32(10).pow(6))
 export const POOL_ADMIN_FEE_MOCK = BigInt.fromI32(5).times(
     BigInt.fromI32(10).pow(9)
 )

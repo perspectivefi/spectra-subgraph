@@ -27,7 +27,8 @@ export const POOL_FEE_MOCK = BigInt.fromString("80").times(
     BigInt.fromString("10").pow(8 as u8)
 )
 export const POOL_ADMIN_FEE_MOCK = BigInt.fromString("40").times(
-  BigInt.fromString("10").pow(8 as u8))
+    BigInt.fromString("10").pow(8 as u8)
+)
 
 const createFeeReceiverCallMack = (addressMock: Address): void => {
     createMockedFunction(
