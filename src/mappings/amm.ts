@@ -18,11 +18,14 @@ import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import { getPoolLPToken } from "../entities/CurvePool"
 import { createTransaction } from "../entities/Transaction"
+<<<<<<< HEAD
 import { generateFeeClaimId } from "../utils"
 import { toPrecision } from "../utils/toPrecision"
 
 const FEES_PRECISION = 10
 const CURVE_LP_TOKEN_PRECISION = 18
+=======
+>>>>>>> b72cdb9 (fix: prettier)
 
 export function handleAddLiquidity(event: AddLiquidity): void {
     let eventTimestamp = event.block.timestamp

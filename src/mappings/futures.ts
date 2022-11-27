@@ -16,6 +16,8 @@ import {
 } from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { FeeClaim, Future, Pool, PoolFactory } from "../../generated/schema"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
+import { getAccount } from "../entities/Account"
+import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import {
@@ -40,8 +42,6 @@ import {
     getUnclaimedFees,
 } from "../entities/FutureVault"
 import { createTransaction } from "../entities/Transaction"
-import { getAccount } from "../entities/Account"
-import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { generateFeeClaimId } from "../utils/idGenerators"
 
 export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
