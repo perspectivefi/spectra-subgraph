@@ -816,7 +816,6 @@ describe("handleRemoveLiquidityOne()", () => {
         )
     })
 
-<<<<<<< HEAD
     test("Should reflect the liquidity transaction in the user portfolio", () => {
         let accountPTId = generateAccountAssetId(
             FIRST_USER_MOCK.toHex(),
@@ -1001,20 +1000,5 @@ describe("handleClaimAdminFee", () => {
             "totalClaimedAdminFees",
             COLLECTED_ADMIN_FEE.toString()
         )
-=======
-            assert.fieldEquals(
-                ACCOUNT_ASSET_ENTITY,
-                accountPTId,
-                "balance",
-                "40"
-            )
-            assert.fieldEquals(
-                ACCOUNT_ASSET_ENTITY,
-                accountLPId,
-                "balance",
-                "15"
-            )
-        })
->>>>>>> b72cdb9 (fix: prettier)
     })
 })
