@@ -21,6 +21,7 @@ import { getAssetAmount } from "../entities/AssetAmount"
 import {
     getPoolAdminFee,
     getPoolFee,
+    getPoolFutureAdminFee,
     getPoolLPToken,
 } from "../entities/CurvePool"
 import {
@@ -390,9 +391,12 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     pool.createdAtTimestamp = event.block.timestamp
 
     pool.feeRate = getPoolFee(poolAddress)
-    pool.adminFeeRate = getPoolAdminFee(poolAddress)
     pool.totalFees = ZERO_BI
+    pool.adminFeeRate = getPoolAdminFee(poolAddress)
     pool.totalAdminFees = ZERO_BI
+    pool.futureAdminFeeRate = getPoolFutureAdminFee(poolAddress)
+    pool.futureAdminFeeDeadline = ZERO_BI
+    pool.totalClaimedAdminFees = ZERO_BI
 
     pool.assets = [ibtAsset.id, ptAsset.id]
 
