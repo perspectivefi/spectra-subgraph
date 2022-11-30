@@ -18,11 +18,11 @@ export const generateAssetPriceId = (
     timestamp: string
 ): string => `${tokenAddress}-${timestamp}`
 
-// UserAsset
-export const generateUserAssetId = (
-    userAddress: string,
+// AccountAsset
+export const generateAccountAssetId = (
+    accountAddress: string,
     assetAddress: string
-): string => `${userAddress}-${assetAddress}`
+): string => `${accountAddress}-${assetAddress}`
 
 // Fees
 export const generateFeeClaimId = (

@@ -16,6 +16,8 @@ import {
 } from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { FeeClaim, Future, Pool, PoolFactory } from "../../generated/schema"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
+import { getAccount } from "../entities/Account"
+import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import {
@@ -40,8 +42,6 @@ import {
     getUnclaimedFees,
 } from "../entities/FutureVault"
 import { createTransaction } from "../entities/Transaction"
-import { getUser } from "../entities/User"
-import { updateUserAssetBalance } from "../entities/UserAsset"
 import { generateFeeClaimId } from "../utils/idGenerators"
 
 export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
@@ -117,7 +117,7 @@ export function handleFeeClaimed(event: FeeClaimed): void {
             )
         )
 
-        let feeCollector = getUser(
+        let feeCollector = getAccount(
             event.params._feeCollector.toHex(),
             event.block.timestamp
         )
@@ -159,7 +159,7 @@ export function handleDeposit(event: Deposit): void {
             event.block.timestamp
         )
 
-        updateUserAssetBalance(
+        updateAccountAssetBalance(
             event.params.owner.toHex(),
             ibtAddress.toHex(),
             ZERO_BI.minus(event.params.assets),
@@ -175,7 +175,7 @@ export function handleDeposit(event: Deposit): void {
             event.block.timestamp
         )
 
-        updateUserAssetBalance(
+        updateAccountAssetBalance(
             event.params.owner.toHex(),
             ptAddress.toHex(),
             event.params.shares,
@@ -191,7 +191,7 @@ export function handleDeposit(event: Deposit): void {
             event.block.timestamp
         )
 
-        updateUserAssetBalance(
+        updateAccountAssetBalance(
             event.params.owner.toHex(),
             ytAddress.toHex(),
             event.params.shares,
@@ -244,7 +244,7 @@ export function handleWithdraw(event: Withdraw): void {
             event.block.timestamp
         )
 
-        updateUserAssetBalance(
+        updateAccountAssetBalance(
             event.params.owner.toHex(),
             ptAddress.toHex(),
             ZERO_BI.minus(event.params.shares),
@@ -260,7 +260,7 @@ export function handleWithdraw(event: Withdraw): void {
             event.block.timestamp
         )
 
-        updateUserAssetBalance(
+        updateAccountAssetBalance(
             event.params.owner.toHex(),
             ytAddress.toHex(),
             ZERO_BI.minus(event.params.shares),
@@ -276,7 +276,7 @@ export function handleWithdraw(event: Withdraw): void {
             event.block.timestamp
         )
 
-        updateUserAssetBalance(
+        updateAccountAssetBalance(
             event.params.receiver.toHex(),
             ibtAddress.toHex(),
             event.params.assets,
@@ -350,7 +350,7 @@ export function handleCurveFactoryChanged(event: CurveFactoryChanged): void {
         curveFactory.future = future.id
         curveFactory.ammProvider = "CURVE"
         curveFactory.admin = getPoolFactoryAdmin(curveFactoryAddress)
-        let factoryFeeReceiver = getUser(
+        let factoryFeeReceiver = getAccount(
             getPoolFactoryFeeReceiver(curveFactoryAddress).toHex(),
             event.block.timestamp
         )

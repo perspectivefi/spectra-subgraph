@@ -1,0 +1,238 @@
+@startuml
+left to right direction
+
+title APWine subgraph v2
+
+
+'#####################################
+
+
+enum AssetType {
+    UNDERLYING
+    IBT
+    PT
+    YT
+    FYT
+    LP
+    UNKNOWN
+}
+
+
+enum TransactionType {
+    FUTURE_VAULT_DEPOSIT
+    FUTURE_VAULT_WITHDRAW
+    AMM_ADD_LIQUIDITY
+    AMM_REMOVE_LIQUIDITY
+    AMM_REMOVE_LIQUIDITY_ONE
+    AMM_EXCHANGE
+}
+
+enum AMM {
+    CURVE
+    UNISWAP_V3
+    UNKNOWN
+}
+
+enum FutureState {
+    ACTIVE
+    PAUSED
+    EXPIRED
+}
+
+
+'#####################################
+
+
+class FeeClaim {
+    id
+    createdAtTimestamp
+    amount
+
+    + feeCollector
+    + future
+    + pool
+}
+
+class PoolFactory {
+    id
+    address
+    createdAtTimestamp
+    admin
+
+    + ammProvider
+    + feeReceiver
+    + future
+    + pools: [ ]
+}
+
+class Future {
+    id
+    address
+    createdAtTimestamp
+    expirationAtTimestamp
+    symbol
+    name
+    daoFeeRate
+    unclaimedFees
+    totalCollectedFees
+    totalAssets
+
+    + feeClaims: [ ]
+    + state
+    + poolFactory
+    + pools: [ ]
+    + transactions: [ ]
+    + underlyingAsset
+    + ibtAsset
+}
+
+class Pool {
+    id
+    address
+    createdAtTimestamp
+    feeRate
+    totalFees
+    adminFeeRate
+    totalAdminFees
+    totalClaimedAdminFees
+    futureAdminFeeRate
+    futureAdminFeeDeadline
+
+    + feeClaims: [ ]
+    + futureVault
+    + factory
+}
+
+class Account {
+    id
+    address
+    createdAtTimestamp
+
+    + collectedFees: [ ]
+    + transactions: [ ]
+    + portfolio: [ ]
+}
+
+class Transaction {
+    id
+    address
+    createdAtTimestamp
+    block
+    gas
+    gasPrice
+    fee
+    adminFee
+
+    + type
+    + futureInTransaction
+    + userInTransaction
+    + poolInTransaction
+    + amountsIn: [ ]
+    + amountsOut: [ ]
+}
+
+class Asset {
+    id
+    address
+    createdAtTimestamp
+    name
+    symbol
+    decimals
+
+    + price
+    + type
+    chainlinkPriceFeed
+    + underlying
+    + fytTokenDetails
+    + lpTokenDetails
+}
+
+class AccountAsset {
+    id
+    createdAtTimestamp
+    balance
+
+    + asset
+    + user
+    + pool
+}
+
+class AssetAmount {
+    id
+    createdAtTimestamp
+    amount
+
+    + asset
+}
+
+class AssetPrice {
+    id
+    createdAtTimestamp
+    value
+
+    + source
+    + asset
+}
+
+class FYTTokenDetails {
+    id
+    createdAtTimestamp
+    expirationAtTimestamp
+    generatedYield
+    generatedYieldValue
+}
+
+class LPTokenDetails {
+    id
+    createdAtTimestamp
+    totalSupply
+
+    + tokens: [ ]
+}
+
+
+'#####################################
+
+
+AMM --> PoolFactory : ammProvider
+
+AssetType --> Asset : type
+
+TransactionType -> Transaction : type
+
+FutureState -> Future : state
+
+FeeClaim::feeCollector <---> Account : collectedFees
+FeeClaim::future ---> Future::feeClaims : feeClaims
+FeeClaim::pool ---> Pool : feeClaims
+
+PoolFactory::future --> Future::poolFactory : poolFactory
+PoolFactory::pools --> Pool::factory : factory
+
+Future ---> Pool::futureVault : futureVault
+
+Pool --> Future::pools : pools
+Pool ---> AccountAsset : pool
+
+Account ---> PoolFactory::feeReceiver : feeReceiver
+
+Transaction::future <---> Future::transactions : transactions
+Transaction::userInTransaction <--> Account::transactions : transactions
+Transaction::poolInTransaction <---> Pool::transactions : transactions
+
+Asset ---> Future::underlyingAsset : underlyingAsset
+Asset ---> Future::ibtAsset : ibtAsset
+Asset ---> AccountAsset : asset
+Asset --> AssetAmount : asset
+Asset <--> AssetPrice : asset
+Asset --> LPTokenDetails : tokens
+
+AccountAsset <-> Account::portfolio : portfolio
+
+AssetAmount --> Transaction::amountsIn : amountsIn
+AssetAmount --> Transaction::amountsOut : amountsOut
+
+FYTTokenDetails --> Asset::fytTokenDetails : fytTokenDetails
+LPTokenDetails --> Asset::lpTokenDetails : lpTokenDetails
+
+@enduml

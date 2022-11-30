@@ -2,7 +2,7 @@ import { Address, BigInt } from "@graphprotocol/graph-ts"
 
 import { Future, Transaction } from "../../generated/schema"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
-import { getUser } from "./User"
+import { getAccount } from "./Account"
 
 class CreateTransactionParams {
     transactionAddress: Address
@@ -47,11 +47,11 @@ export function createTransaction(
 
     // We have to compare it to an address as AssemblyScript do not support optional properties.
     if (params.userInTransaction !== ZERO_ADDRESS) {
-        let user = getUser(
+        let account = getAccount(
             params.userInTransaction.toHex(),
             params.transaction.timestamp
         )
-        transaction.userInTransaction = user.id
+        transaction.userInTransaction = account.id
     }
 
     if (params.futureInTransaction !== ZERO_ADDRESS) {
