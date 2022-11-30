@@ -27,8 +27,13 @@ import {
     handleRemoveLiquidityOne,
     handleTokenExchange,
 } from "../mappings/amm"
-import { generateAssetAmountId, generateUserAssetId } from "../utils"
+import {
+    generateAssetAmountId,
+    generateUserAssetId,
+    logWarning,
+} from "../utils"
 import { generateFeeClaimId } from "../utils/idGenerators"
+import { toPrecision } from "../utils/toPrecision"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
@@ -50,7 +55,7 @@ import {
     POOL_IBT_ADDRESS_MOCK,
     POOL_PT_ADDRESS_MOCK,
 } from "./mocks/CurvePoolFactory"
-import { DECIMALS_MOCK, mockERC20Functions } from "./mocks/ERC20"
+import { STANDARD_DECIMALS_MOCK, mockERC20Functions } from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
     FEE_COLLECTOR_ADDRESS_MOCK,
@@ -66,24 +71,26 @@ import {
     USER_ENTITY,
 } from "./utils/entities"
 
-const LP_TOTAL_SUPPLY = BigInt.fromI32(50).times(
-    BigInt.fromI32(10).pow(DECIMALS_MOCK)
+const LP_TOTAL_SUPPLY = toPrecision(
+    BigInt.fromI32(500),
+    1,
+    STANDARD_DECIMALS_MOCK
 )
 
 const ADD_LIQUIDITY_TOKEN_AMOUNTS = [
-    BigInt.fromString("15").times(BigInt.fromI32(10).pow(DECIMALS_MOCK)),
-    BigInt.fromString("15").times(BigInt.fromI32(10).pow(DECIMALS_MOCK)),
+    toPrecision(BigInt.fromI32(150), 1, STANDARD_DECIMALS_MOCK),
+    toPrecision(BigInt.fromI32(150), 1, STANDARD_DECIMALS_MOCK),
 ]
 
 const REMOVE_LIQUIDITY_TOKEN_AMOUNTS = [
-    BigInt.fromString("5").times(BigInt.fromI32(10).pow(DECIMALS_MOCK)),
-    BigInt.fromString("10").times(BigInt.fromI32(10).pow(DECIMALS_MOCK)),
+    toPrecision(BigInt.fromI32(50), 1, STANDARD_DECIMALS_MOCK),
+    toPrecision(BigInt.fromI32(100), 1, STANDARD_DECIMALS_MOCK),
 ]
 
-const FEE = BigInt.fromI32(4).times(BigInt.fromI32(10).pow(8))
-const ADMIN_FEE = BigInt.fromI32(5).times(BigInt.fromI32(10).pow(10))
-const FUTURE_ADMIN_FEE = BigInt.fromI32(5).times(BigInt.fromI32(10).pow(10))
-const COLLECTED_ADMIN_FEE = BigInt.fromI32(50).times(BigInt.fromI32(10).pow(8))
+const FEE = toPrecision(BigInt.fromI32(40), 1, 8)
+const ADMIN_FEE = toPrecision(BigInt.fromI32(50), 1, 10)
+const FUTURE_ADMIN_FEE = toPrecision(BigInt.fromI32(60), 1, 10)
+const COLLECTED_ADMIN_FEE = toPrecision(BigInt.fromI32(500), 1, 8)
 
 describe("handleAddLiquidity()", () => {
     beforeAll(() => {
@@ -309,9 +316,7 @@ describe("handleRemoveLiquidity()", () => {
             "token_supply",
             ethereum.Value.fromSignedBigInt(
                 LP_TOTAL_SUPPLY.minus(
-                    BigInt.fromI32(30).times(
-                        BigInt.fromI32(10).pow(DECIMALS_MOCK)
-                    )
+                    toPrecision(BigInt.fromI32(30), 0, STANDARD_DECIMALS_MOCK)
                 )
             )
         )
@@ -342,10 +347,11 @@ describe("handleRemoveLiquidity()", () => {
                 POOL_IBT_ADDRESS_MOCK.toHex()
             ),
             "amount",
-            // instead of .times(BigInt.fromI32(20)).pow...
-            BigInt.fromI32(10)
-                .pow(DECIMALS_MOCK + 1)
-                .toString()
+            toPrecision(
+                BigInt.fromI32(100),
+                1,
+                STANDARD_DECIMALS_MOCK
+            ).toString()
         )
 
         assert.fieldEquals(
@@ -355,9 +361,11 @@ describe("handleRemoveLiquidity()", () => {
                 POOL_PT_ADDRESS_MOCK.toHex()
             ),
             "amount",
-            BigInt.fromI32(5)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
-                .toString()
+            toPrecision(
+                BigInt.fromI32(50),
+                1,
+                STANDARD_DECIMALS_MOCK
+            ).toString()
         )
     })
 
@@ -393,9 +401,11 @@ describe("handleRemoveLiquidity()", () => {
                 POOL_IBT_ADDRESS_MOCK.toHex()
             ),
             "amount",
-            BigInt.fromI32(5)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
-                .toString()
+            toPrecision(
+                BigInt.fromI32(50),
+                1,
+                STANDARD_DECIMALS_MOCK
+            ).toString()
         )
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
@@ -404,10 +414,11 @@ describe("handleRemoveLiquidity()", () => {
                 POOL_PT_ADDRESS_MOCK.toHex()
             ),
             "amount",
-            // instead of .times(BigInt.fromI32(20)).pow...
-            BigInt.fromI32(10)
-                .pow(DECIMALS_MOCK + 1)
-                .toString()
+            toPrecision(
+                BigInt.fromI32(100),
+                1,
+                STANDARD_DECIMALS_MOCK
+            ).toString()
         )
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
@@ -416,9 +427,11 @@ describe("handleRemoveLiquidity()", () => {
                 POOL_LP_ADDRESS_MOCK.toHex()
             ),
             "amount",
-            BigInt.fromI32(30)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
-                .toString()
+            toPrecision(
+                BigInt.fromI32(300),
+                1,
+                STANDARD_DECIMALS_MOCK
+            ).toString()
         )
     })
 
@@ -440,8 +453,7 @@ describe("handleRemoveLiquidity()", () => {
             USER_ASSET_ENTITY,
             userIBTId,
             "balance",
-            BigInt.fromI32(10)
-                .pow(DECIMALS_MOCK + 1)
+            toPrecision(BigInt.fromI32(10), 0, STANDARD_DECIMALS_MOCK)
                 .neg()
                 .toString()
         )
@@ -449,8 +461,7 @@ describe("handleRemoveLiquidity()", () => {
             USER_ASSET_ENTITY,
             userPTId,
             "balance",
-            BigInt.fromI32(5)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
+            toPrecision(BigInt.fromI32(5), 0, STANDARD_DECIMALS_MOCK)
                 .neg()
                 .toString()
         )
@@ -458,9 +469,11 @@ describe("handleRemoveLiquidity()", () => {
             USER_ASSET_ENTITY,
             userLPId,
             "balance",
-            BigInt.fromI32(20)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
-                .toString()
+            toPrecision(
+                BigInt.fromI32(20),
+                0,
+                STANDARD_DECIMALS_MOCK
+            ).toString()
         )
     })
 
@@ -500,7 +513,7 @@ describe("handleTokenExchange()", () => {
         let tokensSoldParam = new ethereum.EventParam(
             "tokens_sold",
             ethereum.Value.fromSignedBigInt(
-                BigInt.fromI32(5).times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
+                toPrecision(BigInt.fromI32(50), 1, STANDARD_DECIMALS_MOCK)
             )
         )
 
@@ -512,7 +525,7 @@ describe("handleTokenExchange()", () => {
         let tokensBoughtParam = new ethereum.EventParam(
             "tokens_bought",
             ethereum.Value.fromSignedBigInt(
-                BigInt.fromI32(10).times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
+                toPrecision(BigInt.fromI32(100), 1, STANDARD_DECIMALS_MOCK)
             )
         )
 
@@ -554,9 +567,11 @@ describe("handleTokenExchange()", () => {
                 POOL_PT_ADDRESS_MOCK.toHex()
             ),
             "amount",
-            BigInt.fromI32(10)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
-                .toString()
+            toPrecision(
+                BigInt.fromI32(10),
+                0,
+                STANDARD_DECIMALS_MOCK
+            ).toString()
         )
     })
 
@@ -568,9 +583,11 @@ describe("handleTokenExchange()", () => {
                 POOL_IBT_ADDRESS_MOCK.toHex()
             ),
             "amount",
-            BigInt.fromI32(10)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
-                .toString()
+            toPrecision(
+                BigInt.fromI32(10),
+                0,
+                STANDARD_DECIMALS_MOCK
+            ).toString()
         )
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
@@ -579,9 +596,7 @@ describe("handleTokenExchange()", () => {
                 POOL_PT_ADDRESS_MOCK.toHex()
             ),
             "amount",
-            BigInt.fromI32(5)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
-                .toString()
+            toPrecision(BigInt.fromI32(5), 0, STANDARD_DECIMALS_MOCK).toString()
         )
     })
 
@@ -625,8 +640,7 @@ describe("handleTokenExchange()", () => {
             USER_ASSET_ENTITY,
             userPTId,
             "balance",
-            BigInt.fromI32(10)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
+            toPrecision(BigInt.fromI32(10), 0, STANDARD_DECIMALS_MOCK)
                 .neg()
                 .toString()
         )
@@ -634,9 +648,11 @@ describe("handleTokenExchange()", () => {
             USER_ASSET_ENTITY,
             userLPId,
             "balance",
-            BigInt.fromI32(20)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
-                .toString()
+            toPrecision(
+                BigInt.fromI32(20),
+                0,
+                STANDARD_DECIMALS_MOCK
+            ).toString()
         )
     })
 
@@ -707,7 +723,7 @@ describe("handleRemoveLiquidityOne()", () => {
         let tokenAmountParam = new ethereum.EventParam(
             "token_amount",
             ethereum.Value.fromSignedBigInt(
-                BigInt.fromI32(5).times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
+                toPrecision(BigInt.fromI32(5), 0, STANDARD_DECIMALS_MOCK)
             )
         )
 
@@ -719,7 +735,7 @@ describe("handleRemoveLiquidityOne()", () => {
         let coinAmountParam = new ethereum.EventParam(
             "coin_amount",
             ethereum.Value.fromSignedBigInt(
-                BigInt.fromI32(50).times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
+                toPrecision(BigInt.fromI32(50), 0, STANDARD_DECIMALS_MOCK)
             )
         )
 
@@ -750,8 +766,7 @@ describe("handleRemoveLiquidityOne()", () => {
                 POOL_PT_ADDRESS_MOCK.toHex()
             ),
             "amount",
-            BigInt.fromI32(40)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
+            toPrecision(BigInt.fromI32(40), 0, STANDARD_DECIMALS_MOCK)
                 .neg()
                 .toString()
         )
@@ -786,9 +801,11 @@ describe("handleRemoveLiquidityOne()", () => {
                 POOL_PT_ADDRESS_MOCK.toHex()
             ),
             "amount",
-            BigInt.fromI32(50)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
-                .toString()
+            toPrecision(
+                BigInt.fromI32(50),
+                0,
+                STANDARD_DECIMALS_MOCK
+            ).toString()
         )
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
@@ -797,9 +814,7 @@ describe("handleRemoveLiquidityOne()", () => {
                 POOL_LP_ADDRESS_MOCK.toHex()
             ),
             "amount",
-            BigInt.fromI32(5)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
-                .toString()
+            toPrecision(BigInt.fromI32(5), 0, STANDARD_DECIMALS_MOCK).toString()
         )
     })
 
@@ -817,17 +832,21 @@ describe("handleRemoveLiquidityOne()", () => {
             USER_ASSET_ENTITY,
             userPTId,
             "balance",
-            BigInt.fromI32(40)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
-                .toString()
+            toPrecision(
+                BigInt.fromI32(40),
+                0,
+                STANDARD_DECIMALS_MOCK
+            ).toString()
         )
         assert.fieldEquals(
             USER_ASSET_ENTITY,
             userLPId,
             "balance",
-            BigInt.fromI32(15)
-                .times(BigInt.fromI32(10).pow(DECIMALS_MOCK))
-                .toString()
+            toPrecision(
+                BigInt.fromI32(15),
+                0,
+                STANDARD_DECIMALS_MOCK
+            ).toString()
         )
     })
 

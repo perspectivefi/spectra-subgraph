@@ -22,6 +22,9 @@ import { logWarning } from "../utils"
 import { generateFeeClaimId } from "../utils/idGenerators"
 import { toPrecision } from "../utils/toPrecision"
 
+const FEES_PRECISION = 10
+const CURVE_LP_TOKEN_PRECISION = 18
+
 export function handleAddLiquidity(event: AddLiquidity): void {
     let eventTimestamp = event.block.timestamp
 
@@ -92,10 +95,20 @@ export function handleAddLiquidity(event: AddLiquidity): void {
         lpPosition.pool = pool.id
         lpPosition.save()
 
-        let fee = toPrecision(event.params.fee, 10, 18)
+        let fee = toPrecision(
+            event.params.fee,
+            FEES_PRECISION,
+            CURVE_LP_TOKEN_PRECISION
+        )
 
         let adminFee = fee
-            .times(toPrecision(pool.adminFeeRate, 10, 18))
+            .times(
+                toPrecision(
+                    pool.adminFeeRate,
+                    FEES_PRECISION,
+                    CURVE_LP_TOKEN_PRECISION
+                )
+            )
             .div(BigInt.fromI32(10).pow(18 as u8))
 
         createTransaction({
@@ -295,14 +308,14 @@ export function handleTokenExchange(event: TokenExchange): void {
         )
 
         let assetOut = getAsset(
-            poolAssetInAmount.asset,
+            poolAssetOutAmount.asset,
             eventTimestamp,
             event.params.bought_id.equals(ZERO_BI) ? "PT" : "IBT"
         )
 
         let feeWithBoughtTokenPrecision = toPrecision(
             pool.feeRate,
-            10,
+            FEES_PRECISION,
             assetOut.decimals
         )
 
@@ -318,7 +331,7 @@ export function handleTokenExchange(event: TokenExchange): void {
 
         let adminFeeWithBoughtTokenPrecision = toPrecision(
             pool.adminFeeRate,
-            10,
+            FEES_PRECISION,
             assetOut.decimals
         )
 
@@ -431,7 +444,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
 
         let feeWithWithdrawnTokenPrecision = toPrecision(
             pool.feeRate,
-            10,
+            FEES_PRECISION,
             assetOut.decimals
         )
 
@@ -447,7 +460,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
 
         let adminFeeWithBoughtTokenPrecision = toPrecision(
             pool.adminFeeRate,
-            10,
+            FEES_PRECISION,
             assetOut.decimals
         )
 

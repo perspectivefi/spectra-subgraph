@@ -1,7 +1,7 @@
 import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
 import { createMockedFunction } from "matchstick-as/assembly/index"
 
-import { DECIMALS_MOCK } from "./ERC20"
+import { toPrecision } from "../../utils/toPrecision"
 
 export const POOL_FACTORY_ADDRESS_MOCK = Address.fromString(
     "0x0000000000000000000000555550000000000000"
@@ -39,13 +39,9 @@ export const POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH = Address.fromString(
     "0x1700000000000000000000000000000000000000"
 )
 
-export const POOL_FEE_MOCK = BigInt.fromI32(8).times(BigInt.fromI32(10).pow(6))
-export const POOL_ADMIN_FEE_MOCK = BigInt.fromI32(5).times(
-    BigInt.fromI32(10).pow(9)
-)
-export const POOL_FUTURE_ADMIN_FEE_MOCK = BigInt.fromI32(3).times(
-    BigInt.fromI32(10).pow(9)
-)
+export const POOL_FEE_MOCK = toPrecision(BigInt.fromI32(8), 0, 6)
+export const POOL_ADMIN_FEE_MOCK = toPrecision(BigInt.fromI32(5), 1, 10)
+export const POOL_FUTURE_ADMIN_FEE_MOCK = toPrecision(BigInt.fromI32(3), 1, 10)
 
 const createLPTokenCallMack = (addressMock: Address): void => {
     createMockedFunction(addressMock, "token", "token():(address)").returns([

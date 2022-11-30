@@ -15,7 +15,7 @@ const ETH_NAME = ethereum.Value.fromString("Ethereum")
 const ETH_SYMBOL = ethereum.Value.fromString("ETH")
 const ETH_DECIMALS = ethereum.Value.fromI32(18)
 
-export const DECIMALS_MOCK = 18 as u8
+export const STANDARD_DECIMALS_MOCK = 18 as u8
 
 const createNameCallMock = (addressMock: Address): void => {
     createMockedFunction(addressMock, "name", "name():(string)").returns([
