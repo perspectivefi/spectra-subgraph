@@ -190,6 +190,19 @@ class LPTokenDetails {
     + tokens: [ ]
 }
 
+class Transfer {
+    id
+    address
+    createdAtTimestamp
+    block
+    gasLimit
+    gasPrice
+
+    + from: Account!
+    + to: Account!
+    + amountOut: AssetAmount!
+}
+
 
 '#####################################
 
@@ -215,6 +228,8 @@ Pool --> Future::pools : pools
 Pool ---> AccountAsset : pool
 
 Account ---> PoolFactory::feeReceiver : feeReceiver
+Account ---> Transfer::from : from
+Account ---> Transfer::to : to
 
 Transaction::future <---> Future::transactions : transactions
 Transaction::userInTransaction <--> Account::transactions : transactions
@@ -231,6 +246,7 @@ AccountAsset <-> Account::portfolio : portfolio
 
 AssetAmount --> Transaction::amountsIn : amountsIn
 AssetAmount --> Transaction::amountsOut : amountsOut
+AssetAmount --> Transfer::amountOut : amountOut
 
 FYTTokenDetails --> Asset::fytTokenDetails : fytTokenDetails
 LPTokenDetails --> Asset::lpTokenDetails : lpTokenDetails
