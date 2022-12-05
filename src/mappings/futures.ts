@@ -15,6 +15,7 @@ import {
     FutureVaultDeployed,
 } from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { FeeClaim, Future, Pool, PoolFactory } from "../../generated/schema"
+import { ERC20 } from "../../generated/templates"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
@@ -409,8 +410,6 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     )
     pool.liquidityToken = lpToken.id
 
-    // pool.volumeHistory = []
-
     let future = Future.load(event.address.toHex())!
     pool.factory = future.poolFactory!
     pool.futureVault = future.address.toHex()
@@ -418,4 +417,10 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     pool.totalLPSupply = ZERO_BI
 
     pool.save()
+
+    // Create dynamic data source for LP token events
+    ERC20.create(Address.fromBytes(lpToken.address))
+
+    // Create dynamic data source for PT token events
+    ERC20.create(event.params.pt)
 }
