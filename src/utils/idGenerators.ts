@@ -8,7 +8,7 @@ export const generateLPInfoId = (tokenAddress: string): string =>
 
 // AssetAmount
 export const generateAssetAmountId = (
-  transactionHash: string,
+    transactionHash: string,
     assetAddress: string
 ): string => `${transactionHash}-${assetAddress}`
 
@@ -32,6 +32,6 @@ export const generateFeeClaimId = (
 
 // Transfer
 export const generateTransferId = (
-  transactionHash: string,
-  timestamp: string
+    transactionHash: string,
+    timestamp: string
 ): string => `${timestamp}-${transactionHash}`
