@@ -223,6 +223,9 @@ type Account @entity {
     collectedFees: [FeeClaim!]! @derivedFrom(field: "feeCollector")
     transactions: [Transaction!]! @derivedFrom(field: "userInTransaction")
     portfolio: [AccountAsset!]! @derivedFrom(field: "account")
+
+    transfersOut: [Transfer!]! @derivedFrom(field: "from")
+    transfersIn: [Transfer!]! @derivedFrom(field: "to")
 }
 
 ####################
@@ -308,4 +311,19 @@ type Pool @entity {
 
 #    Asset pricing is not competed at this point
 #    valueHistory: [Value!]
+}
+
+type Transfer @entity {
+    id: ID!
+    address: Bytes!
+    createdAtTimestamp: BigInt!
+    block: BigInt!
+
+    gasLimit: BigInt!
+    gasPrice: BigInt!
+
+    from: Account!
+    to: Account!
+
+    amountOut: AssetAmount!
 }

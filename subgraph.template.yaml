@@ -141,3 +141,21 @@ dataSources:
           handler: handleCommitNewParameters
         - event: NewParameters(uint256,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleNewParameters
+templates:
+  - name: ERC20
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: ERC20Contract
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities: [ ]
+      file: ./src/mappings/transfers.ts
+      abis:
+        - name: ERC20Contract
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
