@@ -1,5 +1,5 @@
 export let FUTURE_VAULT_FACTORY_ENTITY = "FutureVaultFactory"
-export let FUTURE_DAY_DATA_ENTITY = "FutureDayData"
+export let FUTURE_DAILY_STATS_ENTITY = "FutureDailyStats"
 export let FUTURE_ENTITY = "Future"
 export let FEE_CLAIM_ENTITY = "FeeClaim"
 

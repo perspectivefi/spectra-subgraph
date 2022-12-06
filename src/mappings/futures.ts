@@ -31,7 +31,7 @@ import {
     getPoolFactoryAdmin,
     getPoolFactoryFeeReceiver,
 } from "../entities/CurvePoolFactory"
-import { updateFutureDayData } from "../entities/FutureDayData"
+import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import {
     getExpirationTimestamp,
     getMaxFeeRate,
@@ -224,13 +224,13 @@ export function handleDeposit(event: Deposit): void {
             },
         })
 
-        // Deposit specific FutureDayData  data
-        let futureDayData = updateFutureDayData(
+        // Deposit specific FutureDailyStats  data
+        let futureDailyStats = updateFutureDailyStats(
             event as ethereum.Event,
             event.address
         )
-        futureDayData.dailyDeposits = futureDayData.dailyDeposits.plus(UNIT_BI)
-        futureDayData.save()
+        futureDailyStats.dailyDeposits = futureDailyStats.dailyDeposits.plus(UNIT_BI)
+        futureDailyStats.save()
     } else {
         log.warning("Deposit event call for not existing Future {}", [
             event.address.toHex(),
@@ -316,11 +316,11 @@ export function handleWithdraw(event: Withdraw): void {
                 adminFee: ZERO_BI,
             },
         })
-        // Withdraw specific FutureDayData  data
-        let futureDayData = updateFutureDayData(event, event.address)
-        futureDayData.dailyWithdrawals =
-            futureDayData.dailyWithdrawals.plus(UNIT_BI)
-        futureDayData.save()
+        // Withdraw specific FutureDailyStats  data
+        let futureDailyStats = updateFutureDailyStats(event, event.address)
+        futureDailyStats.dailyWithdrawals =
+            futureDailyStats.dailyWithdrawals.plus(UNIT_BI)
+        futureDailyStats.save()
     } else {
         log.warning("Withdraw event call for not existing Future {}", [
             event.address.toHex(),

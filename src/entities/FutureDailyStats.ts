@@ -1,8 +1,8 @@
 import { Address, BigDecimal, BigInt, ethereum } from "@graphprotocol/graph-ts"
 
-import { Future, FutureDayData } from "../../generated/schema"
+import { Future, FutureDailyStats } from "../../generated/schema"
 import { DAYS_PER_YEAR_BD, ZERO_BD, ZERO_BI } from "../constants"
-import { generateFutureDayDataId } from "../utils"
+import { generateFutureDailyStatsId } from "../utils"
 import { getDayIdFromTimestamp, getPastDayId } from "../utils/dayId"
 import { getIBTRate } from "./ERC4626"
 
@@ -11,39 +11,39 @@ import { getIBTRate } from "./ERC4626"
  * Future Deposit or Withdrawal occurs, and each time an Exchange event occurs.
  * @param event A future deposit or withdrawal event, an exchange event (AddLiquidity, RemoveLiquidity, or TokenExchange)
  * @param futureAddress The address of the future
- * @returns The updated FutureDayData entity. This returned entity can still be updated
+ * @returns The updated FutureDailyStats entity. This returned entity can still be updated
  * in event specific handlers to update the correpsonding data
  */
-export function updateFutureDayData(
+export function updateFutureDailyStats(
     event: ethereum.Event,
     futureAddress: Address
-): FutureDayData {
+): FutureDailyStats {
     let dayId = getDayIdFromTimestamp(event.block.timestamp)
-    const futureDayDataId = generateFutureDayDataId(
+    const futureDailyStatsID = generateFutureDailyStatsId(
         futureAddress.toHex(),
         dayId.toString()
     )
-    let futureDayData = FutureDayData.load(futureDayDataId)
-    if (futureDayData === null) {
-        futureDayData = createFutureDayData(futureAddress, dayId)
+    let futureDailyStats = FutureDailyStats.load(futureDailyStatsID)
+    if (futureDailyStats === null) {
+        futureDailyStats = createFutureDailyStats(futureAddress, dayId)
     }
     let future = Future.load(futureAddress.toHex())
     let ibt = future!.ibtAsset
     const currentRate = getIBTRate(Address.fromString(ibt))
 
-    let currentIBTRate = futureDayData.ibtRate
-    let dailyUpdates = futureDayData.dailyUpdates.plus(BigInt.fromI32(1))
+    let currentIBTRate = futureDailyStats.ibtRate
+    let dailyUpdates = futureDailyStats.dailyUpdates.plus(BigInt.fromI32(1))
     // Compute the ibt rate new average
-    futureDayData.ibtRate = currentIBTRate.plus(
+    futureDailyStats.ibtRate = currentIBTRate.plus(
         currentRate.minus(currentIBTRate).div(dailyUpdates)
     )
-    futureDayData.dailyUpdates = dailyUpdates
+    futureDailyStats.dailyUpdates = dailyUpdates
 
-    futureDayData.realizedAPR7D = getAPR(futureAddress, currentRate, dayId, 7)
-    futureDayData.realizedAPR30D = getAPR(futureAddress, currentRate, dayId, 30)
-    futureDayData.realizedAPR90D = getAPR(futureAddress, currentRate, dayId, 90)
-    futureDayData.save()
-    return futureDayData
+    futureDailyStats.realizedAPR7D = getAPR(futureAddress, currentRate, dayId, 7)
+    futureDailyStats.realizedAPR30D = getAPR(futureAddress, currentRate, dayId, 30)
+    futureDailyStats.realizedAPR90D = getAPR(futureAddress, currentRate, dayId, 90)
+    futureDailyStats.save()
+    return futureDailyStats
 }
 /**
  * Compute the realized APR for a future over a given period of time (in days)
@@ -59,15 +59,15 @@ export function getAPR(
     nowDayId: i32,
     window: i32
 ): BigDecimal {
-    const previousFutureDayData = getPreviousFutureDayData(
+    const previousFutureDailyStats = getPreviousFutureDailyStats(
         futureAddress,
         nowDayId,
         window
     )
-    if (previousFutureDayData === null) {
+    if (previousFutureDailyStats === null) {
         return ZERO_BD
     }
-    const previousRate = previousFutureDayData.ibtRate
+    const previousRate = previousFutureDailyStats.ibtRate
     if (previousRate.equals(ZERO_BI)) {
         return ZERO_BD
     }
@@ -83,53 +83,53 @@ export function getAPR(
 }
 
 /**
- * Get the previous FutureDayData entity for a given future
+ * Get the previous FutureDailyStats entity for a given future
  * @param futureAddress The address of the future
  * @param nowDayId The current day id
  * @param days The number of days to go back
- * @returns The previous FutureDayData entity
+ * @returns The previous FutureDailyStats entity
  */
-export function getPreviousFutureDayData(
+export function getPreviousFutureDailyStats(
     futureAddress: Address,
     nowDayId: i32,
     days: i32
-): FutureDayData | null {
+): FutureDailyStats | null {
     const previousDayId = getPastDayId(nowDayId, days)
-    const previousFutureDayDataId = generateFutureDayDataId(
+    const previousFutureDailyStatsId = generateFutureDailyStatsId(
         futureAddress.toHex(),
         previousDayId.toString()
     )
-    let previousFutureDayData = FutureDayData.load(previousFutureDayDataId)
-    return previousFutureDayData
+    let previousFutureDailyStats = FutureDailyStats.load(previousFutureDailyStatsId)
+    return previousFutureDailyStats
 }
 
 /**
- * Create a new FutureDayData entity for a given future and set the initial values
+ * Create a new FutureDailyStats entity for a given future and set the initial values
  * @param address The address of the future
  * @param dayId The day id
- * @returns The newly created FutureDayData entity
+ * @returns The newly created FutureDailyStats entity
  */
-export function createFutureDayData(
+export function createFutureDailyStats(
     address: Address,
     dayId: i32
-): FutureDayData {
-    const futureDayDataId = generateFutureDayDataId(
+): FutureDailyStats {
+    const futureDailyStatsId = generateFutureDailyStatsId(
         address.toHex(),
         dayId.toString()
     )
-    let futureDayData = new FutureDayData(futureDayDataId)
-    futureDayData.future = address.toHex()
-    futureDayData.date = dayId as i32
-    futureDayData.dailyDeposits = ZERO_BI
-    futureDayData.dailyWithdrawals = ZERO_BI
-    futureDayData.dailySwaps = ZERO_BI
-    futureDayData.dailyAddLiquidity = ZERO_BI
-    futureDayData.dailyRemoveLiquidity = ZERO_BI
-    futureDayData.dailyUpdates = ZERO_BI
-    futureDayData.ibtRate = ZERO_BI
-    futureDayData.realizedAPR7D = ZERO_BD
-    futureDayData.realizedAPR30D = ZERO_BD
-    futureDayData.realizedAPR90D = ZERO_BD
-    futureDayData.save()
-    return futureDayData
+    let futureDailyStats = new FutureDailyStats(futureDailyStatsId)
+    futureDailyStats.future = address.toHex()
+    futureDailyStats.date = dayId as i32
+    futureDailyStats.dailyDeposits = ZERO_BI
+    futureDailyStats.dailyWithdrawals = ZERO_BI
+    futureDailyStats.dailySwaps = ZERO_BI
+    futureDailyStats.dailyAddLiquidity = ZERO_BI
+    futureDailyStats.dailyRemoveLiquidity = ZERO_BI
+    futureDailyStats.dailyUpdates = ZERO_BI
+    futureDailyStats.ibtRate = ZERO_BI
+    futureDailyStats.realizedAPR7D = ZERO_BD
+    futureDailyStats.realizedAPR30D = ZERO_BD
+    futureDailyStats.realizedAPR90D = ZERO_BD
+    futureDailyStats.save()
+    return futureDailyStats
 }

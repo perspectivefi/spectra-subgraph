@@ -31,15 +31,14 @@ import {
     generateAssetAmountId,
     generateAccountAssetId,
     generateFeeClaimId,
+    generateFutureDailyStatsId,
 } from "../utils"
-import { generateFutureDayDataId } from "../utils/idGenerators"
 import { toPrecision } from "../utils/toPrecision"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
-import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
 import {
     mockCurvePoolFunctions,
     POOL_ADD_LIQUIDITY_TRANSACTION_HASH,
@@ -57,6 +56,7 @@ import {
     POOL_PT_ADDRESS_MOCK,
 } from "./mocks/CurvePoolFactory"
 import { STANDARD_DECIMALS_MOCK, mockERC20Functions } from "./mocks/ERC20"
+import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
     FEE_COLLECTOR_ADDRESS_MOCK,
@@ -72,7 +72,7 @@ import {
     TRANSACTION_ENTITY,
     ACCOUNT_ASSET_ENTITY,
     ACCOUNT_ENTITY,
-    FUTURE_DAY_DATA_ENTITY,
+    FUTURE_DAILY_STATS_ENTITY,
 } from "./utils/entities"
 
 const LP_TOTAL_SUPPLY = toPrecision(
@@ -297,12 +297,12 @@ describe("handleAddLiquidity()", () => {
         )
     })
 
-    test("Should create/update FutureDayData with the correct details", () => {
+    test("Should create/update FutureDailyStats with the correct details", () => {
         const day0Id = "0"
-        assert.entityCount(FUTURE_DAY_DATA_ENTITY, 1)
+        assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -311,8 +311,8 @@ describe("handleAddLiquidity()", () => {
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -321,8 +321,8 @@ describe("handleAddLiquidity()", () => {
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -331,8 +331,8 @@ describe("handleAddLiquidity()", () => {
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -540,12 +540,12 @@ describe("handleRemoveLiquidity()", () => {
         )
     })
 
-    test("Should create/update FutureDayData with the correct details", () => {
+    test("Should create/update FutureDailyStats with the correct details", () => {
         const day0Id = "0"
-        assert.entityCount(FUTURE_DAY_DATA_ENTITY, 1)
+        assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -554,8 +554,8 @@ describe("handleRemoveLiquidity()", () => {
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -564,8 +564,8 @@ describe("handleRemoveLiquidity()", () => {
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -574,8 +574,8 @@ describe("handleRemoveLiquidity()", () => {
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -795,12 +795,12 @@ describe("handleTokenExchange()", () => {
         )
     })
 
-    test("Should create/update FutureDayData with the correct details", () => {
+    test("Should create/update FutureDailyStats with the correct details", () => {
         const day0Id = "0"
-        assert.entityCount(FUTURE_DAY_DATA_ENTITY, 1)
+        assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -809,8 +809,8 @@ describe("handleTokenExchange()", () => {
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -819,8 +819,8 @@ describe("handleTokenExchange()", () => {
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -829,8 +829,8 @@ describe("handleTokenExchange()", () => {
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -1017,12 +1017,12 @@ describe("handleRemoveLiquidityOne()", () => {
         )
     })
 
-    test("Should create/update FutureDayData with the correct details", () => {
+    test("Should create/update FutureDailyStats with the correct details", () => {
         const day0Id = "0"
-        assert.entityCount(FUTURE_DAY_DATA_ENTITY, 1)
+        assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -1031,8 +1031,8 @@ describe("handleRemoveLiquidityOne()", () => {
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -1041,8 +1041,8 @@ describe("handleRemoveLiquidityOne()", () => {
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),
@@ -1051,8 +1051,8 @@ describe("handleRemoveLiquidityOne()", () => {
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 day0Id
             ),

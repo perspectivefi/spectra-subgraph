@@ -24,7 +24,7 @@ import {
     generateAssetAmountId,
     generateFeeClaimId,
     generateAccountAssetId,
-    generateFutureDayDataId,
+    generateFutureDailyStatsId,
 } from "../utils/idGenerators"
 import {
     emiCurveFactoryChanged,
@@ -55,8 +55,8 @@ import {
     ACCOUNT_ENTITY,
     ACCOUNT_ASSET_ENTITY,
     ASSET_AMOUNT_ENTITY, ASSET_ENTITY,
-    FEE_CLAIM_ENTITY, FUTURE_DAY_DATA_ENTITY, FUTURE_ENTITY, POOL_ENTITY,
-    POOL_FACTORY_ENTITY, TRANSACTION_ENTITY, 
+    FEE_CLAIM_ENTITY, FUTURE_DAILY_STATS_ENTITY, FUTURE_ENTITY, POOL_ENTITY,
+    POOL_FACTORY_ENTITY, TRANSACTION_ENTITY
 } from "./utils/entities"
 
 const COLLECTED_FEE = 50
@@ -395,32 +395,32 @@ describe("handleDeposit()", () => {
             )}]`
         )
     })
-      test("Should create FutureDayData with the correct details", () => {
+      test("Should create FutureDailyStats with the correct details", () => {
         const day0Id = "0"
-        assert.entityCount(FUTURE_DAY_DATA_ENTITY, 1)
+        assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
             "future",
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
         )
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
             "dailyDeposits",
             "1"
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
             "date",
             day0Id
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
             "ibtRate",
             "1"
         )
@@ -545,39 +545,39 @@ describe("handleWithdraw()", () => {
         )
     })
 
-    test("Should create FutureDayData with the correct details", () => {
+    test("Should create FutureDailyStats with the correct details", () => {
         const day0Id = "0"
-        assert.entityCount(FUTURE_DAY_DATA_ENTITY, 1)
+        assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
             "future",
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
         )
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
             "dailyDeposits",
             "1"
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
             "dailyWithdrawals",
             "1"
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
             "date",
             day0Id
         )
 
         assert.fieldEquals(
-            FUTURE_DAY_DATA_ENTITY,
-            generateFutureDayDataId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
             "ibtRate",
             "1"
         )
