@@ -7,7 +7,7 @@ import { assert } from "matchstick-as/assembly/index"
  * @returns The absolute value of the BigDecimal
  */
 export function absBD(n: BigDecimal): BigDecimal {
-    return n < BigDecimal.fromString("0") ? n.neg() : n
+    return BigDecimal.fromString("0").gt(n) ? n.neg() : n
 }
 
 /**
