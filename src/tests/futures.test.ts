@@ -16,7 +16,7 @@ import {
     Withdraw,
     YieldTransferred,
 } from "../../generated/FutureVault/FutureVault"
-import { ZERO_BI } from "../constants"
+import { DAY_ID_0, ZERO_BI } from "../constants"
 import {
     handleFeeClaimed,
     handlePaused,
@@ -412,13 +412,12 @@ describe("handleDeposit()", () => {
         )
     })
     test("Should create FutureDailyStats with the correct details", () => {
-        const day0Id = "0"
         assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
             generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
-                day0Id
+                DAY_ID_0
             ),
             "future",
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
@@ -427,7 +426,7 @@ describe("handleDeposit()", () => {
             FUTURE_DAILY_STATS_ENTITY,
             generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
-                day0Id
+                DAY_ID_0
             ),
             "dailyDeposits",
             "1"
@@ -437,17 +436,17 @@ describe("handleDeposit()", () => {
             FUTURE_DAILY_STATS_ENTITY,
             generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
-                day0Id
+                DAY_ID_0
             ),
             "date",
-            day0Id
+            DAY_ID_0
         )
 
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
             generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
-                day0Id
+                DAY_ID_0
             ),
             "ibtRate",
             "1"
@@ -573,13 +572,12 @@ describe("handleWithdraw()", () => {
     })
 
     test("Should create FutureDailyStats with the correct details", () => {
-        const day0Id = "0"
         assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
             generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
-                day0Id
+                DAY_ID_0
             ),
             "future",
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
@@ -588,7 +586,7 @@ describe("handleWithdraw()", () => {
             FUTURE_DAILY_STATS_ENTITY,
             generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
-                day0Id
+                DAY_ID_0
             ),
             "dailyDeposits",
             "1"
@@ -598,7 +596,7 @@ describe("handleWithdraw()", () => {
             FUTURE_DAILY_STATS_ENTITY,
             generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
-                day0Id
+                DAY_ID_0
             ),
             "dailyWithdrawals",
             "1"
@@ -608,17 +606,17 @@ describe("handleWithdraw()", () => {
             FUTURE_DAILY_STATS_ENTITY,
             generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
-                day0Id
+                DAY_ID_0
             ),
             "date",
-            day0Id
+            DAY_ID_0
         )
 
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
             generateFutureDailyStatsId(
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
-                day0Id
+                DAY_ID_0
             ),
             "ibtRate",
             "1"
