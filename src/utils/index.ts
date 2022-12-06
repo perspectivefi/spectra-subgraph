@@ -7,5 +7,5 @@ export {
     generateLPInfoId,
     generateAccountAssetId,
     generateFeeClaimId,
-    generateFutureDailyStatsId
+    generateFutureDailyStatsId,
 } from "./idGenerators"

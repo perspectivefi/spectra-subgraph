@@ -1,4 +1,3 @@
-
 // FYTTokenDetails
 export const generateFYTInfoId = (tokenAddress: string): string =>
     `${tokenAddress}-FYT`

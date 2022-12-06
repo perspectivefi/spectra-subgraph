@@ -8,16 +8,16 @@ import {
     NewParameters,
     RemoveLiquidity,
     RemoveLiquidityOne,
-    TokenExchange
+    TokenExchange,
 } from "../../generated/AMM/CurvePool"
 import { AssetAmount, FeeClaim, Pool } from "../../generated/schema"
-import { ZERO_ADDRESS,UNIT_BI, ZERO_BI } from "../constants"
+import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
 import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import { getPoolLPToken } from "../entities/CurvePool"
-import { updateFutureDailyStats} from "../entities/FutureDailyStats"
+import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import { createTransaction } from "../entities/Transaction"
 import { generateFeeClaimId } from "../utils"
 import { toPrecision } from "../utils/toPrecision"

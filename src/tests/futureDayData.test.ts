@@ -4,7 +4,7 @@ import {
     beforeAll,
     clearStore,
     describe,
-    test
+    test,
 } from "matchstick-as/assembly/index"
 
 import { FutureDailyStats } from "../../generated/schema"
@@ -14,7 +14,7 @@ import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
     emitDeposit,
-    emitFutureVaultDeployed
+    emitFutureVaultDeployed,
 } from "./events/FutureVault"
 import { mockCurvePoolFunctions } from "./mocks/CurvePool"
 import { mockMetaPoolFactoryFunctions } from "./mocks/CurvePoolFactory"
@@ -24,7 +24,7 @@ import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterfac
 import {
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
     IBT_ADDRESS_MOCK,
-    mockFutureVaultFunctions
+    mockFutureVaultFunctions,
 } from "./mocks/FutureVault"
 import { assertAlmostEquals } from "./utils/asserts"
 import { FUTURE_DAILY_STATS_ENTITY } from "./utils/entities"
@@ -185,5 +185,4 @@ describe("IBT Rate Average computation in FutureDailyStats", () => {
             "2000000000000000000"
         )
     })
-
 })

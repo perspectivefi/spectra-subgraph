@@ -39,9 +39,24 @@ export function updateFutureDailyStats(
     )
     futureDailyStats.dailyUpdates = dailyUpdates
 
-    futureDailyStats.realizedAPR7D = getAPR(futureAddress, currentRate, dayId, 7)
-    futureDailyStats.realizedAPR30D = getAPR(futureAddress, currentRate, dayId, 30)
-    futureDailyStats.realizedAPR90D = getAPR(futureAddress, currentRate, dayId, 90)
+    futureDailyStats.realizedAPR7D = getAPR(
+        futureAddress,
+        currentRate,
+        dayId,
+        7
+    )
+    futureDailyStats.realizedAPR30D = getAPR(
+        futureAddress,
+        currentRate,
+        dayId,
+        30
+    )
+    futureDailyStats.realizedAPR90D = getAPR(
+        futureAddress,
+        currentRate,
+        dayId,
+        90
+    )
     futureDailyStats.save()
     return futureDailyStats
 }
@@ -99,7 +114,9 @@ export function getPreviousFutureDailyStats(
         futureAddress.toHex(),
         previousDayId.toString()
     )
-    let previousFutureDailyStats = FutureDailyStats.load(previousFutureDailyStatsId)
+    let previousFutureDailyStats = FutureDailyStats.load(
+        previousFutureDailyStatsId
+    )
     return previousFutureDailyStats
 }
 

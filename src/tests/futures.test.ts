@@ -1,8 +1,12 @@
 import { BigInt, ethereum } from "@graphprotocol/graph-ts"
 import {
-    assert, beforeAll, beforeEach, clearStore, describe,
+    assert,
+    beforeAll,
+    beforeEach,
+    clearStore,
+    describe,
     newMockEvent,
-    test
+    test,
 } from "matchstick-as/assembly/index"
 
 import {
@@ -10,7 +14,7 @@ import {
     Paused,
     Unpaused,
     Withdraw,
-    YieldTransferred
+    YieldTransferred,
 } from "../../generated/FutureVault/FutureVault"
 import { ZERO_BI } from "../constants"
 import {
@@ -18,7 +22,7 @@ import {
     handlePaused,
     handleUnpaused,
     handleWithdraw,
-    handleYieldTransferred
+    handleYieldTransferred,
 } from "../mappings/futures"
 import {
     generateAssetAmountId,
@@ -32,7 +36,7 @@ import {
     emitDeposit,
     emitFutureVaultDeployed,
     IBT_DEPOSIT,
-    SHARES_RETURN
+    SHARES_RETURN,
 } from "./events/FutureVault"
 import { mockCurvePoolFunctions, POOL_LP_ADDRESS_MOCK } from "./mocks/CurvePool"
 import {
@@ -42,21 +46,33 @@ import {
     POOL_FACTORY_ADDRESS_MOCK,
     POOL_FEE_MOCK,
     POOL_IBT_ADDRESS_MOCK,
-    POOL_PT_ADDRESS_MOCK
+    POOL_PT_ADDRESS_MOCK,
 } from "./mocks/CurvePoolFactory"
 import { ETH_ADDRESS_MOCK, mockERC20Functions } from "./mocks/ERC20"
 import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
-    DEPOSIT_TRANSACTION_HASH, FEE_COLLECTOR_ADDRESS_MOCK, FEE_MOCK, FIRST_FUTURE_VAULT_ADDRESS_MOCK, FIRST_USER_MOCK, IBT_ADDRESS_MOCK,
-    mockFutureVaultFunctions, WITHDRAW_TRANSACTION_HASH, YT_ADDRESS_MOCK
+    DEPOSIT_TRANSACTION_HASH,
+    FEE_COLLECTOR_ADDRESS_MOCK,
+    FEE_MOCK,
+    FIRST_FUTURE_VAULT_ADDRESS_MOCK,
+    FIRST_USER_MOCK,
+    IBT_ADDRESS_MOCK,
+    mockFutureVaultFunctions,
+    WITHDRAW_TRANSACTION_HASH,
+    YT_ADDRESS_MOCK,
 } from "./mocks/FutureVault"
 import {
     ACCOUNT_ENTITY,
     ACCOUNT_ASSET_ENTITY,
-    ASSET_AMOUNT_ENTITY, ASSET_ENTITY,
-    FEE_CLAIM_ENTITY, FUTURE_DAILY_STATS_ENTITY, FUTURE_ENTITY, POOL_ENTITY,
-    POOL_FACTORY_ENTITY, TRANSACTION_ENTITY
+    ASSET_AMOUNT_ENTITY,
+    ASSET_ENTITY,
+    FEE_CLAIM_ENTITY,
+    FUTURE_DAILY_STATS_ENTITY,
+    FUTURE_ENTITY,
+    POOL_ENTITY,
+    POOL_FACTORY_ENTITY,
+    TRANSACTION_ENTITY,
 } from "./utils/entities"
 
 const COLLECTED_FEE = 50
@@ -395,38 +411,49 @@ describe("handleDeposit()", () => {
             )}]`
         )
     })
-      test("Should create FutureDailyStats with the correct details", () => {
+    test("Should create FutureDailyStats with the correct details", () => {
         const day0Id = "0"
         assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
-            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
             "future",
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
         )
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
-            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
             "dailyDeposits",
             "1"
         )
 
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
-            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
             "date",
             day0Id
         )
 
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
-            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
             "ibtRate",
             "1"
         )
     })
-
-  })
+})
 
 describe("handleWithdraw()", () => {
     beforeAll(() => {
@@ -550,39 +577,53 @@ describe("handleWithdraw()", () => {
         assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
-            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
             "future",
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
         )
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
-            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
             "dailyDeposits",
             "1"
         )
 
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
-            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
             "dailyWithdrawals",
             "1"
         )
 
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
-            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
             "date",
             day0Id
         )
 
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
-            generateFutureDailyStatsId(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(), day0Id),
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                day0Id
+            ),
             "ibtRate",
             "1"
         )
     })
-
 })
 
 describe("handleCurveFactoryChanged()", () => {

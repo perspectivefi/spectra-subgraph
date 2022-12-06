@@ -16,7 +16,7 @@ import {
 } from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { FeeClaim, Future, Pool, PoolFactory } from "../../generated/schema"
 import { ERC20 } from "../../generated/templates"
-import { ZERO_ADDRESS,UNIT_BI, ZERO_BI } from "../constants"
+import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
 import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
@@ -229,7 +229,8 @@ export function handleDeposit(event: Deposit): void {
             event as ethereum.Event,
             event.address
         )
-        futureDailyStats.dailyDeposits = futureDailyStats.dailyDeposits.plus(UNIT_BI)
+        futureDailyStats.dailyDeposits =
+            futureDailyStats.dailyDeposits.plus(UNIT_BI)
         futureDailyStats.save()
     } else {
         log.warning("Deposit event call for not existing Future {}", [

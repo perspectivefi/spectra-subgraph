@@ -1,12 +1,12 @@
 import { BigDecimal, BigInt, ethereum } from "@graphprotocol/graph-ts"
 import {
     describe,
-    test,
     newMockEvent,
     clearStore,
     assert,
     logStore,
     beforeAll,
+    test,
 } from "matchstick-as/assembly/index"
 
 import {
@@ -42,11 +42,11 @@ import {
 import {
     mockCurvePoolFunctions,
     POOL_ADD_LIQUIDITY_TRANSACTION_HASH,
-    POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH,
+    POOL_ADMIN_FEE_MOCK,
     POOL_EXCHANGE_TRANSACTION_HASH,
     POOL_LP_ADDRESS_MOCK,
     POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH,
-    POOL_ADMIN_FEE_MOCK,
+    POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH,
 } from "./mocks/CurvePool"
 import {
     POOL_DEPLOY_TRANSACTION_HASH,
