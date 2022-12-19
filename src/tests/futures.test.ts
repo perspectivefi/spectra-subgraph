@@ -1,13 +1,12 @@
-import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
+import { BigInt, ethereum } from "@graphprotocol/graph-ts"
 import {
     assert,
+    beforeAll,
     beforeEach,
+    clearStore,
     describe,
     newMockEvent,
     test,
-    beforeAll,
-    logStore,
-    clearStore,
 } from "matchstick-as/assembly/index"
 
 import {
@@ -17,7 +16,7 @@ import {
     Withdraw,
     YieldTransferred,
 } from "../../generated/FutureVault/FutureVault"
-import { ZERO_BI } from "../constants"
+import { DAY_ID_0, ZERO_BI } from "../constants"
 import {
     handleFeeClaimed,
     handlePaused,
@@ -29,6 +28,7 @@ import {
     generateAssetAmountId,
     generateFeeClaimId,
     generateAccountAssetId,
+    generateFutureDailyStatsId,
 } from "../utils/idGenerators"
 import {
     emiCurveFactoryChanged,
@@ -49,28 +49,30 @@ import {
     POOL_PT_ADDRESS_MOCK,
 } from "./mocks/CurvePoolFactory"
 import { ETH_ADDRESS_MOCK, mockERC20Functions } from "./mocks/ERC20"
+import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
+    DEPOSIT_TRANSACTION_HASH,
     FEE_COLLECTOR_ADDRESS_MOCK,
+    FEE_MOCK,
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
+    FIRST_USER_MOCK,
     IBT_ADDRESS_MOCK,
     mockFutureVaultFunctions,
-    DEPOSIT_TRANSACTION_HASH,
-    YT_ADDRESS_MOCK,
-    FIRST_USER_MOCK,
     WITHDRAW_TRANSACTION_HASH,
-    FEE_MOCK,
+    YT_ADDRESS_MOCK,
 } from "./mocks/FutureVault"
 import {
+    ACCOUNT_ENTITY,
+    ACCOUNT_ASSET_ENTITY,
+    ASSET_AMOUNT_ENTITY,
     ASSET_ENTITY,
     FEE_CLAIM_ENTITY,
+    FUTURE_DAILY_STATS_ENTITY,
     FUTURE_ENTITY,
-    TRANSACTION_ENTITY,
-    ACCOUNT_ENTITY,
-    ASSET_AMOUNT_ENTITY,
-    ACCOUNT_ASSET_ENTITY,
     POOL_ENTITY,
     POOL_FACTORY_ENTITY,
+    TRANSACTION_ENTITY,
 } from "./utils/entities"
 
 const COLLECTED_FEE = 50
@@ -272,6 +274,7 @@ describe("handleFeeClaimed()", () => {
 
 describe("handleDeposit()", () => {
     beforeAll(() => {
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
         emitDeposit()
     })
 
@@ -408,6 +411,47 @@ describe("handleDeposit()", () => {
             )}]`
         )
     })
+    test("Should create FutureDailyStats with the correct details", () => {
+        assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
+        assert.fieldEquals(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                DAY_ID_0
+            ),
+            "future",
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+        )
+        assert.fieldEquals(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                DAY_ID_0
+            ),
+            "dailyDeposits",
+            "1"
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                DAY_ID_0
+            ),
+            "date",
+            DAY_ID_0
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                DAY_ID_0
+            ),
+            "ibtRate",
+            "1"
+        )
+    })
 })
 
 describe("handleWithdraw()", () => {
@@ -448,7 +492,7 @@ describe("handleWithdraw()", () => {
             assetsParam,
             sharesParam,
         ]
-
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
         handleWithdraw(withdrawEvent)
     })
 
@@ -526,13 +570,64 @@ describe("handleWithdraw()", () => {
             ZERO_BI.toString()
         )
     })
+
+    test("Should create FutureDailyStats with the correct details", () => {
+        assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
+        assert.fieldEquals(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                DAY_ID_0
+            ),
+            "future",
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+        )
+        assert.fieldEquals(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                DAY_ID_0
+            ),
+            "dailyDeposits",
+            "1"
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                DAY_ID_0
+            ),
+            "dailyWithdrawals",
+            "1"
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                DAY_ID_0
+            ),
+            "date",
+            DAY_ID_0
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                DAY_ID_0
+            ),
+            "ibtRate",
+            "1"
+        )
+    })
 })
 
 describe("handleCurveFactoryChanged()", () => {
     beforeAll(() => {
         mockMetaPoolFactoryFunctions()
         mockCurvePoolFunctions()
-
         emiCurveFactoryChanged()
     })
 

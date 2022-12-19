@@ -1,4 +1,4 @@
-import { Address, log } from "@graphprotocol/graph-ts"
+import { Address, ethereum, log } from "@graphprotocol/graph-ts"
 
 import {
     Deposit,
@@ -16,7 +16,7 @@ import {
 } from "../../generated/FutureVaultFactory/FutureVaultFactory"
 import { FeeClaim, Future, Pool, PoolFactory } from "../../generated/schema"
 import { ERC20 } from "../../generated/templates"
-import { ZERO_ADDRESS, ZERO_BI } from "../constants"
+import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
 import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
@@ -31,6 +31,7 @@ import {
     getPoolFactoryAdmin,
     getPoolFactoryFeeReceiver,
 } from "../entities/CurvePoolFactory"
+import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import {
     getExpirationTimestamp,
     getMaxFeeRate,
@@ -222,6 +223,15 @@ export function handleDeposit(event: Deposit): void {
                 adminFee: ZERO_BI,
             },
         })
+
+        // Deposit specific FutureDailyStats  data
+        let futureDailyStats = updateFutureDailyStats(
+            event as ethereum.Event,
+            event.address
+        )
+        futureDailyStats.dailyDeposits =
+            futureDailyStats.dailyDeposits.plus(UNIT_BI)
+        futureDailyStats.save()
     } else {
         log.warning("Deposit event call for not existing Future {}", [
             event.address.toHex(),
@@ -307,6 +317,11 @@ export function handleWithdraw(event: Withdraw): void {
                 adminFee: ZERO_BI,
             },
         })
+        // Withdraw specific FutureDailyStats  data
+        let futureDailyStats = updateFutureDailyStats(event, event.address)
+        futureDailyStats.dailyWithdrawals =
+            futureDailyStats.dailyWithdrawals.plus(UNIT_BI)
+        futureDailyStats.save()
     } else {
         log.warning("Withdraw event call for not existing Future {}", [
             event.address.toHex(),

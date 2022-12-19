@@ -189,6 +189,7 @@ type Future @entity {
     pools: [Pool!]! @derivedFrom(field: "futureVault")
 
     transactions: [Transaction!]! @derivedFrom(field: "futureInTransaction")
+    futureDailyStats: [FutureDailyStats!]! @derivedFrom(field: "future")
 
 #    ibtToUnderlyingRatio: Value
 
@@ -208,6 +209,23 @@ type FeeClaim @entity {
     future: Future
     "pool that collector claimed the fees from"
     pool: Pool
+}
+
+"The daily data of the future vault"
+type FutureDailyStats @entity {
+  id: ID! # future address and timestamp rounded to current day by dividing by 86400
+  future: Future! # future address
+  date: Int! # future address and timestamp rounded to current day by dividing by 86400
+  dailyDeposits: BigInt! # total deposits in the day (the unit is a count of transactions)
+  dailyWithdrawals: BigInt! # total withdrawals in the day (the unit is a count of transactions)
+  dailySwaps: BigInt! # total swaps in the day in the AMM (the unit is a count of transactions)
+  dailyAddLiquidity: BigInt! # total add liquidity in the day in the AMM (the unit is a count of transactions)
+  dailyRemoveLiquidity: BigInt! # total remove liquidity in the day in the AMM (the unit is a count of transactions)
+  dailyUpdates: BigInt! # total updates of the FutureDailyStats. This is used to compute the IBT rate as an incremental average (the unit is a count of transactions)
+  ibtRate: BigInt! # The average rate of the IBT token for the day
+  realizedAPR7D: BigDecimal! # The realized APR (in % i.e: realizedAPR7D = 1 <==> APR = 100%) of the IBT token over the last 7 days
+  realizedAPR30D: BigDecimal! # The realized APR of the IBT token over the last 30 days
+  realizedAPR90D: BigDecimal! # The realized APR of the IBT token over the last 90 days
 }
 
 ####################

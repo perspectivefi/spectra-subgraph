@@ -11,12 +11,13 @@ import {
     TokenExchange,
 } from "../../generated/AMM/CurvePool"
 import { AssetAmount, FeeClaim, Pool } from "../../generated/schema"
-import { ZERO_ADDRESS, ZERO_BI } from "../constants"
+import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
 import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import { getPoolLPToken } from "../entities/CurvePool"
+import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import { createTransaction } from "../entities/Transaction"
 import { generateFeeClaimId } from "../utils"
 import { toPrecision } from "../utils/toPrecision"
@@ -148,6 +149,13 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             event.params.token_amounts[1]
         )
         poolPTAssetAmount.save()
+
+        // AddLiquidity specific FutureDailyStats data
+        const futureVaultAddress = Address.fromString(pool.futureVault)
+        let futureDailyStats = updateFutureDailyStats(event, futureVaultAddress)
+        futureDailyStats.dailyAddLiquidity =
+            futureDailyStats.dailyAddLiquidity.plus(UNIT_BI)
+        futureDailyStats.save()
     }
 }
 
@@ -258,6 +266,13 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             event.params.token_amounts[1]
         )
         poolPTAssetAmount.save()
+
+        // RemoveLiquidity specific FutureDailyStats data
+        const futureVaultAddress = Address.fromString(pool.futureVault)
+        let futureDailyStats = updateFutureDailyStats(event, futureVaultAddress)
+        futureDailyStats.dailyRemoveLiquidity =
+            futureDailyStats.dailyRemoveLiquidity.plus(UNIT_BI)
+        futureDailyStats.save()
     }
 }
 
@@ -374,6 +389,12 @@ export function handleTokenExchange(event: TokenExchange): void {
             event.params.tokens_bought
         )
         poolAssetOutAmount.save()
+
+        // Swap specific FutureDailyStats data
+        const futureVaultAddress = Address.fromString(pool.futureVault)
+        let futureDailyStats = updateFutureDailyStats(event, futureVaultAddress)
+        futureDailyStats.dailySwaps = futureDailyStats.dailySwaps.plus(UNIT_BI)
+        futureDailyStats.save()
     }
 }
 
@@ -500,6 +521,13 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             event.params.coin_amount
         )
         poolWithdrawnAssetAmount.save()
+
+        // RemoveLiquidityOne specific FutureDailyStats data
+        const futureVaultAddress = Address.fromString(pool.futureVault)
+        let futureDailyStats = updateFutureDailyStats(event, futureVaultAddress)
+        futureDailyStats.dailyRemoveLiquidity =
+            futureDailyStats.dailyRemoveLiquidity.plus(UNIT_BI)
+        futureDailyStats.save()
     }
 }
 

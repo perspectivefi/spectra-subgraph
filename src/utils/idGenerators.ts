@@ -35,3 +35,9 @@ export const generateTransferId = (
     transactionHash: string,
     timestamp: string
 ): string => `${timestamp}-${transactionHash}`
+
+// FutureDailyStats
+export const generateFutureDailyStatsId = (
+    futureAddress: string,
+    dayId: string
+): string => `${futureAddress}-${dayId}`

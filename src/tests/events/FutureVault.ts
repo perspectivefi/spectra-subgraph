@@ -1,4 +1,4 @@
-import { ethereum } from "@graphprotocol/graph-ts/index"
+import { BigInt, ethereum } from "@graphprotocol/graph-ts/index"
 import { newMockEvent } from "matchstick-as/assembly/index"
 
 import { Deposit } from "../../../generated/FutureVault/FutureVault"
@@ -50,11 +50,13 @@ export const emitFutureVaultDeployed = (): void => {
     handleFutureVaultDeployed(futureVaultDeployedEvent)
 }
 
-export const emitDeposit = (): void => {
+export const emitDeposit = (timestamp: number = 0): Deposit => {
     let depositEvent = changetype<Deposit>(newMockEvent())
     depositEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
     depositEvent.transaction.hash = DEPOSIT_TRANSACTION_HASH
-
+    if (timestamp) {
+        depositEvent.block.timestamp = BigInt.fromI32(timestamp as i32)
+    }
     let callerParam = new ethereum.EventParam(
         "caller",
         ethereum.Value.fromAddress(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
@@ -83,6 +85,7 @@ export const emitDeposit = (): void => {
     ]
 
     handleDeposit(depositEvent)
+    return depositEvent
 }
 
 export const emiCurveFactoryChanged = (): void => {
