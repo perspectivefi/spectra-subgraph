@@ -89,6 +89,10 @@ type FutureVaultFactory @entity {
     name: String!
     old: FutureVaultFactory
     address: Bytes!
+
+    poolFactory: PoolFactory
+    deployedFutures: [Future!]! @derivedFrom(field: "futureVaultFactory")
+    deployedPools: [Pool!]! @derivedFrom(field: "futureVaultFactory")
 }
 
 ####################
@@ -170,6 +174,8 @@ type Future @entity {
     symbol: String!
     name: String!
 
+    futureVaultFactory: FutureVaultFactory
+
     "how big is the fee setup for that future"
     daoFeeRate: BigInt!
     unclaimedFees: BigInt!
@@ -185,8 +191,7 @@ type Future @entity {
     underlyingAsset: Asset!
     ibtAsset: Asset!
 
-    poolFactory: PoolFactory
-    pools: [Pool!]! @derivedFrom(field: "futureVault")
+#    pools: [Pool!]! @derivedFrom(field: "futureVault")
 
     transactions: [Transaction!]! @derivedFrom(field: "futureInTransaction")
     futureDailyStats: [FutureDailyStats!]! @derivedFrom(field: "future")
@@ -292,7 +297,7 @@ type PoolFactory @entity {
     feeReceiver: Account!
     admin: Bytes!
 
-    future: Future!
+    futureVaultFactory: FutureVaultFactory
 
     pools: [Pool!]! @derivedFrom(field: "factory")
 }
@@ -312,10 +317,9 @@ type Pool @entity {
     futureAdminFeeRate: BigInt!
     futureAdminFeeDeadline: BigInt!
 
-    "to be able to follow all the future's pools"
-    futureVault: Future!
+    futureVaultFactory: FutureVaultFactory
     "to be able to follow all the pools created by a factory"
-    factory: PoolFactory!
+    factory: PoolFactory
 
     liquidityToken: Asset!
     assets: [AssetAmount!]

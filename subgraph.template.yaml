@@ -71,8 +71,10 @@ dataSources:
           file: ./node_modules/@chainlink/contracts/abi/v0.8/FeedRegistryInterface.json
         - name: CurvePoolFactory
           file: ./abis/CurvePoolFactory.json
+        - name: CurvePool
+          file: ./abis/CurvePool.json
       eventHandlers:
-        - event: FutureVaultDeployed(address)
+        - event: FutureVaultDeployed(indexed address,indexed address)
           handler: handleFutureVaultDeployed
         - event: CurveFactoryChanged(address)
           handler: handleCurveFactoryChanged
@@ -111,7 +113,7 @@ dataSources:
           handler: handleRedeem
         - event: YieldTransferred(indexed address,uint256)
           handler: handleYieldTransferred
-  - name: AMM
+  - name: CurvePool
     kind: ethereum/contract
     network: {{ network }}
     source:

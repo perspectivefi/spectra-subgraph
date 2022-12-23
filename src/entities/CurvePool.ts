@@ -1,6 +1,6 @@
 import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
-import { CurvePool } from "../../generated/AMM/CurvePool"
+import { CurvePool } from "../../generated/CurvePool/CurvePool"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 
 export const getPoolLPToken = (poolAddress: Address): Address => {

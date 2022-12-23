@@ -26,6 +26,7 @@ import {
     FIRST_USER_MOCK,
     SECOND_FUTURE_VAULT_ADDRESS_MOCK,
 } from "../mocks/FutureVault"
+import { FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK } from "../mocks/FutureVaultFactory"
 
 export const SHARES_RETURN = 51
 export const IBT_DEPOSIT = 15
@@ -34,6 +35,7 @@ export const emitFutureVaultDeployed = (): void => {
     let futureVaultDeployedEvent = changetype<FutureVaultDeployed>(
         newMockEvent()
     )
+    futureVaultDeployedEvent.address = FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK
 
     let futureVaultParam = new ethereum.EventParam(
         "_futureVault",
@@ -92,8 +94,7 @@ export const emiCurveFactoryChanged = (): void => {
     let curveFactoryChangedEvent = changetype<CurveFactoryChanged>(
         newMockEvent()
     )
-
-    curveFactoryChangedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+    curveFactoryChangedEvent.address = FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK
 
     let newFactoryParam = new ethereum.EventParam(
         "newFactory",
@@ -108,7 +109,7 @@ export const emiCurveFactoryChanged = (): void => {
 export const emitCurvePoolDeployed = (): void => {
     let curvePoolDeployedEvent = changetype<CurvePoolDeployed>(newMockEvent())
 
-    curvePoolDeployedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+    curvePoolDeployedEvent.address = FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK
     curvePoolDeployedEvent.transaction.hash = POOL_DEPLOY_TRANSACTION_HASH
 
     let poolAddressParam = new ethereum.EventParam(

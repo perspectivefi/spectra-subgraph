@@ -1,6 +1,6 @@
 import { Address, log } from "@graphprotocol/graph-ts"
 
-import { CurvePoolFactory } from "../../generated/AMM/CurvePoolFactory"
+import { CurvePoolFactory } from "../../generated/CurvePool/CurvePoolFactory"
 import { ZERO_ADDRESS } from "../constants"
 
 export const getPoolFactoryFeeReceiver = (factoryAddress: Address): Address => {

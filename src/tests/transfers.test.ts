@@ -21,6 +21,7 @@ import {
     emitCurvePoolDeployed,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
+import { emitRegistryUpdate } from "./events/FutureVaultFactory"
 import {
     mockCurvePoolFunctions,
     POOL_LP_ADDRESS_MOCK,
@@ -34,6 +35,7 @@ import {
 } from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import { mockFutureVaultFunctions } from "./mocks/FutureVault"
+import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory"
 import {
     ACCOUNT_ASSET_ENTITY,
     ACCOUNT_ENTITY,
@@ -77,11 +79,13 @@ describe("handleTransfer()", () => {
 
         mockERC20Functions()
 
+        mockFutureVaultFactoryFunctions()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
         mockMetaPoolFactoryFunctions()
         mockCurvePoolFunctions()
 
+        emitRegistryUpdate("Test")
         emitFutureVaultDeployed()
         emiCurveFactoryChanged()
         emitCurvePoolDeployed()
