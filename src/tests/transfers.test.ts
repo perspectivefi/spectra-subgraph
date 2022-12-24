@@ -34,7 +34,10 @@ import {
     STANDARD_DECIMALS_MOCK,
 } from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
-import { mockFutureVaultFunctions } from "./mocks/FutureVault"
+import {
+    FIRST_FUTURE_VAULT_ADDRESS_MOCK,
+    mockFutureVaultFunctions,
+} from "./mocks/FutureVault"
 import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory"
 import {
     ACCOUNT_ASSET_ENTITY,
@@ -86,7 +89,7 @@ describe("handleTransfer()", () => {
         mockCurvePoolFunctions()
 
         emitRegistryUpdate("Test")
-        emitFutureVaultDeployed()
+        emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChanged()
         emitCurvePoolDeployed()
 

@@ -134,10 +134,10 @@ export function handleFeeClaimed(event: FeeClaimed): void {
         claim.createdAtTimestamp = event.block.timestamp
         claim.feeCollector = feeCollector.id
         claim.future = future.id
-        claim.amount = event.params._fees
+        claim.amount = event.params._feesInIBT
 
         future.totalCollectedFees = future.totalCollectedFees.plus(
-            event.params._fees
+            event.params._feesInIBT
         )
         future.unclaimedFees = ZERO_BI
 

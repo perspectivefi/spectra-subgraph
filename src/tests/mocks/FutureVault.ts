@@ -87,8 +87,8 @@ export function mockFutureVaultFunctions(): void {
 
         createMockedFunction(
             addressMock,
-            "unclaimedFees",
-            "unclaimedFees():(uint256)"
+            "unclaimedFeesInIBT",
+            "unclaimedFeesInIBT():(uint256)"
         ).returns([ethereum.Value.fromI32(FEE_MOCK)])
     })
 }

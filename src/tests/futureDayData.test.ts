@@ -43,7 +43,7 @@ describe("APY Computations on futureDailyStats", () => {
         mockCurvePoolFunctions()
 
         emitRegistryUpdate("Test")
-        emitFutureVaultDeployed()
+        emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChanged()
         emitCurvePoolDeployed()
     })

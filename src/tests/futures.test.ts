@@ -95,7 +95,8 @@ describe("handleFutureVaultDeployed()", () => {
 
     beforeEach(() => {
         emitRegistryUpdate("Test")
-        emitFutureVaultDeployed()
+        emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
+        emitFutureVaultDeployed(SECOND_FUTURE_VAULT_ADDRESS_MOCK)
     })
 
     test("Should create new Future on every deployment", () => {

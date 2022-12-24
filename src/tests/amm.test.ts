@@ -112,7 +112,7 @@ describe("handleAddLiquidity()", () => {
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
 
         emitRegistryUpdate("Test")
-        emitFutureVaultDeployed()
+        emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChanged()
         emitCurvePoolDeployed()
 

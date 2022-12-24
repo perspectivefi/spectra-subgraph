@@ -226,7 +226,7 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "yield",
+          "name": "_yield",
           "type": "uint256"
         }
       ],
@@ -245,7 +245,7 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "yield",
+          "name": "_yield",
           "type": "uint256"
         }
       ],
@@ -1830,7 +1830,7 @@
             },
             {
               "internalType": "uint256",
-              "name": "yield",
+              "name": "_yield",
               "type": "uint256",
               "indexed": false
             }
@@ -1849,7 +1849,7 @@
             },
             {
               "internalType": "uint256",
-              "name": "yield",
+              "name": "_yield",
               "type": "uint256",
               "indexed": true
             }
@@ -4873,7 +4873,7 @@
                   "id": 38706,
                   "indexed": true,
                   "mutability": "mutable",
-                  "name": "yield",
+                  "name": "_yield",
                   "nameLocation": "2749:5:69",
                   "nodeType": "VariableDeclaration",
                   "scope": 38708,
@@ -5021,7 +5021,7 @@
                   "id": 38718,
                   "indexed": false,
                   "mutability": "mutable",
-                  "name": "yield",
+                  "name": "_yield",
                   "nameLocation": "2891:5:69",
                   "nodeType": "VariableDeclaration",
                   "scope": 38720,

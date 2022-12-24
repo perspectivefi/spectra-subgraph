@@ -37,13 +37,15 @@ export function getMaxFeeRate(futureVault: Address): BigInt {
 export function getUnclaimedFees(futureVault: Address): BigInt {
     const futureContract = FutureVault.bind(futureVault)
 
-    let unclaimedFeesCall = futureContract.try_unclaimedFees()
+    let unclaimedFeesCall = futureContract.try_unclaimedFeesInIBT()
 
     if (!unclaimedFeesCall.reverted) {
         return unclaimedFeesCall.value
     }
 
-    log.warning("unclaimedFees() call reverted for {}", [futureVault.toHex()])
+    log.warning("unclaimedFeesInIBT() call reverted for {}", [
+        futureVault.toHex(),
+    ])
 
     return ZERO_BI
 }
