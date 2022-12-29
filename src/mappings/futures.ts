@@ -433,8 +433,10 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     pool.liquidityToken = lpToken.id
     pool.totalLPSupply = ZERO_BI
 
-    let futureVaultFactory = FutureVaultFactory.load(event.address.toHex())
+    let future = Future.load(event.params.pt.toHex())!
+    pool.futureVault = future.address.toHex()
 
+    let futureVaultFactory = FutureVaultFactory.load(event.address.toHex())
     if (futureVaultFactory) {
         pool.factory = futureVaultFactory.poolFactory!
         pool.futureVaultFactory = futureVaultFactory.id
