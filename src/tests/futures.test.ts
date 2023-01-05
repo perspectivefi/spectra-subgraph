@@ -493,7 +493,7 @@ describe("handleWithdraw()", () => {
 
         let senderParam = new ethereum.EventParam(
             "sender",
-            ethereum.Value.fromAddress(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
+            ethereum.Value.fromAddress(FIRST_USER_MOCK)
         )
 
         let receiverParam = new ethereum.EventParam(
