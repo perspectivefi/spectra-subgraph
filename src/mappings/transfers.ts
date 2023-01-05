@@ -1,5 +1,5 @@
 import { Asset, Transfer } from "../../generated/schema"
-import { Transfer as TransferEvent } from "../../generated/templates/ERC20/ERC20Contract"
+import { Transfer as TransferEvent } from "../../generated/templates/ERC20/ERC20"
 import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAssetAmount } from "../entities/AssetAmount"

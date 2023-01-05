@@ -91,9 +91,7 @@ describe("handleFutureVaultDeployed()", () => {
         mockFutureVaultFactoryFunctions()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
-    })
 
-    beforeEach(() => {
         emitRegistryUpdate("Test")
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emitFutureVaultDeployed(SECOND_FUTURE_VAULT_ADDRESS_MOCK)
@@ -493,8 +491,8 @@ describe("handleWithdraw()", () => {
         withdrawEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
         withdrawEvent.transaction.hash = WITHDRAW_TRANSACTION_HASH
 
-        let callerParam = new ethereum.EventParam(
-            "caller",
+        let senderParam = new ethereum.EventParam(
+            "sender",
             ethereum.Value.fromAddress(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         )
 
@@ -519,7 +517,7 @@ describe("handleWithdraw()", () => {
         )
 
         withdrawEvent.parameters = [
-            callerParam,
+            senderParam,
             receiverParam,
             ownerParam,
             assetsParam,

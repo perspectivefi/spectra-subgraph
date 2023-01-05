@@ -53,8 +53,8 @@ export const emitDeposit = (timestamp: number = 0): Deposit => {
     if (timestamp) {
         depositEvent.block.timestamp = BigInt.fromI32(timestamp as i32)
     }
-    let callerParam = new ethereum.EventParam(
-        "caller",
+    let senderParam = new ethereum.EventParam(
+        "sender",
         ethereum.Value.fromAddress(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
     )
 
@@ -74,7 +74,7 @@ export const emitDeposit = (timestamp: number = 0): Deposit => {
     )
 
     depositEvent.parameters = [
-        callerParam,
+        senderParam,
         ownerParam,
         assetsParam,
         sharesParam,

@@ -23,7 +23,7 @@ dataSources:
           file: ./node_modules/@chainlink/contracts/abi/v0.8/AggregatorProxy.json
         - name: FeedRegistryInterface
           file: ./node_modules/@chainlink/contracts/abi/v0.8/FeedRegistryInterface.json
-        - name: ERC20Contract
+        - name: ERC20
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
       eventHandlers:
         - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
@@ -65,7 +65,7 @@ dataSources:
           file: ./abis/FutureVaultFactory.json
         - name: FutureVault
           file: ./abis/FutureVault.json
-        - name: ERC20Contract
+        - name: ERC20
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
         - name: FeedRegistryInterface
           file: ./node_modules/@chainlink/contracts/abi/v0.8/FeedRegistryInterface.json
@@ -76,9 +76,9 @@ dataSources:
       eventHandlers:
         - event: FutureVaultDeployed(indexed address,indexed address)
           handler: handleFutureVaultDeployed
-        - event: CurveFactoryChanged(address)
+        - event: CurveFactoryChanged(indexed address)
           handler: handleCurveFactoryChanged
-        - event: CurvePoolDeployed(address,address,address)
+        - event: CurvePoolDeployed(indexed address,address,address)
           handler: handleCurvePoolDeployed
   - name: FutureVault
     kind: ethereum/contract
@@ -96,8 +96,10 @@ dataSources:
       abis:
         - name: FutureVault
           file: ./abis/FutureVault.json
-        - name: ERC4626Contract
+        - name: ERC4626
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
       eventHandlers:
         - event: Paused(address)
           handler: handlePaused
@@ -130,6 +132,8 @@ dataSources:
           file: ./abis/CurvePool.json
         - name: CurvePoolFactory
           file: ./abis/CurvePoolFactory.json
+        - name: ERC4626
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
       eventHandlers:
         - event: AddLiquidity(indexed address,uint256[2],uint256,uint256)
           handler: handleAddLiquidity
@@ -150,7 +154,7 @@ templates:
     kind: ethereum/contract
     network: {{ network }}
     source:
-      abi: ERC20Contract
+      abi: ERC20
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -158,7 +162,7 @@ templates:
       entities: [ ]
       file: ./src/mappings/transfers.ts
       abis:
-        - name: ERC20Contract
+        - name: ERC20
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
