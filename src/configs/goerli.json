@@ -2,8 +2,8 @@
     "network": "goerli",
     "startBlock": 8090000,
 
-    "registry": "0x52C3F9c3fD72ccf82Aa6a4e9d1C4543dE7618414",
-    "futureVaultFactory": "0x1F2D0BF56FcaA054555214f2B1D5ee05663AB13F",
-    "futureVault": "0xE4Dc4Da05290579e09493860448d0dca1b5259D6",
-    "curvePool": "0xdf2fc07002b1a9c00eb8518a38bb5d3606203435"
+    "registry": "0x28460580299d05DB0CC27FA7DA8d05b817b40b29",
+    "futureVaultFactory": "0x4F8e2A14F069e4aF9160Adba0156172C0F361a1a",
+    "futureVault": "0xE7bD3dE03fBf80e6E4F05c1Ffa03DC07B28EB648",
+    "curvePool": "0xd144B98d723FCc432419B73b6359C0B5C7aFF122"
 }
