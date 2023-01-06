@@ -9,7 +9,7 @@ import {
     test,
 } from "matchstick-as/assembly/index"
 
-import { Transfer } from "../../generated/templates/ERC20/ERC20Contract"
+import { Transfer } from "../../generated/templates/ERC20/ERC20"
 import { handleTransfer } from "../mappings/transfers"
 import {
     generateAccountAssetId,
@@ -50,7 +50,7 @@ const LP_TRANSFER_TRANSACTION_HASH = Address.fromString(
 )
 
 const PT_TRANSFER_TRANSACTION_HASH = Address.fromString(
-    "0x0000000000000000000000000000000005551111"
+    "0x0000000000000000000000000000000000000001"
 )
 
 const INVALID_TRANSFER_TRANSACTION_HASH = Address.fromString(

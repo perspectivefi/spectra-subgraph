@@ -209,10 +209,10 @@ export function handleDeposit(event: Deposit): void {
         )
 
         createTransaction({
-            transactionAddress: Address.fromBytes(event.transaction.hash),
+            transactionAddress: event.transaction.hash,
 
-            futureInTransaction: event.params.caller,
-            userInTransaction: event.params.owner,
+            futureInTransaction: Address.fromBytes(future.address),
+            userInTransaction: event.params.sender,
             poolInTransaction: ZERO_ADDRESS,
 
             amountsIn: [amountIn.id],
@@ -303,10 +303,10 @@ export function handleWithdraw(event: Withdraw): void {
         )
 
         createTransaction({
-            transactionAddress: Address.fromBytes(event.transaction.hash),
+            transactionAddress: event.transaction.hash,
 
-            futureInTransaction: event.params.caller,
-            userInTransaction: event.params.receiver,
+            futureInTransaction: Address.fromBytes(future.address),
+            userInTransaction: event.params.sender,
             poolInTransaction: ZERO_ADDRESS,
 
             amountsIn: [firstAmountIn.id, secondAmountIn.id],
@@ -433,10 +433,14 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     pool.liquidityToken = lpToken.id
     pool.totalLPSupply = ZERO_BI
 
-    let futureVaultFactory = FutureVaultFactory.load(event.address.toHex())
+    let future = Future.load(event.params.pt.toHex())!
+    pool.futureVault = future.address.toHex()
 
+    let futureVaultFactory = FutureVaultFactory.load(event.address.toHex())
     if (futureVaultFactory) {
-        pool.factory = futureVaultFactory.poolFactory!
+        if (futureVaultFactory.poolFactory) {
+            pool.factory = futureVaultFactory.poolFactory
+        }
         pool.futureVaultFactory = futureVaultFactory.id
     }
 

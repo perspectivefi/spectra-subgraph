@@ -191,7 +191,7 @@ type Future @entity {
     underlyingAsset: Asset!
     ibtAsset: Asset!
 
-#    pools: [Pool!]! @derivedFrom(field: "futureVault")
+    pools: [Pool!]! @derivedFrom(field: "futureVault")
 
     transactions: [Transaction!]! @derivedFrom(field: "futureInTransaction")
     futureDailyStats: [FutureDailyStats!]! @derivedFrom(field: "future")
@@ -318,6 +318,7 @@ type Pool @entity {
     futureAdminFeeDeadline: BigInt!
 
     futureVaultFactory: FutureVaultFactory
+    futureVault: Future!
     "to be able to follow all the pools created by a factory"
     factory: PoolFactory
 
@@ -325,7 +326,7 @@ type Pool @entity {
     assets: [AssetAmount!]
 
     transactionCount: Int!
-    transactions: [Transaction!]
+    transactions: [Transaction!] @derivedFrom(field: "poolInTransaction")
 
     totalLPSupply: BigInt!
     liquidityPositions: [AccountAsset!]! @derivedFrom(field: "pool")

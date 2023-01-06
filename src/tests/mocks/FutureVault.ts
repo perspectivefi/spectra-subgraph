@@ -43,14 +43,14 @@ export function mockFutureVaultFunctions(): void {
     ].forEach((addressMock) => {
         createMockedFunction(
             addressMock,
-            "EXPIRY",
-            "EXPIRY():(uint256)"
+            "expiry",
+            "expiry():(uint256)"
         ).returns([ethereum.Value.fromI32(1)])
 
         createMockedFunction(
             addressMock,
-            "MAX_PROTOCOL_FEE",
-            "MAX_PROTOCOL_FEE():(uint256)"
+            "maxProtocolFee",
+            "maxProtocolFee():(uint256)"
         ).returns([ethereum.Value.fromI32(11)])
 
         createMockedFunction(addressMock, "name", "name():(string)").returns([
