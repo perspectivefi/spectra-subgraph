@@ -112,7 +112,7 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             .div(BigInt.fromI32(10).pow(18 as u8))
 
         createTransaction({
-            transactionAddress: Address.fromBytes(event.transaction.hash),
+            transactionAddress: event.transaction.hash,
 
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: event.params.provider,
@@ -232,7 +232,7 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
         )
 
         createTransaction({
-            transactionAddress: Address.fromBytes(event.transaction.hash),
+            transactionAddress: event.transaction.hash,
 
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: event.params.provider,
@@ -354,7 +354,7 @@ export function handleTokenExchange(event: TokenExchange): void {
             .div(BigInt.fromI32(10).pow(assetOut.decimals as u8))
 
         createTransaction({
-            transactionAddress: Address.fromBytes(event.transaction.hash),
+            transactionAddress: event.transaction.hash,
 
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: Address.fromBytes(account.address),
@@ -489,7 +489,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             .div(BigInt.fromI32(10).pow(assetOut.decimals as u8))
 
         createTransaction({
-            transactionAddress: Address.fromBytes(event.transaction.hash),
+            transactionAddress: event.transaction.hash,
 
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: Address.fromString(accountAddress),

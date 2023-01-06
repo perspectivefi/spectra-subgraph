@@ -1,11 +1,11 @@
-import { Address, BigInt } from "@graphprotocol/graph-ts"
+import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 
 import { Future, Transaction } from "../../generated/schema"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 import { getAccount } from "./Account"
 
 class CreateTransactionParams {
-    transactionAddress: Address
+    transactionAddress: Bytes
 
     futureInTransaction: Address
     userInTransaction: Address
@@ -56,7 +56,9 @@ export function createTransaction(
 
     if (params.futureInTransaction !== ZERO_ADDRESS) {
         let future = Future.load(params.futureInTransaction.toHex())
-        transaction.futureInTransaction = future!.id
+        if (future) {
+            transaction.futureInTransaction = future.id
+        }
     }
 
     if (params.poolInTransaction !== ZERO_ADDRESS) {

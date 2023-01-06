@@ -9,7 +9,7 @@ import {
     test,
 } from "matchstick-as/assembly/index"
 
-import { Transfer } from "../../generated/templates/ERC20/ERC20Contract"
+import { Transfer } from "../../generated/templates/ERC20/ERC20"
 import { handleTransfer } from "../mappings/transfers"
 import {
     generateAccountAssetId,

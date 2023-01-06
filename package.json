@@ -4,8 +4,8 @@
     "repository": "https://github.com/APWine/apwine-v2-subgraph",
     "license": "MIT",
     "scripts": {
-        "create": "graph create apwine/apwine-v2-subgraph --node https://api.thegraph.com/deploy/",
         "create:local": "graph create apwine/apwine-v2-subgraph --node http://127.0.0.1:8020",
+        "create": "graph create apwine/apwine-v2-subgraph --node https://api.thegraph.com/deploy/",
         "codegen": "graph codegen",
         "build": "graph build",
         "deploy": "graph deploy apwine/apwine-v2-subgraph --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
