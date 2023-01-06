@@ -1,3 +1,4 @@
+import { Address } from "@graphprotocol/graph-ts"
 import { BigInt, ethereum } from "@graphprotocol/graph-ts/index"
 import { newMockEvent } from "matchstick-as/assembly/index"
 
@@ -26,25 +27,20 @@ import {
     FIRST_USER_MOCK,
     SECOND_FUTURE_VAULT_ADDRESS_MOCK,
 } from "../mocks/FutureVault"
+import { FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK } from "../mocks/FutureVaultFactory"
 
 export const SHARES_RETURN = 51
 export const IBT_DEPOSIT = 15
 
-export const emitFutureVaultDeployed = (): void => {
+export const emitFutureVaultDeployed = (futureVaultAddress: Address): void => {
     let futureVaultDeployedEvent = changetype<FutureVaultDeployed>(
         newMockEvent()
     )
+    futureVaultDeployedEvent.address = FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK
 
     let futureVaultParam = new ethereum.EventParam(
         "_futureVault",
-        ethereum.Value.fromAddress(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
-    )
-    futureVaultDeployedEvent.parameters = [futureVaultParam]
-    handleFutureVaultDeployed(futureVaultDeployedEvent)
-
-    futureVaultParam = new ethereum.EventParam(
-        "_futureVault",
-        ethereum.Value.fromAddress(SECOND_FUTURE_VAULT_ADDRESS_MOCK)
+        ethereum.Value.fromAddress(futureVaultAddress)
     )
     futureVaultDeployedEvent.parameters = [futureVaultParam]
     handleFutureVaultDeployed(futureVaultDeployedEvent)
@@ -57,9 +53,9 @@ export const emitDeposit = (timestamp: number = 0): Deposit => {
     if (timestamp) {
         depositEvent.block.timestamp = BigInt.fromI32(timestamp as i32)
     }
-    let callerParam = new ethereum.EventParam(
-        "caller",
-        ethereum.Value.fromAddress(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
+    let senderParam = new ethereum.EventParam(
+        "sender",
+        ethereum.Value.fromAddress(FIRST_USER_MOCK)
     )
 
     let ownerParam = new ethereum.EventParam(
@@ -78,7 +74,7 @@ export const emitDeposit = (timestamp: number = 0): Deposit => {
     )
 
     depositEvent.parameters = [
-        callerParam,
+        senderParam,
         ownerParam,
         assetsParam,
         sharesParam,
@@ -92,8 +88,7 @@ export const emiCurveFactoryChanged = (): void => {
     let curveFactoryChangedEvent = changetype<CurveFactoryChanged>(
         newMockEvent()
     )
-
-    curveFactoryChangedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+    curveFactoryChangedEvent.address = FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK
 
     let newFactoryParam = new ethereum.EventParam(
         "newFactory",
@@ -108,7 +103,7 @@ export const emiCurveFactoryChanged = (): void => {
 export const emitCurvePoolDeployed = (): void => {
     let curvePoolDeployedEvent = changetype<CurvePoolDeployed>(newMockEvent())
 
-    curvePoolDeployedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+    curvePoolDeployedEvent.address = FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK
     curvePoolDeployedEvent.transaction.hash = POOL_DEPLOY_TRANSACTION_HASH
 
     let poolAddressParam = new ethereum.EventParam(

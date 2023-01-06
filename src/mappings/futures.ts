@@ -14,7 +14,13 @@ import {
     CurvePoolDeployed,
     FutureVaultDeployed,
 } from "../../generated/FutureVaultFactory/FutureVaultFactory"
-import { FeeClaim, Future, Pool, PoolFactory } from "../../generated/schema"
+import {
+    FeeClaim,
+    Future,
+    FutureVaultFactory,
+    Pool,
+    PoolFactory,
+} from "../../generated/schema"
 import { ERC20 } from "../../generated/templates"
 import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
 import { getAccount } from "../entities/Account"
@@ -44,12 +50,13 @@ import {
     getUnclaimedFees,
 } from "../entities/FutureVault"
 import { createTransaction } from "../entities/Transaction"
-import { generateFeeClaimId } from "../utils/idGenerators"
+import { generateFeeClaimId } from "../utils"
 
 export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
     let futureVaultAddress = event.params._futureVault
     const newFuture = new Future(futureVaultAddress.toHex())
     newFuture.address = futureVaultAddress
+    newFuture.futureVaultFactory = event.address.toHex()
 
     newFuture.state = "ACTIVE"
     newFuture.createdAtTimestamp = event.block.timestamp
@@ -127,10 +134,10 @@ export function handleFeeClaimed(event: FeeClaimed): void {
         claim.createdAtTimestamp = event.block.timestamp
         claim.feeCollector = feeCollector.id
         claim.future = future.id
-        claim.amount = event.params._fees
+        claim.amount = event.params._feesInIBT
 
         future.totalCollectedFees = future.totalCollectedFees.plus(
-            event.params._fees
+            event.params._feesInIBT
         )
         future.unclaimedFees = ZERO_BI
 
@@ -202,10 +209,10 @@ export function handleDeposit(event: Deposit): void {
         )
 
         createTransaction({
-            transactionAddress: Address.fromBytes(event.transaction.hash),
+            transactionAddress: event.transaction.hash,
 
-            futureInTransaction: event.params.caller,
-            userInTransaction: event.params.owner,
+            futureInTransaction: Address.fromBytes(future.address),
+            userInTransaction: event.params.sender,
             poolInTransaction: ZERO_ADDRESS,
 
             amountsIn: [amountIn.id],
@@ -296,10 +303,10 @@ export function handleWithdraw(event: Withdraw): void {
         )
 
         createTransaction({
-            transactionAddress: Address.fromBytes(event.transaction.hash),
+            transactionAddress: event.transaction.hash,
 
-            futureInTransaction: event.params.caller,
-            userInTransaction: event.params.receiver,
+            futureInTransaction: Address.fromBytes(future.address),
+            userInTransaction: event.params.sender,
             poolInTransaction: ZERO_ADDRESS,
 
             amountsIn: [firstAmountIn.id, secondAmountIn.id],
@@ -356,14 +363,14 @@ export function handleYieldTransferred(event: YieldTransferred): void {
 }
 
 export function handleCurveFactoryChanged(event: CurveFactoryChanged): void {
-    let future = Future.load(event.address.toHex())
+    let futureVaultFactory = FutureVaultFactory.load(event.address.toHex())
 
-    if (future) {
+    if (futureVaultFactory) {
         let curveFactoryAddress = event.params.newFactory
         let curveFactory = new PoolFactory(curveFactoryAddress.toHex())
         curveFactory.createdAtTimestamp = event.block.timestamp
         curveFactory.address = curveFactoryAddress
-        curveFactory.future = future.id
+        curveFactory.futureVaultFactory = futureVaultFactory.id
         curveFactory.ammProvider = "CURVE"
         curveFactory.admin = getPoolFactoryAdmin(curveFactoryAddress)
         let factoryFeeReceiver = getAccount(
@@ -373,11 +380,11 @@ export function handleCurveFactoryChanged(event: CurveFactoryChanged): void {
         curveFactory.feeReceiver = factoryFeeReceiver.id
         curveFactory.save()
 
-        future.poolFactory = curveFactory.id
-        future.save()
+        futureVaultFactory.poolFactory = curveFactory.id
+        futureVaultFactory.save()
     } else {
         log.warning(
-            "CurveFactoryChanged event call for not existing Future {}",
+            "CurveFactoryChanged event call for not existing FutureVaultFactory {}",
             [event.address.toHex()]
         )
     }
@@ -424,12 +431,18 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
         "LP"
     )
     pool.liquidityToken = lpToken.id
+    pool.totalLPSupply = ZERO_BI
 
-    let future = Future.load(event.address.toHex())!
-    pool.factory = future.poolFactory!
+    let future = Future.load(event.params.pt.toHex())!
     pool.futureVault = future.address.toHex()
 
-    pool.totalLPSupply = ZERO_BI
+    let futureVaultFactory = FutureVaultFactory.load(event.address.toHex())
+    if (futureVaultFactory) {
+        if (futureVaultFactory.poolFactory) {
+            pool.factory = futureVaultFactory.poolFactory
+        }
+        pool.futureVaultFactory = futureVaultFactory.id
+    }
 
     pool.save()
 

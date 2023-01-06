@@ -17,7 +17,7 @@ import {
     RemoveLiquidity,
     RemoveLiquidityOne,
     TokenExchange,
-} from "../../generated/AMM/CurvePool"
+} from "../../generated/CurvePool/CurvePool"
 import { DAY_ID_0 } from "../constants"
 import {
     handleAddLiquidity,
@@ -40,6 +40,7 @@ import {
     emitCurvePoolDeployed,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
+import { emitRegistryUpdate } from "./events/FutureVaultFactory"
 import {
     mockCurvePoolFunctions,
     POOL_ADD_LIQUIDITY_TRANSACTION_HASH,
@@ -66,6 +67,7 @@ import {
     IBT_ADDRESS_MOCK,
     mockFutureVaultFunctions,
 } from "./mocks/FutureVault"
+import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory"
 import {
     ASSET_AMOUNT_ENTITY,
     FEE_CLAIM_ENTITY,
@@ -102,12 +104,15 @@ describe("handleAddLiquidity()", () => {
         clearStore()
 
         mockERC20Functions()
+        mockFutureVaultFactoryFunctions()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
         mockMetaPoolFactoryFunctions()
         mockCurvePoolFunctions()
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
-        emitFutureVaultDeployed()
+
+        emitRegistryUpdate("Test")
+        emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChanged()
         emitCurvePoolDeployed()
 

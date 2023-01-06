@@ -7,13 +7,13 @@ import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 export function getExpirationTimestamp(futureVault: Address): BigInt {
     const futureContract = FutureVault.bind(futureVault)
 
-    let expiryCall = futureContract.try_EXPIRY()
+    let expiryCall = futureContract.try_expiry()
 
     if (!expiryCall.reverted) {
         return expiryCall.value
     }
 
-    log.warning("EXPIRY() call reverted for {}", [futureVault.toHex()])
+    log.warning("expiry() call reverted for {}", [futureVault.toHex()])
 
     return ZERO_BI
 }
@@ -21,15 +21,13 @@ export function getExpirationTimestamp(futureVault: Address): BigInt {
 export function getMaxFeeRate(futureVault: Address): BigInt {
     const futureContract = FutureVault.bind(futureVault)
 
-    let maxProtocolFeeCall = futureContract.try_MAX_PROTOCOL_FEE()
+    let maxProtocolFeeCall = futureContract.try_maxProtocolFee()
 
     if (!maxProtocolFeeCall.reverted) {
         return maxProtocolFeeCall.value
     }
 
-    log.warning("MAX_PROTOCOL_FEE() call reverted for {}", [
-        futureVault.toHex(),
-    ])
+    log.warning("maxProtocolFee() call reverted for {}", [futureVault.toHex()])
 
     return ZERO_BI
 }
@@ -37,13 +35,15 @@ export function getMaxFeeRate(futureVault: Address): BigInt {
 export function getUnclaimedFees(futureVault: Address): BigInt {
     const futureContract = FutureVault.bind(futureVault)
 
-    let unclaimedFeesCall = futureContract.try_unclaimedFees()
+    let unclaimedFeesCall = futureContract.try_unclaimedFeesInIBT()
 
     if (!unclaimedFeesCall.reverted) {
         return unclaimedFeesCall.value
     }
 
-    log.warning("unclaimedFees() call reverted for {}", [futureVault.toHex()])
+    log.warning("unclaimedFeesInIBT() call reverted for {}", [
+        futureVault.toHex(),
+    ])
 
     return ZERO_BI
 }

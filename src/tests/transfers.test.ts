@@ -9,7 +9,7 @@ import {
     test,
 } from "matchstick-as/assembly/index"
 
-import { Transfer } from "../../generated/templates/ERC20/ERC20Contract"
+import { Transfer } from "../../generated/templates/ERC20/ERC20"
 import { handleTransfer } from "../mappings/transfers"
 import {
     generateAccountAssetId,
@@ -21,6 +21,7 @@ import {
     emitCurvePoolDeployed,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
+import { emitRegistryUpdate } from "./events/FutureVaultFactory"
 import {
     mockCurvePoolFunctions,
     POOL_LP_ADDRESS_MOCK,
@@ -33,7 +34,11 @@ import {
     STANDARD_DECIMALS_MOCK,
 } from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
-import { mockFutureVaultFunctions } from "./mocks/FutureVault"
+import {
+    FIRST_FUTURE_VAULT_ADDRESS_MOCK,
+    mockFutureVaultFunctions,
+} from "./mocks/FutureVault"
+import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory"
 import {
     ACCOUNT_ASSET_ENTITY,
     ACCOUNT_ENTITY,
@@ -45,7 +50,7 @@ const LP_TRANSFER_TRANSACTION_HASH = Address.fromString(
 )
 
 const PT_TRANSFER_TRANSACTION_HASH = Address.fromString(
-    "0x0000000000000000000000000000000005551111"
+    "0x0000000000000000000000000000000000000001"
 )
 
 const INVALID_TRANSFER_TRANSACTION_HASH = Address.fromString(
@@ -77,12 +82,14 @@ describe("handleTransfer()", () => {
 
         mockERC20Functions()
 
+        mockFutureVaultFactoryFunctions()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
         mockMetaPoolFactoryFunctions()
         mockCurvePoolFunctions()
 
-        emitFutureVaultDeployed()
+        emitRegistryUpdate("Test")
+        emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChanged()
         emitCurvePoolDeployed()
 

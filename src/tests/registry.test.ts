@@ -11,6 +11,8 @@ import {
 
 import { RegistryUpdate } from "../../generated/Registry/Registry"
 import { handleRegistryUpdate } from "../mappings/registry"
+import { emitRegistryUpdate } from "./events/FutureVaultFactory"
+import { FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK } from "./mocks/FutureVaultFactory"
 import {
     FIRST_CONTRACT_NAME,
     SECOND_CONTRACT_NAME,
@@ -24,43 +26,8 @@ describe("handleRegistryUpdate()", () => {
     beforeEach(() => {
         clearStore()
 
-        // first event
-        let registryUpdateEvent = changetype<RegistryUpdate>(newMockEvent())
-
-        let firstNameParam = new ethereum.EventParam(
-            "_contractName",
-            ethereum.Value.fromString(FIRST_CONTRACT_NAME)
-        )
-
-        let newAddressParam = new ethereum.EventParam(
-            "_new",
-            ethereum.Value.fromAddress(NEW_ADDRESS_MOCK)
-        )
-
-        let oldAddressParam = new ethereum.EventParam(
-            "_old",
-            ethereum.Value.fromAddress(OLD_ADDRESS_MOCK)
-        )
-
-        registryUpdateEvent.parameters = [
-            firstNameParam,
-            oldAddressParam,
-            newAddressParam,
-        ]
-        handleRegistryUpdate(registryUpdateEvent)
-
-        // // second event
-        let secondNameParam = new ethereum.EventParam(
-            "_contractName",
-            ethereum.Value.fromString(SECOND_CONTRACT_NAME)
-        )
-
-        registryUpdateEvent.parameters = [
-            secondNameParam,
-            oldAddressParam,
-            newAddressParam,
-        ]
-        handleRegistryUpdate(registryUpdateEvent)
+        emitRegistryUpdate(FIRST_CONTRACT_NAME)
+        emitRegistryUpdate(SECOND_CONTRACT_NAME)
     })
 
     test("Should create new FutureVaultFactory entity for every registry update with unique address", () => {
@@ -70,13 +37,13 @@ describe("handleRegistryUpdate()", () => {
     test("Should should save new address and add the old one to the entity", () => {
         assert.fieldEquals(
             FUTURE_VAULT_FACTORY_ENTITY,
-            NEW_ADDRESS_MOCK.toHex(),
+            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
             "address",
-            NEW_ADDRESS_MOCK.toHexString()
+            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHexString()
         )
         assert.fieldEquals(
             FUTURE_VAULT_FACTORY_ENTITY,
-            NEW_ADDRESS_MOCK.toHex(),
+            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
             "old",
             OLD_ADDRESS_MOCK.toHexString()
         )

@@ -16,6 +16,7 @@ import {
     emitDeposit,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
+import { emitRegistryUpdate } from "./events/FutureVaultFactory"
 import { mockCurvePoolFunctions } from "./mocks/CurvePool"
 import { mockMetaPoolFactoryFunctions } from "./mocks/CurvePoolFactory"
 import { mockERC20Functions } from "./mocks/ERC20"
@@ -26,6 +27,7 @@ import {
     IBT_ADDRESS_MOCK,
     mockFutureVaultFunctions,
 } from "./mocks/FutureVault"
+import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory"
 import { assertAlmostEquals } from "./utils/asserts"
 import { FUTURE_DAILY_STATS_ENTITY } from "./utils/entities"
 
@@ -33,12 +35,15 @@ describe("APY Computations on futureDailyStats", () => {
     beforeAll(() => {
         // Mock the deployment of the whole stack
         clearStore()
+        mockFutureVaultFactoryFunctions()
         mockERC20Functions()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
         mockMetaPoolFactoryFunctions()
         mockCurvePoolFunctions()
-        emitFutureVaultDeployed()
+
+        emitRegistryUpdate("Test")
+        emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChanged()
         emitCurvePoolDeployed()
     })

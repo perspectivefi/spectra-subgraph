@@ -1,11 +1,11 @@
 import { Address, log } from "@graphprotocol/graph-ts"
 
-import { ERC20Contract } from "../../generated/ChainlinkAggregatorDataSource/ERC20Contract"
+import { ERC20 } from "../../generated/ChainlinkAggregatorDataSource/ERC20"
 
 const UNKNOWN = "Unknown"
 
 export function getERC20Name(address: Address): string {
-    let erc20Contract = ERC20Contract.bind(address)
+    let erc20Contract = ERC20.bind(address)
 
     let nameCall = erc20Contract.try_name()
 
@@ -20,7 +20,7 @@ export function getERC20Name(address: Address): string {
 }
 
 export function getERC20Symbol(address: Address): string {
-    let erc20Contract = ERC20Contract.bind(address)
+    let erc20Contract = ERC20.bind(address)
 
     let symbolCall = erc20Contract.try_symbol()
 
@@ -35,7 +35,7 @@ export function getERC20Symbol(address: Address): string {
 }
 
 export function getERC20Decimals(address: Address): i32 {
-    let erc20Contract = ERC20Contract.bind(address)
+    let erc20Contract = ERC20.bind(address)
 
     let decimalsCall = erc20Contract.try_decimals()
 

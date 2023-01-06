@@ -29,7 +29,7 @@ import {
     generateFeeClaimId,
     generateAccountAssetId,
     generateFutureDailyStatsId,
-} from "../utils/idGenerators"
+} from "../utils"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
@@ -38,6 +38,7 @@ import {
     IBT_DEPOSIT,
     SHARES_RETURN,
 } from "./events/FutureVault"
+import { emitRegistryUpdate } from "./events/FutureVaultFactory"
 import { mockCurvePoolFunctions, POOL_LP_ADDRESS_MOCK } from "./mocks/CurvePool"
 import {
     FIRST_POOL_ADDRESS_MOCK,
@@ -59,9 +60,14 @@ import {
     FIRST_USER_MOCK,
     IBT_ADDRESS_MOCK,
     mockFutureVaultFunctions,
+    SECOND_FUTURE_VAULT_ADDRESS_MOCK,
     WITHDRAW_TRANSACTION_HASH,
     YT_ADDRESS_MOCK,
 } from "./mocks/FutureVault"
+import {
+    FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK,
+    mockFutureVaultFactoryFunctions,
+} from "./mocks/FutureVaultFactory"
 import {
     ACCOUNT_ENTITY,
     ACCOUNT_ASSET_ENTITY,
@@ -73,6 +79,7 @@ import {
     POOL_ENTITY,
     POOL_FACTORY_ENTITY,
     TRANSACTION_ENTITY,
+    FUTURE_VAULT_FACTORY_ENTITY,
 } from "./utils/entities"
 
 const COLLECTED_FEE = 50
@@ -81,12 +88,13 @@ describe("handleFutureVaultDeployed()", () => {
     beforeAll(() => {
         clearStore()
         mockERC20Functions()
+        mockFutureVaultFactoryFunctions()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
-    })
 
-    beforeEach(() => {
-        emitFutureVaultDeployed()
+        emitRegistryUpdate("Test")
+        emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
+        emitFutureVaultDeployed(SECOND_FUTURE_VAULT_ADDRESS_MOCK)
     })
 
     test("Should create new Future on every deployment", () => {
@@ -146,6 +154,29 @@ describe("handleFutureVaultDeployed()", () => {
             ETH_ADDRESS_MOCK
         )
         assert.fieldEquals(ASSET_ENTITY, ETH_ADDRESS_MOCK, "type", "UNDERLYING")
+    })
+
+    test("Should assign created future to correct future vault factory", () => {
+        assert.fieldEquals(
+            FUTURE_ENTITY,
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+            "futureVaultFactory",
+            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex()
+        )
+
+        assert.fieldEquals(
+            FUTURE_ENTITY,
+            SECOND_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+            "futureVaultFactory",
+            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex()
+        )
+
+        assert.fieldEquals(
+            FUTURE_VAULT_FACTORY_ENTITY,
+            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
+            "deployedFutures",
+            `[${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}, ${SECOND_FUTURE_VAULT_ADDRESS_MOCK.toHex()}]`
+        )
     })
 })
 
@@ -460,9 +491,9 @@ describe("handleWithdraw()", () => {
         withdrawEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
         withdrawEvent.transaction.hash = WITHDRAW_TRANSACTION_HASH
 
-        let callerParam = new ethereum.EventParam(
-            "caller",
-            ethereum.Value.fromAddress(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
+        let senderParam = new ethereum.EventParam(
+            "sender",
+            ethereum.Value.fromAddress(FIRST_USER_MOCK)
         )
 
         let receiverParam = new ethereum.EventParam(
@@ -486,7 +517,7 @@ describe("handleWithdraw()", () => {
         )
 
         withdrawEvent.parameters = [
-            callerParam,
+            senderParam,
             receiverParam,
             ownerParam,
             assetsParam,
@@ -660,10 +691,10 @@ describe("handleCurveFactoryChanged()", () => {
         )
     })
 
-    test("Should set new curve factory address for the future vault", () => {
+    test("Should set new curve factory address for the future vault factory", () => {
         assert.fieldEquals(
-            FUTURE_ENTITY,
-            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+            FUTURE_VAULT_FACTORY_ENTITY,
+            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
             "poolFactory",
             POOL_FACTORY_ADDRESS_MOCK.toHex()
         )
@@ -736,17 +767,17 @@ describe("handleCurvePoolDeployed()", () => {
         )
     })
 
-    test("Should assign created pool to correct future vault", () => {
+    test("Should assign created pool to correct future vault factory", () => {
         assert.fieldEquals(
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
-            "futureVault",
-            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+            "futureVaultFactory",
+            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex()
         )
         assert.fieldEquals(
-            FUTURE_ENTITY,
-            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
-            "pools",
+            FUTURE_VAULT_FACTORY_ENTITY,
+            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
+            "deployedPools",
             `[${FIRST_POOL_ADDRESS_MOCK.toHex()}]`
         )
     })
