@@ -394,7 +394,7 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     let poolAddress = event.params.poolAddress
     let pool = new Pool(poolAddress.toHex())
 
-    let ibtAsset = getAssetAmount(
+    let ibtAssetAmount = getAssetAmount(
         event.transaction.hash,
         event.params.ibt,
         ZERO_BI,
@@ -402,7 +402,7 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
         event.block.timestamp
     )
 
-    let ptAsset = getAssetAmount(
+    let ptAssetAmount = getAssetAmount(
         event.transaction.hash,
         event.params.pt,
         ZERO_BI,
@@ -421,20 +421,38 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     pool.futureAdminFeeDeadline = ZERO_BI
     pool.totalClaimedAdminFees = ZERO_BI
 
-    pool.assets = [ibtAsset.id, ptAsset.id]
+    pool.assets = [ibtAssetAmount.id, ptAssetAmount.id]
 
     pool.transactionCount = 0
 
+    let future = Future.load(event.params.pt.toHex())!
+    pool.futureVault = future.address.toHex()
+
+    // Asset - Future relation
     let lpToken = getAsset(
         getPoolLPToken(poolAddress).toHex(),
         event.block.timestamp,
         "LP"
     )
+    lpToken.futureVault = future.address.toHex()
+    lpToken.save()
+
     pool.liquidityToken = lpToken.id
     pool.totalLPSupply = ZERO_BI
 
-    let future = Future.load(event.params.pt.toHex())!
-    pool.futureVault = future.address.toHex()
+    // PT Asset - Future relation
+    let ptToken = getAsset(event.params.pt.toHex(), event.block.timestamp, "PT")
+    ptToken.futureVault = future.address.toHex()
+    ptToken.save()
+
+    // YT Asset - Future relation
+    let ytToken = getAsset(
+        getYT(Address.fromBytes(future.address)).toHex(),
+        event.block.timestamp,
+        "YT"
+    )
+    ytToken.futureVault = future.address.toHex()
+    ytToken.save()
 
     let futureVaultFactory = FutureVaultFactory.load(event.address.toHex())
     if (futureVaultFactory) {
@@ -453,8 +471,5 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     ERC20.create(event.params.pt)
 
     // Create dynamic data source for YT token events
-    const yt = getYT(event.address)
-    let ytToken = getAsset(yt.toHex(), event.block.timestamp, "YT")
-    ytToken.save()
-    ERC20.create(yt)
+    ERC20.create(Address.fromBytes(ytToken.address))
 }
