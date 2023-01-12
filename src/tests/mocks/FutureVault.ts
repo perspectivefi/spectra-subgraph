@@ -2,6 +2,7 @@ import { Address, Bytes, ethereum } from "@graphprotocol/graph-ts"
 import { createMockedFunction } from "matchstick-as/assembly/index"
 
 import { ETH_ADDRESS_MOCK } from "./ERC20"
+import { FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK } from "./FutureVaultFactory"
 
 export const FIRST_FUTURE_VAULT_ADDRESS_MOCK = Address.fromString(
     "0x0000000000000000000000000000000000000001"
@@ -39,6 +40,7 @@ export function mockFutureVaultFunctions(): void {
     ;[
         FIRST_FUTURE_VAULT_ADDRESS_MOCK,
         SECOND_FUTURE_VAULT_ADDRESS_MOCK,
+        FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK,
         Address.fromString(ETH_ADDRESS_MOCK),
     ].forEach((addressMock) => {
         createMockedFunction(

@@ -113,7 +113,7 @@ export function getYT(address: Address): Address {
         return ytCall.value
     }
 
-    log.warning("ytCall() call reverted for {}", [address.toHex()])
+    log.warning("yt() call reverted for {}", [address.toHex()])
 
     return ZERO_ADDRESS
 }

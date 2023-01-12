@@ -767,6 +767,15 @@ describe("handleCurvePoolDeployed()", () => {
         )
     })
 
+    test("Should create Asset entity for yt token used in the pool", () => {
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            YT_ADDRESS_MOCK.toHex(),
+            "address",
+            YT_ADDRESS_MOCK.toHex()
+        )
+    })
+
     test("Should assign created pool to correct future vault factory", () => {
         assert.fieldEquals(
             POOL_ENTITY,

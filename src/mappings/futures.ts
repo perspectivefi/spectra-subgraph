@@ -451,4 +451,10 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
 
     // Create dynamic data source for PT token events
     ERC20.create(event.params.pt)
+
+    // Create dynamic data source for YT token events
+    const yt = getYT(event.address)
+    let ytToken = getAsset(yt.toHex(), event.block.timestamp, "YT")
+    ytToken.save()
+    ERC20.create(yt)
 }
