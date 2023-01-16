@@ -149,6 +149,7 @@ class Asset {
     + price
     + type
     chainlinkPriceFeed
+    + futureVault
     + underlying
     + fytTokenDetails
     + lpTokenDetails
@@ -233,6 +234,7 @@ FutureVaultFactory ---> Pool::futureVaultFactory : futureVaultFactory
 FutureVaultFactory ---> Future::futureVaultFactory : futureVaultFactory
 
 Future ---> FutureVaultFactory::deployedFutures : deployedFutures
+Future ---> Asset::futureVault : futureVault
 
 Pool ---> AccountAsset : pool
 Pool ---> FutureVaultFactory::deployedPools : deployedPools

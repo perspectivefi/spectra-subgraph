@@ -87,6 +87,30 @@ export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
     newFuture.ibtAsset = ibtAddress.toHex()
 
     newFuture.save()
+
+    // PT Asset - Future relation
+    let ptToken = getAsset(
+        event.params._futureVault.toHex(),
+        event.block.timestamp,
+        "PT"
+    )
+    ptToken.futureVault = event.params._futureVault.toHex()
+    ptToken.save()
+
+    // YT Asset - Future relation
+    let ytToken = getAsset(
+        getYT(event.params._futureVault).toHex(),
+        event.block.timestamp,
+        "YT"
+    )
+    ytToken.futureVault = event.params._futureVault.toHex()
+    ytToken.save()
+
+    // Create dynamic data source for PT token events
+    ERC20.create(event.params._futureVault)
+
+    // Create dynamic data source for YT token events
+    ERC20.create(Address.fromBytes(ytToken.address))
 }
 
 export function handlePaused(event: Paused): void {
@@ -394,7 +418,7 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     let poolAddress = event.params.poolAddress
     let pool = new Pool(poolAddress.toHex())
 
-    let ibtAsset = getAssetAmount(
+    let ibtAssetAmount = getAssetAmount(
         event.transaction.hash,
         event.params.ibt,
         ZERO_BI,
@@ -402,7 +426,7 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
         event.block.timestamp
     )
 
-    let ptAsset = getAssetAmount(
+    let ptAssetAmount = getAssetAmount(
         event.transaction.hash,
         event.params.pt,
         ZERO_BI,
@@ -421,20 +445,24 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     pool.futureAdminFeeDeadline = ZERO_BI
     pool.totalClaimedAdminFees = ZERO_BI
 
-    pool.assets = [ibtAsset.id, ptAsset.id]
+    pool.assets = [ibtAssetAmount.id, ptAssetAmount.id]
 
     pool.transactionCount = 0
 
+    let future = Future.load(event.params.pt.toHex())!
+    pool.futureVault = future.address.toHex()
+
+    // Asset - Future relation
     let lpToken = getAsset(
         getPoolLPToken(poolAddress).toHex(),
         event.block.timestamp,
         "LP"
     )
+    lpToken.futureVault = future.address.toHex()
+    lpToken.save()
+
     pool.liquidityToken = lpToken.id
     pool.totalLPSupply = ZERO_BI
-
-    let future = Future.load(event.params.pt.toHex())!
-    pool.futureVault = future.address.toHex()
 
     let futureVaultFactory = FutureVaultFactory.load(event.address.toHex())
     if (futureVaultFactory) {
@@ -445,10 +473,4 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     }
 
     pool.save()
-
-    // Create dynamic data source for LP token events
-    ERC20.create(Address.fromBytes(lpToken.address))
-
-    // Create dynamic data source for PT token events
-    ERC20.create(event.params.pt)
 }
