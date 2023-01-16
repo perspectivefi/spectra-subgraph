@@ -15,7 +15,7 @@ jobs:
             - name: Generate config
               run: yarn generate-config:goerli
             - name: Codegen
-              run: yarn codegen
+              run: yarn codegen:goerli
             - name: Authorize TheGraph
               run: graph auth https://api.thegraph.com/deploy/ ${{secrets.THE_GRAPH_ACCESS_TOKEN}}
             - name: Deploy
