@@ -178,6 +178,24 @@ describe("handleFutureVaultDeployed()", () => {
             `[${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}, ${SECOND_FUTURE_VAULT_ADDRESS_MOCK.toHex()}]`
         )
     })
+
+    test("Should create Asset - Future for PT token", () => {
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            POOL_PT_ADDRESS_MOCK.toHex(),
+            "futureVault",
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+        )
+    })
+
+    test("Should create Asset - Future for YT token", () => {
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            YT_ADDRESS_MOCK.toHex(),
+            "futureVault",
+            SECOND_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+        )
+    })
 })
 
 describe("handlePaused()", () => {
@@ -788,26 +806,6 @@ describe("handleCurvePoolDeployed()", () => {
             FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
             "deployedPools",
             `[${FIRST_POOL_ADDRESS_MOCK.toHex()}]`
-        )
-    })
-
-    test("Should create Asset - Future for PT token", () => {
-        assert.fieldEquals(
-            ASSET_ENTITY,
-            POOL_PT_ADDRESS_MOCK.toHex(),
-            "futureVault",
-            // the same as FutureVault address
-            POOL_PT_ADDRESS_MOCK.toHex()
-        )
-    })
-
-    test("Should create Asset - Future for YT token", () => {
-        assert.fieldEquals(
-            ASSET_ENTITY,
-            YT_ADDRESS_MOCK.toHex(),
-            "futureVault",
-            // the same as FutureVault address
-            POOL_PT_ADDRESS_MOCK.toHex()
         )
     })
 

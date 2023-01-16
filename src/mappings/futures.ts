@@ -87,6 +87,30 @@ export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
     newFuture.ibtAsset = ibtAddress.toHex()
 
     newFuture.save()
+
+    // PT Asset - Future relation
+    let ptToken = getAsset(
+        event.params._futureVault.toHex(),
+        event.block.timestamp,
+        "PT"
+    )
+    ptToken.futureVault = event.params._futureVault.toHex()
+    ptToken.save()
+
+    // YT Asset - Future relation
+    let ytToken = getAsset(
+        getYT(event.params._futureVault).toHex(),
+        event.block.timestamp,
+        "YT"
+    )
+    ytToken.futureVault = event.params._futureVault.toHex()
+    ytToken.save()
+
+    // Create dynamic data source for PT token events
+    ERC20.create(event.params._futureVault)
+
+    // Create dynamic data source for YT token events
+    ERC20.create(Address.fromBytes(ytToken.address))
 }
 
 export function handlePaused(event: Paused): void {
@@ -440,20 +464,6 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     pool.liquidityToken = lpToken.id
     pool.totalLPSupply = ZERO_BI
 
-    // PT Asset - Future relation
-    let ptToken = getAsset(event.params.pt.toHex(), event.block.timestamp, "PT")
-    ptToken.futureVault = future.address.toHex()
-    ptToken.save()
-
-    // YT Asset - Future relation
-    let ytToken = getAsset(
-        getYT(Address.fromBytes(future.address)).toHex(),
-        event.block.timestamp,
-        "YT"
-    )
-    ytToken.futureVault = future.address.toHex()
-    ytToken.save()
-
     let futureVaultFactory = FutureVaultFactory.load(event.address.toHex())
     if (futureVaultFactory) {
         if (futureVaultFactory.poolFactory) {
@@ -466,10 +476,4 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
 
     // Create dynamic data source for LP token events
     ERC20.create(Address.fromBytes(lpToken.address))
-
-    // Create dynamic data source for PT token events
-    ERC20.create(event.params.pt)
-
-    // Create dynamic data source for YT token events
-    ERC20.create(Address.fromBytes(ytToken.address))
 }
