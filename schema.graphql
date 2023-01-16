@@ -58,7 +58,7 @@ type FYTTokenDetails @entity {
     createdAtTimestamp: BigInt!
     expirationAtTimestamp: BigInt!
 
-    generatedYield: BigDecimal!
+    generatedYield: BigDecimal
     generatedYieldValue: BigDecimal
 }
 
@@ -112,6 +112,9 @@ type Asset @entity {
 
     "on of the price feeds"
     chainlinkPriceFeed: ChainlinkAggregatorProxy
+
+    "for PT/YT/LP tokens"
+    futureVault: Future
 
     "in the case the asset is an IBT we create relation between this IBT and its underlying asset"
     underlying: Asset
