@@ -473,7 +473,4 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     }
 
     pool.save()
-
-    // Create dynamic data source for LP token events
-    ERC20.create(Address.fromBytes(lpToken.address))
 }
