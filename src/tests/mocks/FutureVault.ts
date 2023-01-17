@@ -73,9 +73,9 @@ export function mockFutureVaultFunctions(): void {
             ethereum.Value.fromAddress(Address.fromString(ETH_ADDRESS_MOCK)),
         ])
 
-        createMockedFunction(addressMock, "asset", "asset():(address)").returns(
-            [ethereum.Value.fromAddress(IBT_ADDRESS_MOCK)]
-        )
+        createMockedFunction(addressMock, "ibt", "ibt():(address)").returns([
+            ethereum.Value.fromAddress(IBT_ADDRESS_MOCK),
+        ])
 
         createMockedFunction(addressMock, "yt", "yt():(address)").returns([
             ethereum.Value.fromAddress(YT_ADDRESS_MOCK),
