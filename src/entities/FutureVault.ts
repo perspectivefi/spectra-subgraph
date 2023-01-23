@@ -93,13 +93,13 @@ export function getUnderlying(address: Address): Address {
 export function getIBT(address: Address): Address {
     const futureContract = FutureVault.bind(address)
 
-    let ibtCall = futureContract.try_asset()
+    let ibtCall = futureContract.try_ibt()
 
     if (!ibtCall.reverted) {
         return ibtCall.value
     }
 
-    log.warning("asset() call reverted for {}", [address.toHex()])
+    log.warning("ibt() call reverted for {}", [address.toHex()])
 
     return ZERO_ADDRESS
 }

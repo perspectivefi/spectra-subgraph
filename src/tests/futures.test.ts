@@ -141,6 +141,7 @@ describe("handleFutureVaultDeployed()", () => {
     })
 
     test("Should create Asset entities for FutureVault underlying and ibt", () => {
+        // Check IBT details are correct
         assert.fieldEquals(
             ASSET_ENTITY,
             IBT_ADDRESS_MOCK.toHex(),
@@ -153,7 +154,20 @@ describe("handleFutureVaultDeployed()", () => {
             "underlying",
             ETH_ADDRESS_MOCK
         )
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            IBT_ADDRESS_MOCK.toHex(),
+            "address",
+            IBT_ADDRESS_MOCK.toHex()
+        )
+        // Check Underlying details are correct
         assert.fieldEquals(ASSET_ENTITY, ETH_ADDRESS_MOCK, "type", "UNDERLYING")
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            ETH_ADDRESS_MOCK,
+            "address",
+            ETH_ADDRESS_MOCK
+        )
     })
 
     test("Should assign created future to correct future vault factory", () => {
