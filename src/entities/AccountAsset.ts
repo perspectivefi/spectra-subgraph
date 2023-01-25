@@ -2,7 +2,7 @@ import { Address, BigInt } from "@graphprotocol/graph-ts"
 
 import { AccountAsset } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
-import { generateAccountAssetId } from "../utils"
+import { AssetType, generateAccountAssetId } from "../utils"
 import { getAccount } from "./Account"
 import { getAsset } from "./Asset"
 

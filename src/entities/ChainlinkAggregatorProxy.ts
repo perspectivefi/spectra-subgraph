@@ -1,6 +1,7 @@
 import { BigInt } from "@graphprotocol/graph-ts"
 
 import { ChainlinkAggregatorProxy } from "../../generated/schema"
+import { AssetType } from "../utils"
 import { getAsset } from "./Asset"
 
 export function getChainlinkAggregatorProxy(
@@ -16,7 +17,7 @@ export function getChainlinkAggregatorProxy(
         // Mocked ETH as we have no pool creation event = no asset entity creation flow
         "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
         timestamp,
-        "UNDERLYING"
+        AssetType.UNDERLYING
     )
 
     proxy = createChainlinkAggregatorProxy(id, asset.address.toHex(), timestamp)
@@ -31,7 +32,7 @@ export function createChainlinkAggregatorProxy(
 ): ChainlinkAggregatorProxy {
     let proxy = new ChainlinkAggregatorProxy(id)
     proxy.aggregator = id
-    let asset = getAsset(assetAddress, timestamp, "UNDERLYING")
+    let asset = getAsset(assetAddress, timestamp, AssetType.UNDERLYING)
     proxy.asset = asset.id
 
     proxy.save()

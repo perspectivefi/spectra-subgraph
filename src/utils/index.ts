@@ -9,3 +9,4 @@ export {
     generateFeeClaimId,
     generateFutureDailyStatsId,
 } from "./idGenerators"
+export { default as AssetType } from "./AssetType"

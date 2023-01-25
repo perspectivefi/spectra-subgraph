@@ -19,7 +19,7 @@ import { getAssetAmount } from "../entities/AssetAmount"
 import { getPoolLPToken } from "../entities/CurvePool"
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import { createTransaction } from "../entities/Transaction"
-import { generateFeeClaimId } from "../utils"
+import { AssetType, generateFeeClaimId } from "../utils"
 import { toPrecision } from "../utils/toPrecision"
 
 const FEES_PRECISION = 10
@@ -45,7 +45,7 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             event.transaction.hash,
             Address.fromString(ibtAddress),
             event.params.token_amounts[0],
-            "IBT",
+            AssetType.IBT,
             eventTimestamp
         )
 
@@ -54,14 +54,14 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             ibtAddress,
             ZERO_BI.minus(event.params.token_amounts[0]),
             eventTimestamp,
-            "IBT"
+            AssetType.IBT
         )
 
         let ptAmountIn = getAssetAmount(
             event.transaction.hash,
             Address.fromString(ptAddress),
             event.params.token_amounts[1],
-            "PT",
+            AssetType.PT,
             eventTimestamp
         )
 
@@ -70,7 +70,7 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             ptAddress,
             ZERO_BI.minus(event.params.token_amounts[1]),
             eventTimestamp,
-            "PT"
+            AssetType.PT
         )
 
         let lpTokenDiff = event.params.token_supply.minus(pool.totalLPSupply)
@@ -80,7 +80,7 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             event.transaction.hash,
             lpTokenAddress,
             lpTokenDiff,
-            "LP",
+            AssetType.LP,
             eventTimestamp
         )
 
@@ -89,7 +89,7 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             lpTokenAddress.toHex(),
             lpTokenDiff,
             eventTimestamp,
-            "LP"
+            AssetType.LP
         )
 
         lpPosition.pool = pool.id
@@ -173,7 +173,7 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             event.transaction.hash,
             lpTokenAddress,
             lpTokenDiff,
-            "LP",
+            AssetType.LP,
             eventTimestamp
         )
 
@@ -182,7 +182,7 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             lpTokenAddress.toHex(),
             ZERO_BI.minus(lpTokenDiff),
             eventTimestamp,
-            "LP"
+            AssetType.LP
         )
 
         if (!lpPosition.pool) {
@@ -203,7 +203,7 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             event.transaction.hash,
             Address.fromString(ibtAddress),
             event.params.token_amounts[0],
-            "IBT",
+            AssetType.IBT,
             eventTimestamp
         )
 
@@ -212,14 +212,14 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             ibtAddress,
             event.params.token_amounts[0],
             event.block.timestamp,
-            "IBT"
+            AssetType.IBT
         )
 
         let ptAmountOut = getAssetAmount(
             event.transaction.hash,
             Address.fromString(ptAddress),
             event.params.token_amounts[1],
-            "PT",
+            AssetType.PT,
             eventTimestamp
         )
 
@@ -228,7 +228,7 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             ptAddress,
             event.params.token_amounts[1],
             event.block.timestamp,
-            "PT"
+            AssetType.PT
         )
 
         createTransaction({
@@ -293,7 +293,7 @@ export function handleTokenExchange(event: TokenExchange): void {
             event.transaction.hash,
             Address.fromString(poolAssetInAmount.asset),
             event.params.tokens_sold,
-            event.params.sold_id.equals(ZERO_BI) ? "IBT" : "PT",
+            event.params.sold_id.equals(ZERO_BI) ? AssetType.IBT : AssetType.PT,
             eventTimestamp
         )
 
@@ -302,14 +302,16 @@ export function handleTokenExchange(event: TokenExchange): void {
             poolAssetInAmount.asset,
             ZERO_BI.minus(event.params.tokens_sold),
             event.block.timestamp,
-            event.params.sold_id.equals(ZERO_BI) ? "IBT" : "PT"
+            event.params.sold_id.equals(ZERO_BI) ? AssetType.IBT : AssetType.PT
         )
 
         let amountOut = getAssetAmount(
             event.transaction.hash,
             Address.fromString(poolAssetOutAmount.asset),
             event.params.tokens_bought,
-            event.params.bought_id.equals(ZERO_BI) ? "PT" : "IBT",
+            event.params.bought_id.equals(ZERO_BI)
+                ? AssetType.PT
+                : AssetType.IBT,
             eventTimestamp
         )
 
@@ -318,13 +320,17 @@ export function handleTokenExchange(event: TokenExchange): void {
             poolAssetOutAmount.asset,
             event.params.tokens_bought,
             event.block.timestamp,
-            event.params.bought_id.equals(ZERO_BI) ? "PT" : "IBT"
+            event.params.bought_id.equals(ZERO_BI)
+                ? AssetType.PT
+                : AssetType.IBT
         )
 
         let assetOut = getAsset(
             poolAssetOutAmount.asset,
             eventTimestamp,
-            event.params.bought_id.equals(ZERO_BI) ? "PT" : "IBT"
+            event.params.bought_id.equals(ZERO_BI)
+                ? AssetType.PT
+                : AssetType.IBT
         )
 
         let feeWithBoughtTokenPrecision = toPrecision(
@@ -415,7 +421,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             event.transaction.hash,
             lpTokenAddress,
             event.params.token_amount,
-            "LP",
+            AssetType.LP,
             eventTimestamp
         )
 
@@ -424,7 +430,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             lpTokenAddress.toHex(),
             ZERO_BI.minus(event.params.token_amount),
             eventTimestamp,
-            "LP"
+            AssetType.LP
         )
 
         if (!lpPosition.pool) {
@@ -437,8 +443,8 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
         let withdrawnTokenAddress = poolWithdrawnAssetAmount.asset
 
         let withdrawnAssetType = event.params.coin_index.equals(ZERO_BI)
-            ? "IBT"
-            : "PT"
+            ? AssetType.IBT
+            : AssetType.PT
 
         let withdrawnAmountOut = getAssetAmount(
             event.transaction.hash,
