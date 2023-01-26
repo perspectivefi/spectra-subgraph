@@ -67,6 +67,8 @@ dataSources:
           file: ./abis/FutureVault.json
         - name: ERC20
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+        - name: ERC4626
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
         - name: FeedRegistryInterface
           file: ./node_modules/@chainlink/contracts/abi/v0.8/FeedRegistryInterface.json
         - name: CurvePoolFactory
@@ -132,6 +134,8 @@ dataSources:
           file: ./abis/CurvePool.json
         - name: CurvePoolFactory
           file: ./abis/CurvePoolFactory.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
         - name: ERC4626
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
       eventHandlers:
@@ -164,6 +168,8 @@ templates:
       abis:
         - name: ERC20
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+        - name: ERC4626
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
