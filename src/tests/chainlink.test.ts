@@ -12,7 +12,11 @@ import {
 import { AnswerUpdated } from "../../generated/ChainlinkAggregatorDataSource/ChainlinkAggregatorProxyContract"
 import { handleAnswerUpdated } from "../mappings/chainlinkAggregator"
 import { generateAssetPriceId } from "../utils"
-import { ETH_ADDRESS_MOCK, mockERC20Balances, mockERC20Functions } from "./mocks/ERC20";
+import {
+    ETH_ADDRESS_MOCK,
+    mockERC20Balances,
+    mockERC20Functions,
+} from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import { ASSET_ENTITY } from "./utils/entities"
 
