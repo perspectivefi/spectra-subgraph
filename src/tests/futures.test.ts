@@ -2,7 +2,6 @@ import { BigInt, ethereum } from "@graphprotocol/graph-ts"
 import {
     assert,
     beforeAll,
-    beforeEach,
     clearStore,
     describe,
     newMockEvent,
@@ -49,7 +48,14 @@ import {
     POOL_IBT_ADDRESS_MOCK,
     POOL_PT_ADDRESS_MOCK,
 } from "./mocks/CurvePoolFactory"
-import { ETH_ADDRESS_MOCK, mockERC20Functions } from "./mocks/ERC20"
+import {
+    ETH_ADDRESS_MOCK,
+    mockERC20Balances,
+    mockERC20Functions,
+    POOL_IBT_BALANCE_MOCK,
+    POOL_PT_BALANCE_MOCK,
+    YT_BALANCE_MOCK,
+} from "./mocks/ERC20"
 import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
@@ -88,6 +94,7 @@ describe("handleFutureVaultDeployed()", () => {
     beforeAll(() => {
         clearStore()
         mockERC20Functions()
+        mockERC20Balances()
         mockFutureVaultFactoryFunctions()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
@@ -424,7 +431,7 @@ describe("handleDeposit()", () => {
             "1"
         )
     })
-    test("Should create three AccountAsset entities and reflect its balances changes", () => {
+    test("Should create three AccountAsset entities and fetch IBT token balance", () => {
         assert.entityCount(ACCOUNT_ASSET_ENTITY, 3)
 
         assert.fieldEquals(
@@ -434,7 +441,7 @@ describe("handleDeposit()", () => {
                 IBT_ADDRESS_MOCK.toHex()
             ),
             "balance",
-            ZERO_BI.minus(BigInt.fromI32(IBT_DEPOSIT)).toString()
+            POOL_IBT_BALANCE_MOCK.toString()
         )
 
         assert.fieldEquals(
@@ -444,7 +451,7 @@ describe("handleDeposit()", () => {
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
             ),
             "balance",
-            BigInt.fromI32(SHARES_RETURN).toString()
+            POOL_PT_BALANCE_MOCK.toString()
         )
 
         assert.fieldEquals(
@@ -454,7 +461,7 @@ describe("handleDeposit()", () => {
                 YT_ADDRESS_MOCK.toHex()
             ),
             "balance",
-            BigInt.fromI32(SHARES_RETURN).toString()
+            YT_BALANCE_MOCK.toString()
         )
     })
     test("Should assign three AccountAsset entities to Account entity used in the transaction", () => {
@@ -602,7 +609,7 @@ describe("handleWithdraw()", () => {
             )}]`
         )
     })
-    test("Should update createAccountAsset entities and reflect its changes in balances", () => {
+    test("Should update createAccountAsset entities and fetch IBT token balance", () => {
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
             generateAccountAssetId(
@@ -610,7 +617,7 @@ describe("handleWithdraw()", () => {
                 IBT_ADDRESS_MOCK.toHex()
             ),
             "balance",
-            ZERO_BI.toString()
+            POOL_IBT_BALANCE_MOCK.toString()
         )
 
         assert.fieldEquals(
@@ -620,7 +627,7 @@ describe("handleWithdraw()", () => {
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
             ),
             "balance",
-            ZERO_BI.toString()
+            POOL_PT_BALANCE_MOCK.toString()
         )
 
         assert.fieldEquals(
@@ -630,7 +637,7 @@ describe("handleWithdraw()", () => {
                 YT_ADDRESS_MOCK.toHex()
             ),
             "balance",
-            ZERO_BI.toString()
+            YT_BALANCE_MOCK.toString()
         )
     })
 
