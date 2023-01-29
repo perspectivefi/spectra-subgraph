@@ -1,11 +1,10 @@
-import { BigDecimal, BigInt, ethereum } from "@graphprotocol/graph-ts"
+import { BigInt, ethereum } from "@graphprotocol/graph-ts"
 import {
     describe,
     test,
     newMockEvent,
     clearStore,
     assert,
-    logStore,
     beforeAll,
 } from "matchstick-as/assembly/index"
 
@@ -48,7 +47,6 @@ import {
     POOL_EXCHANGE_TRANSACTION_HASH,
     POOL_LP_ADDRESS_MOCK,
     POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH,
-    POOL_ADMIN_FEE_MOCK,
 } from "./mocks/CurvePool"
 import {
     POOL_DEPLOY_TRANSACTION_HASH,
@@ -57,7 +55,14 @@ import {
     POOL_IBT_ADDRESS_MOCK,
     POOL_PT_ADDRESS_MOCK,
 } from "./mocks/CurvePoolFactory"
-import { STANDARD_DECIMALS_MOCK, mockERC20Functions } from "./mocks/ERC20"
+import {
+    STANDARD_DECIMALS_MOCK,
+    mockERC20Functions,
+    mockERC20Balances,
+    POOL_IBT_BALANCE_MOCK,
+    POOL_PT_BALANCE_MOCK,
+    POOL_LP_BALANCE_MOCK,
+} from "./mocks/ERC20"
 import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
@@ -104,6 +109,8 @@ describe("handleAddLiquidity()", () => {
         clearStore()
 
         mockERC20Functions()
+        mockERC20Balances()
+
         mockFutureVaultFactoryFunctions()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
@@ -259,19 +266,19 @@ describe("handleAddLiquidity()", () => {
             ACCOUNT_ASSET_ENTITY,
             accountIBTId,
             "balance",
-            ADD_LIQUIDITY_TOKEN_AMOUNTS[0].neg().toString()
+            POOL_IBT_BALANCE_MOCK.toString()
         )
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
             accountPTId,
             "balance",
-            ADD_LIQUIDITY_TOKEN_AMOUNTS[1].neg().toString()
+            POOL_PT_BALANCE_MOCK.toString()
         )
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
             accountLPId,
             "balance",
-            LP_TOTAL_SUPPLY.toString()
+            POOL_LP_BALANCE_MOCK.toString()
         )
     })
 
@@ -505,27 +512,19 @@ describe("handleRemoveLiquidity()", () => {
             ACCOUNT_ASSET_ENTITY,
             accountIBTId,
             "balance",
-            toPrecision(BigInt.fromI32(10), 0, STANDARD_DECIMALS_MOCK)
-                .neg()
-                .toString()
+            POOL_IBT_BALANCE_MOCK.toString()
         )
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
             accountPTId,
             "balance",
-            toPrecision(BigInt.fromI32(5), 0, STANDARD_DECIMALS_MOCK)
-                .neg()
-                .toString()
+            POOL_PT_BALANCE_MOCK.toString()
         )
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
             accountLPId,
             "balance",
-            toPrecision(
-                BigInt.fromI32(20),
-                0,
-                STANDARD_DECIMALS_MOCK
-            ).toString()
+            POOL_LP_BALANCE_MOCK.toString()
         )
     })
 
@@ -730,24 +729,23 @@ describe("handleTokenExchange()", () => {
             POOL_LP_ADDRESS_MOCK.toHex()
         )
 
-        assert.fieldEquals(ACCOUNT_ASSET_ENTITY, accountIBTId, "balance", "0")
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            accountIBTId,
+            "balance",
+            POOL_IBT_BALANCE_MOCK.toString()
+        )
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
             accountPTId,
             "balance",
-            toPrecision(BigInt.fromI32(10), 0, STANDARD_DECIMALS_MOCK)
-                .neg()
-                .toString()
+            POOL_PT_BALANCE_MOCK.toString()
         )
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
             accountLPId,
             "balance",
-            toPrecision(
-                BigInt.fromI32(20),
-                0,
-                STANDARD_DECIMALS_MOCK
-            ).toString()
+            POOL_LP_BALANCE_MOCK.toString()
         )
     })
 
@@ -970,21 +968,13 @@ describe("handleRemoveLiquidityOne()", () => {
             ACCOUNT_ASSET_ENTITY,
             accountPTId,
             "balance",
-            toPrecision(
-                BigInt.fromI32(40),
-                0,
-                STANDARD_DECIMALS_MOCK
-            ).toString()
+            POOL_PT_BALANCE_MOCK.toString()
         )
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
             accountLPId,
             "balance",
-            toPrecision(
-                BigInt.fromI32(15),
-                0,
-                STANDARD_DECIMALS_MOCK
-            ).toString()
+            POOL_LP_BALANCE_MOCK.toString()
         )
     })
 

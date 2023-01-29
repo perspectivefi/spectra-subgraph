@@ -19,7 +19,7 @@ import {
 import { emitRegistryUpdate } from "./events/FutureVaultFactory"
 import { mockCurvePoolFunctions } from "./mocks/CurvePool"
 import { mockMetaPoolFactoryFunctions } from "./mocks/CurvePoolFactory"
-import { mockERC20Functions } from "./mocks/ERC20"
+import { mockERC20Balances, mockERC20Functions } from "./mocks/ERC20"
 import { createConvertToAssetsCallMockFromString } from "./mocks/ERC4626"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
@@ -37,6 +37,7 @@ describe("APY Computations on futureDailyStats", () => {
         clearStore()
         mockFutureVaultFactoryFunctions()
         mockERC20Functions()
+        mockERC20Balances()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
         mockMetaPoolFactoryFunctions()

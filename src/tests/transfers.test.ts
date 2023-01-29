@@ -29,8 +29,10 @@ import {
 } from "./mocks/CurvePool"
 import { mockMetaPoolFactoryFunctions } from "./mocks/CurvePoolFactory"
 import {
-    ETH_ADDRESS_MOCK,
+    mockERC20Balances,
     mockERC20Functions,
+    POOL_LP_BALANCE_MOCK,
+    POOL_PT_BALANCE_MOCK,
     STANDARD_DECIMALS_MOCK,
 } from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
@@ -39,6 +41,7 @@ import {
     mockFutureVaultFunctions,
 } from "./mocks/FutureVault"
 import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory"
+import { RECEIVER_USER_MOCK } from "./mocks/Transaction"
 import {
     ACCOUNT_ASSET_ENTITY,
     ACCOUNT_ENTITY,
@@ -61,10 +64,6 @@ export const SENDER_USER_MOCK = Address.fromString(
     "0x1010000000000000000000000000000000000000"
 )
 
-export const RECEIVER_USER_MOCK = Address.fromString(
-    "0x2020000000000000000000000000000000000000"
-)
-
 export const LP_TRANSFER_VALUE = toPrecision(
     BigInt.fromI32(5),
     0,
@@ -81,6 +80,7 @@ describe("handleTransfer()", () => {
         clearStore()
 
         mockERC20Functions()
+        mockERC20Balances()
 
         mockFutureVaultFactoryFunctions()
         mockFutureVaultFunctions()
@@ -203,7 +203,7 @@ describe("handleTransfer()", () => {
                 POOL_LP_ADDRESS_MOCK.toHex()
             ),
             "balance",
-            LP_TRANSFER_VALUE.neg().toString()
+            POOL_LP_BALANCE_MOCK.toString()
         )
 
         assert.fieldEquals(
@@ -213,7 +213,7 @@ describe("handleTransfer()", () => {
                 POOL_LP_ADDRESS_MOCK.toHex()
             ),
             "balance",
-            LP_TRANSFER_VALUE.toString()
+            POOL_LP_BALANCE_MOCK.toString()
         )
 
         assert.fieldEquals(
@@ -223,7 +223,7 @@ describe("handleTransfer()", () => {
                 POOL_PT_ADDRESS_MOCK.toHex()
             ),
             "balance",
-            PT_TRANSFER_VALUE.neg().toString()
+            POOL_PT_BALANCE_MOCK.toString()
         )
 
         assert.fieldEquals(
@@ -233,7 +233,7 @@ describe("handleTransfer()", () => {
                 POOL_PT_ADDRESS_MOCK.toHex()
             ),
             "balance",
-            PT_TRANSFER_VALUE.toString()
+            POOL_PT_BALANCE_MOCK.toString()
         )
     })
 

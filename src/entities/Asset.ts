@@ -3,6 +3,7 @@ import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { FeedRegistryInterface } from "../../generated/ChainlinkAggregatorDataSource/FeedRegistryInterface"
 import { Asset } from "../../generated/schema"
 import { FEED_REGISTRY, USD_DENOMINATION } from "../constants"
+import { AssetType } from "../utils"
 import { createChainlinkAggregatorProxy } from "./ChainlinkAggregatorProxy"
 import { getERC20Decimals, getERC20Name, getERC20Symbol } from "./ERC20"
 
@@ -15,10 +16,14 @@ export function getAsset(
     if (asset) {
         return asset
     } else {
-        if (type === "UNDERLYING") {
+        if (type === AssetType.UNDERLYING) {
             asset = createUnderlyingAsset(address, timestamp, type)
         }
-        if (["IBT", "PT", "YT", "LP"].includes(type)) {
+        if (
+            [AssetType.IBT, AssetType.PT, AssetType.YT, AssetType.LP].includes(
+                type
+            )
+        ) {
             asset = createAsset(address, timestamp, type)
         }
     }

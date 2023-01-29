@@ -50,7 +50,7 @@ import {
     getUnclaimedFees,
 } from "../entities/FutureVault"
 import { createTransaction } from "../entities/Transaction"
-import { generateFeeClaimId } from "../utils"
+import { AssetType, generateFeeClaimId } from "../utils"
 
 export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
     let futureVaultAddress = event.params._futureVault
@@ -74,12 +74,16 @@ export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
     let underlyingAsset = getAsset(
         underlyingAddress.toHex(),
         event.block.timestamp,
-        "UNDERLYING"
+        AssetType.UNDERLYING
     )
     underlyingAsset.save()
 
     let ibtAddress = getIBT(futureVaultAddress)
-    let ibtAsset = getAsset(ibtAddress.toHex(), event.block.timestamp, "IBT")
+    let ibtAsset = getAsset(
+        ibtAddress.toHex(),
+        event.block.timestamp,
+        AssetType.IBT
+    )
     ibtAsset.underlying = underlyingAsset.id
     ibtAsset.save()
 
@@ -92,7 +96,7 @@ export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
     let ptToken = getAsset(
         event.params._futureVault.toHex(),
         event.block.timestamp,
-        "PT"
+        AssetType.PT
     )
     ptToken.futureVault = event.params._futureVault.toHex()
     ptToken.save()
@@ -101,7 +105,7 @@ export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
     let ytToken = getAsset(
         getYT(event.params._futureVault).toHex(),
         event.block.timestamp,
-        "YT"
+        AssetType.YT
     )
     ytToken.futureVault = event.params._futureVault.toHex()
     ytToken.save()
@@ -188,7 +192,7 @@ export function handleDeposit(event: Deposit): void {
             event.transaction.hash,
             ibtAddress,
             event.params.assets,
-            "IBT",
+            AssetType.IBT,
             event.block.timestamp
         )
 
@@ -197,14 +201,14 @@ export function handleDeposit(event: Deposit): void {
             ibtAddress.toHex(),
             ZERO_BI.minus(event.params.assets),
             event.block.timestamp,
-            "IBT"
+            AssetType.IBT
         )
 
         let firstAmountOut = getAssetAmount(
             event.transaction.hash,
             ptAddress,
             event.params.shares,
-            "PT",
+            AssetType.PT,
             event.block.timestamp
         )
 
@@ -213,14 +217,14 @@ export function handleDeposit(event: Deposit): void {
             ptAddress.toHex(),
             event.params.shares,
             event.block.timestamp,
-            "PT"
+            AssetType.PT
         )
 
         let secondAmountOut = getAssetAmount(
             event.transaction.hash,
             ytAddress,
             event.params.shares,
-            "YT",
+            AssetType.YT,
             event.block.timestamp
         )
 
@@ -229,7 +233,7 @@ export function handleDeposit(event: Deposit): void {
             ytAddress.toHex(),
             event.params.shares,
             event.block.timestamp,
-            "YT"
+            AssetType.YT
         )
 
         createTransaction({
@@ -282,7 +286,7 @@ export function handleWithdraw(event: Withdraw): void {
             event.transaction.hash,
             ptAddress,
             event.params.shares,
-            "PT",
+            AssetType.PT,
             event.block.timestamp
         )
 
@@ -291,14 +295,14 @@ export function handleWithdraw(event: Withdraw): void {
             ptAddress.toHex(),
             ZERO_BI.minus(event.params.shares),
             event.block.timestamp,
-            "PT"
+            AssetType.PT
         )
 
         let secondAmountIn = getAssetAmount(
             event.transaction.hash,
             ytAddress,
             event.params.shares,
-            "YT",
+            AssetType.YT,
             event.block.timestamp
         )
 
@@ -307,14 +311,14 @@ export function handleWithdraw(event: Withdraw): void {
             ytAddress.toHex(),
             ZERO_BI.minus(event.params.shares),
             event.block.timestamp,
-            "YT"
+            AssetType.YT
         )
 
         let amountOut = getAssetAmount(
             event.transaction.hash,
             ibtAddress,
             event.params.assets,
-            "IBT",
+            AssetType.IBT,
             event.block.timestamp
         )
 
@@ -323,7 +327,7 @@ export function handleWithdraw(event: Withdraw): void {
             ibtAddress.toHex(),
             event.params.assets,
             event.block.timestamp,
-            "IBT"
+            AssetType.IBT
         )
 
         createTransaction({
@@ -422,7 +426,7 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
         event.transaction.hash,
         event.params.ibt,
         ZERO_BI,
-        "IBT",
+        AssetType.IBT,
         event.block.timestamp
     )
 
@@ -430,7 +434,7 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
         event.transaction.hash,
         event.params.pt,
         ZERO_BI,
-        "PT",
+        AssetType.PT,
         event.block.timestamp
     )
 
@@ -456,7 +460,7 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     let lpToken = getAsset(
         getPoolLPToken(poolAddress).toHex(),
         event.block.timestamp,
-        "LP"
+        AssetType.LP
     )
     lpToken.futureVault = future.address.toHex()
     lpToken.save()
