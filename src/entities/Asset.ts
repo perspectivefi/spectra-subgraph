@@ -6,6 +6,7 @@ import { FEED_REGISTRY, USD_DENOMINATION } from "../constants"
 import { AssetType } from "../utils"
 import { createChainlinkAggregatorProxy } from "./ChainlinkAggregatorProxy"
 import { getERC20Decimals, getERC20Name, getERC20Symbol } from "./ERC20"
+import { getNetwork } from "./Network"
 
 export function getAsset(
     address: string,
@@ -62,6 +63,7 @@ export function createUnderlyingAsset(
 
 function createAsset(address: string, timestamp: BigInt, type: string): Asset {
     let asset = new Asset(address)
+    asset.chainId = getNetwork().chainId
     asset.address = Address.fromString(address)
     asset.createdAtTimestamp = timestamp
     asset.type = type

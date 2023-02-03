@@ -1,4 +1,14 @@
 ####################
+# Init
+####################
+
+type Network @entity {
+    id: ID!
+    name: String!
+    chainId: Int!
+}
+
+####################
 # Enums
 ####################
 
@@ -102,6 +112,7 @@ type FutureVaultFactory @entity {
 "Asset entity to index all kind of details of an asset stored in the subgraph"
 type Asset @entity {
     id: ID!
+    chainId: Int!
     address: Bytes!
     createdAtTimestamp: BigInt!
     name: String!
@@ -171,6 +182,7 @@ type ChainlinkAggregatorProxy @entity {
 "Future entity to index all the future's stats as well as its transactions, managers and other relations"
 type Future @entity {
     id: ID!
+    chainId: Int!
     address: Bytes!
     createdAtTimestamp: BigInt!
     expirationAtTimestamp: BigInt!
