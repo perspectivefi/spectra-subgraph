@@ -1,7 +1,7 @@
 import { RegistryUpdate } from "../../generated/Registry/Registry"
 import { FutureVaultFactory } from "../../generated/schema"
 import { createFutureVaultFactory } from "../entities/FutureVaultFactory"
-import { setNetwork } from "../entities/Network";
+import { setNetwork } from "../entities/Network"
 
 export function handleRegistryUpdate(event: RegistryUpdate): void {
     setNetwork()
