@@ -160,7 +160,11 @@ yarn create
 graph auth https://api.thegraph.com/deploy/ <ACCESS_TOKEN>
 ```
 
-### 5. Deploy the subgraph
+### 5. Create deployment script in `package.json` (if not exists for your network)
+
+### 6. Add network id (if missing) to the `ChainId` class in `src/utils/ChainId.ts` file 
+
+### 7. Deploy the subgraph
 
 -   Mainnet
 
