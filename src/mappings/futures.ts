@@ -49,12 +49,14 @@ import {
     getYT,
     getUnclaimedFees,
 } from "../entities/FutureVault"
+import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
 
 export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
     let futureVaultAddress = event.params._futureVault
     const newFuture = new Future(futureVaultAddress.toHex())
+    newFuture.chainId = getNetwork().chainId
     newFuture.address = futureVaultAddress
     newFuture.futureVaultFactory = event.address.toHex()
 

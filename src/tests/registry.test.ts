@@ -20,7 +20,7 @@ import {
     OLD_ADDRESS_MOCK,
     THIRD_EVENT_ADDRESS_MOCK,
 } from "./mocks/Registry"
-import { FUTURE_VAULT_FACTORY_ENTITY } from "./utils/entities"
+import { FUTURE_VAULT_FACTORY_ENTITY, NETWORK_ENTITY } from "./utils/entities"
 
 describe("handleRegistryUpdate()", () => {
     beforeEach(() => {
@@ -97,5 +97,11 @@ describe("handleRegistryUpdate()", () => {
             "address",
             THIRD_EVENT_ADDRESS_MOCK
         )
+    })
+
+    test("Should create Network entity ", () => {
+        assert.fieldEquals(NETWORK_ENTITY, "1", "name", "mainnet")
+
+        assert.fieldEquals(NETWORK_ENTITY, "1", "chainId", "1")
     })
 })

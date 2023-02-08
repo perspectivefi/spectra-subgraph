@@ -839,4 +839,34 @@ describe("handleCurvePoolDeployed()", () => {
             POOL_PT_ADDRESS_MOCK.toHex()
         )
     })
+
+    test("Should assign chainId to the new Asset entities", () => {
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            POOL_LP_ADDRESS_MOCK.toHex(),
+            "chainId",
+            "1"
+        )
+
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            POOL_IBT_ADDRESS_MOCK.toHex(),
+            "chainId",
+            "1"
+        )
+
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            POOL_PT_ADDRESS_MOCK.toHex(),
+            "chainId",
+            "1"
+        )
+
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            YT_ADDRESS_MOCK.toHex(),
+            "chainId",
+            "1"
+        )
+    })
 })
