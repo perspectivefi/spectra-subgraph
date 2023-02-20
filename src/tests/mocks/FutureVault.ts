@@ -45,14 +45,14 @@ export function mockFutureVaultFunctions(): void {
     ].forEach((addressMock) => {
         createMockedFunction(
             addressMock,
-            "expiry",
-            "expiry():(uint256)"
+            "maturity",
+            "maturity():(uint256)"
         ).returns([ethereum.Value.fromI32(1)])
 
         createMockedFunction(
             addressMock,
-            "maxProtocolFee",
-            "maxProtocolFee():(uint256)"
+            "getMaxProtocolFee",
+            "getMaxProtocolFee():(uint256)"
         ).returns([ethereum.Value.fromI32(11)])
 
         createMockedFunction(addressMock, "name", "name():(string)").returns([
@@ -73,13 +73,15 @@ export function mockFutureVaultFunctions(): void {
             ethereum.Value.fromAddress(Address.fromString(ETH_ADDRESS_MOCK)),
         ])
 
-        createMockedFunction(addressMock, "ibt", "ibt():(address)").returns([
-            ethereum.Value.fromAddress(IBT_ADDRESS_MOCK),
-        ])
+        createMockedFunction(
+            addressMock,
+            "getIBT",
+            "getIBT():(address)"
+        ).returns([ethereum.Value.fromAddress(IBT_ADDRESS_MOCK)])
 
-        createMockedFunction(addressMock, "yt", "yt():(address)").returns([
-            ethereum.Value.fromAddress(YT_ADDRESS_MOCK),
-        ])
+        createMockedFunction(addressMock, "getYT", "getYT():(address)").returns(
+            [ethereum.Value.fromAddress(YT_ADDRESS_MOCK)]
+        )
 
         createMockedFunction(
             addressMock,
@@ -89,8 +91,8 @@ export function mockFutureVaultFunctions(): void {
 
         createMockedFunction(
             addressMock,
-            "unclaimedFeesInIBT",
-            "unclaimedFeesInIBT():(uint256)"
+            "getUnclaimedFeesInIBT",
+            "getUnclaimedFeesInIBT():(uint256)"
         ).returns([ethereum.Value.fromI32(FEE_MOCK)])
     })
 }

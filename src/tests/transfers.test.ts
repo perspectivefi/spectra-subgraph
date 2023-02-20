@@ -21,7 +21,7 @@ import {
     emitCurvePoolDeployed,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
-import { emitRegistryUpdate } from "./events/FutureVaultFactory"
+import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
 import {
     mockCurvePoolFunctions,
     POOL_LP_ADDRESS_MOCK,
@@ -88,7 +88,7 @@ describe("handleTransfer()", () => {
         mockMetaPoolFactoryFunctions()
         mockCurvePoolFunctions()
 
-        emitRegistryUpdate("Test")
+        emitPrincipalTokenFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChanged()
         emitCurvePoolDeployed()

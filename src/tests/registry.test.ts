@@ -9,25 +9,23 @@ import {
     beforeEach,
 } from "matchstick-as/assembly/index"
 
-import { RegistryUpdate } from "../../generated/Registry/Registry"
-import { handleRegistryUpdate } from "../mappings/registry"
-import { emitRegistryUpdate } from "./events/FutureVaultFactory"
+import { PrincipalTokenFactoryUpdated } from "../../generated/Registry/Registry"
+import { handlePrincipalTokenFactoryUpdated } from "../mappings/registry"
+import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
 import { FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK } from "./mocks/FutureVaultFactory"
 import {
-    FIRST_CONTRACT_NAME,
-    SECOND_CONTRACT_NAME,
     NEW_ADDRESS_MOCK,
     OLD_ADDRESS_MOCK,
     THIRD_EVENT_ADDRESS_MOCK,
 } from "./mocks/Registry"
 import { FUTURE_VAULT_FACTORY_ENTITY, NETWORK_ENTITY } from "./utils/entities"
 
-describe("handleRegistryUpdate()", () => {
+describe("handlePrincipalTokenFactoryUpdated()", () => {
     beforeEach(() => {
         clearStore()
 
-        emitRegistryUpdate(FIRST_CONTRACT_NAME)
-        emitRegistryUpdate(SECOND_CONTRACT_NAME)
+        emitPrincipalTokenFactoryUpdated()
+        emitPrincipalTokenFactoryUpdated()
     })
 
     test("Should create new FutureVaultFactory entity for every registry update with unique address", () => {
@@ -51,11 +49,8 @@ describe("handleRegistryUpdate()", () => {
 
     test("Should create FutureVaultFactory entity with old address if the one has been updated but entity with the old address does not exist", () => {
         // third event
-        let registryUpdateEvent = changetype<RegistryUpdate>(newMockEvent())
-
-        let nameParam = new ethereum.EventParam(
-            "_contractName",
-            ethereum.Value.fromString(SECOND_CONTRACT_NAME)
+        let registryUpdateEvent = changetype<PrincipalTokenFactoryUpdated>(
+            newMockEvent()
         )
 
         let newAddressParam = new ethereum.EventParam(
@@ -72,12 +67,8 @@ describe("handleRegistryUpdate()", () => {
             thirdEventOldAddress
         )
 
-        registryUpdateEvent.parameters = [
-            nameParam,
-            oldAddressParam,
-            newAddressParam,
-        ]
-        handleRegistryUpdate(registryUpdateEvent)
+        registryUpdateEvent.parameters = [oldAddressParam, newAddressParam]
+        handlePrincipalTokenFactoryUpdated(registryUpdateEvent)
 
         assert.fieldEquals(
             FUTURE_VAULT_FACTORY_ENTITY,

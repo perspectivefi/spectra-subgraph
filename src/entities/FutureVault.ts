@@ -1,47 +1,49 @@
 import { BigInt } from "@graphprotocol/graph-ts"
 import { Address, log } from "@graphprotocol/graph-ts"
 
-import { FutureVault } from "../../generated/FutureVault/FutureVault"
+import { PrincipalToken } from "../../generated/PrincipalToken/PrincipalToken"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 
 export function getExpirationTimestamp(futureVault: Address): BigInt {
-    const futureContract = FutureVault.bind(futureVault)
+    const futureContract = PrincipalToken.bind(futureVault)
 
-    let expiryCall = futureContract.try_expiry()
+    let expiryCall = futureContract.try_maturity()
 
     if (!expiryCall.reverted) {
         return expiryCall.value
     }
 
-    log.warning("expiry() call reverted for {}", [futureVault.toHex()])
+    log.warning("maturity() call reverted for {}", [futureVault.toHex()])
 
     return ZERO_BI
 }
 
 export function getMaxFeeRate(futureVault: Address): BigInt {
-    const futureContract = FutureVault.bind(futureVault)
+    const futureContract = PrincipalToken.bind(futureVault)
 
-    let maxProtocolFeeCall = futureContract.try_maxProtocolFee()
+    let maxProtocolFeeCall = futureContract.try_getMaxProtocolFee()
 
     if (!maxProtocolFeeCall.reverted) {
         return maxProtocolFeeCall.value
     }
 
-    log.warning("maxProtocolFee() call reverted for {}", [futureVault.toHex()])
+    log.warning("getMaxProtocolFee() call reverted for {}", [
+        futureVault.toHex(),
+    ])
 
     return ZERO_BI
 }
 
 export function getUnclaimedFees(futureVault: Address): BigInt {
-    const futureContract = FutureVault.bind(futureVault)
+    const futureContract = PrincipalToken.bind(futureVault)
 
-    let unclaimedFeesCall = futureContract.try_unclaimedFeesInIBT()
+    let unclaimedFeesCall = futureContract.try_getUnclaimedFeesInIBT()
 
     if (!unclaimedFeesCall.reverted) {
         return unclaimedFeesCall.value
     }
 
-    log.warning("unclaimedFeesInIBT() call reverted for {}", [
+    log.warning("getUnclaimedFeesInIBT() call reverted for {}", [
         futureVault.toHex(),
     ])
 
@@ -49,7 +51,7 @@ export function getUnclaimedFees(futureVault: Address): BigInt {
 }
 
 export function getName(address: Address): string {
-    const futureContract = FutureVault.bind(address)
+    const futureContract = PrincipalToken.bind(address)
 
     let nameCall = futureContract.try_name()
 
@@ -63,7 +65,7 @@ export function getName(address: Address): string {
 }
 
 export function getSymbol(address: Address): string {
-    const futureContract = FutureVault.bind(address)
+    const futureContract = PrincipalToken.bind(address)
 
     let symbolCall = futureContract.try_symbol()
 
@@ -77,7 +79,7 @@ export function getSymbol(address: Address): string {
 }
 
 export function getUnderlying(address: Address): Address {
-    const futureContract = FutureVault.bind(address)
+    const futureContract = PrincipalToken.bind(address)
 
     let underlyingCall = futureContract.try_underlying()
 
@@ -91,35 +93,35 @@ export function getUnderlying(address: Address): Address {
 }
 
 export function getIBT(address: Address): Address {
-    const futureContract = FutureVault.bind(address)
+    const futureContract = PrincipalToken.bind(address)
 
-    let ibtCall = futureContract.try_ibt()
+    let ibtCall = futureContract.try_getIBT()
 
     if (!ibtCall.reverted) {
         return ibtCall.value
     }
 
-    log.warning("ibt() call reverted for {}", [address.toHex()])
+    log.warning("getIBT() call reverted for {}", [address.toHex()])
 
     return ZERO_ADDRESS
 }
 
 export function getYT(address: Address): Address {
-    const futureContract = FutureVault.bind(address)
+    const futureContract = PrincipalToken.bind(address)
 
-    let ytCall = futureContract.try_yt()
+    let ytCall = futureContract.try_getYT()
 
     if (!ytCall.reverted) {
         return ytCall.value
     }
 
-    log.warning("yt() call reverted for {}", [address.toHex()])
+    log.warning("getYT() call reverted for {}", [address.toHex()])
 
     return ZERO_ADDRESS
 }
 
 export function getTotalAssets(address: Address): BigInt {
-    const futureContract = FutureVault.bind(address)
+    const futureContract = PrincipalToken.bind(address)
 
     let totalAssetsCall = futureContract.try_totalAssets()
 

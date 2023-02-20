@@ -3,7 +3,7 @@
     "startBlock": 8255000,
 
     "registry": "0x28460580299d05DB0CC27FA7DA8d05b817b40b29",
-    "futureVaultFactory": "0x4F8e2A14F069e4aF9160Adba0156172C0F361a1a",
-    "futureVault": "0xE7bD3dE03fBf80e6E4F05c1Ffa03DC07B28EB648",
+    "principalTokenFactory": "0x4F8e2A14F069e4aF9160Adba0156172C0F361a1a",
+    "principalToken": "0xE7bD3dE03fBf80e6E4F05c1Ffa03DC07B28EB648",
     "curvePool": "0xd144B98d723FCc432419B73b6359C0B5C7aFF122"
 }

@@ -45,7 +45,6 @@ enum FutureState {
 class FutureVaultFactory {
     id: ID!
     createdAtTimestamp: BigInt!
-    name: String!
     address: Bytes!
 
     + old: FutureVaultFactory
