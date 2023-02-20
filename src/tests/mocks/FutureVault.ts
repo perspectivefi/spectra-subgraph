@@ -3,7 +3,7 @@ import { createMockedFunction } from "matchstick-as/assembly/index"
 
 import { ETH_ADDRESS_MOCK } from "./ERC20"
 import { FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK } from "./FutureVaultFactory"
-import { PRINCIPAL_TOKEN_ADDRESS_MOCK } from "./LPVault";
+import { PRINCIPAL_TOKEN_ADDRESS_MOCK } from "./LPVault"
 
 export const FIRST_FUTURE_VAULT_ADDRESS_MOCK = Address.fromString(
     "0x0000000000000000000000000000000000000001"
@@ -43,7 +43,7 @@ export function mockFutureVaultFunctions(): void {
         SECOND_FUTURE_VAULT_ADDRESS_MOCK,
         FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK,
         Address.fromString(ETH_ADDRESS_MOCK),
-        PRINCIPAL_TOKEN_ADDRESS_MOCK
+        PRINCIPAL_TOKEN_ADDRESS_MOCK,
     ].forEach((addressMock) => {
         createMockedFunction(
             addressMock,

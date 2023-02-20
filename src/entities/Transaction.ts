@@ -67,7 +67,7 @@ export function createTransaction(
     }
 
     if (params.lpVaultInTransaction !== ZERO_ADDRESS) {
-        transaction.lpVaultInTransaction= params.lpVaultInTransaction.toHex()
+        transaction.lpVaultInTransaction = params.lpVaultInTransaction.toHex()
     }
 
     if (params.transaction.fee !== ZERO_BI) {

@@ -1,60 +1,60 @@
-import { Address, BigInt, log } from "@graphprotocol/graph-ts";
-import { LPVault } from "../../generated/LPVault/LPVault";
-import { ZERO_ADDRESS, ZERO_BI } from "../constants";
-import { FutureVault } from "../../generated/FutureVault/FutureVault";
+import { Address, BigInt, log } from "@graphprotocol/graph-ts"
+
+import { LPVault } from "../../generated/LPVault/LPVault"
+import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 
 export function getName(address: Address): string {
-  const lpVaultContract = LPVault.bind(address);
+    const lpVaultContract = LPVault.bind(address)
 
-  let nameCall = lpVaultContract.try_name();
+    let nameCall = lpVaultContract.try_name()
 
-  if (!nameCall.reverted) {
-    return nameCall.value;
-  }
+    if (!nameCall.reverted) {
+        return nameCall.value
+    }
 
-  log.warning("name() call reverted for {}", [address.toHex()]);
+    log.warning("name() call reverted for {}", [address.toHex()])
 
-  return "";
+    return ""
 }
 
 export function getSymbol(address: Address): string {
-  const lpVaultContract = LPVault.bind(address);
+    const lpVaultContract = LPVault.bind(address)
 
-  let symbolCall = lpVaultContract.try_symbol();
+    let symbolCall = lpVaultContract.try_symbol()
 
-  if (!symbolCall.reverted) {
-    return symbolCall.value;
-  }
+    if (!symbolCall.reverted) {
+        return symbolCall.value
+    }
 
-  log.warning("symbol() call reverted for {}", [address.toHex()]);
+    log.warning("symbol() call reverted for {}", [address.toHex()])
 
-  return "";
+    return ""
 }
 
 export function getUnderlying(address: Address): Address {
-  const lpVaultContract = LPVault.bind(address);
+    const lpVaultContract = LPVault.bind(address)
 
-  let assetCall = lpVaultContract.try_asset();
+    let assetCall = lpVaultContract.try_asset()
 
-  if (!assetCall.reverted) {
-    return assetCall.value;
-  }
+    if (!assetCall.reverted) {
+        return assetCall.value
+    }
 
-  log.warning("asset() call reverted for {}", [address.toHex()]);
+    log.warning("asset() call reverted for {}", [address.toHex()])
 
-  return ZERO_ADDRESS;
+    return ZERO_ADDRESS
 }
 
 export function getTotalAssets(address: Address): BigInt {
-  const lpVaultContract = LPVault.bind(address);
+    const lpVaultContract = LPVault.bind(address)
 
-  let totalAssetsCall = lpVaultContract.try_totalAssets()
+    let totalAssetsCall = lpVaultContract.try_totalAssets()
 
-  if (!totalAssetsCall.reverted) {
-    return totalAssetsCall.value
-  }
+    if (!totalAssetsCall.reverted) {
+        return totalAssetsCall.value
+    }
 
-  log.warning("totalAssets() call reverted for {}", [address.toHex()])
+    log.warning("totalAssets() call reverted for {}", [address.toHex()])
 
-  return ZERO_BI
+    return ZERO_BI
 }
