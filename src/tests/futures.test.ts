@@ -14,7 +14,7 @@ import {
     Unpaused,
     Withdraw,
     YieldTransferred,
-} from "../../generated/FutureVault/FutureVault"
+} from "../../generated/PrincipalToken/PrincipalToken"
 import { DAY_ID_0, ZERO_BI } from "../constants"
 import {
     handleFeeClaimed,
@@ -37,7 +37,7 @@ import {
     IBT_DEPOSIT,
     SHARES_RETURN,
 } from "./events/FutureVault"
-import { emitRegistryUpdate } from "./events/FutureVaultFactory"
+import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
 import { mockCurvePoolFunctions, POOL_LP_ADDRESS_MOCK } from "./mocks/CurvePool"
 import {
     FIRST_POOL_ADDRESS_MOCK,
@@ -99,7 +99,7 @@ describe("handleFutureVaultDeployed()", () => {
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
 
-        emitRegistryUpdate("Test")
+        emitPrincipalTokenFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emitFutureVaultDeployed(SECOND_FUTURE_VAULT_ADDRESS_MOCK)
     })

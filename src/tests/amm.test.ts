@@ -39,7 +39,7 @@ import {
     emitCurvePoolDeployed,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
-import { emitRegistryUpdate } from "./events/FutureVaultFactory"
+import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
 import {
     mockCurvePoolFunctions,
     POOL_ADD_LIQUIDITY_TRANSACTION_HASH,
@@ -118,7 +118,7 @@ describe("handleAddLiquidity()", () => {
         mockCurvePoolFunctions()
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
 
-        emitRegistryUpdate("Test")
+        emitPrincipalTokenFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChanged()
         emitCurvePoolDeployed()

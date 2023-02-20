@@ -8,12 +8,12 @@ import {
     Unpaused,
     Withdraw,
     YieldTransferred,
-} from "../../generated/FutureVault/FutureVault"
+} from "../../generated/PrincipalToken/PrincipalToken"
 import {
     CurveFactoryChanged,
     CurvePoolDeployed,
-    FutureVaultDeployed,
-} from "../../generated/FutureVaultFactory/FutureVaultFactory"
+    PrincipalTokenDeployed,
+} from "../../generated/PrincipalTokenFactory/PrincipalTokenFactory"
 import {
     FeeClaim,
     Future,
@@ -53,8 +53,8 @@ import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
 
-export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
-    let futureVaultAddress = event.params._futureVault
+export function handleFutureVaultDeployed(event: PrincipalTokenDeployed): void {
+    let futureVaultAddress = event.params._principalToken
     const newFuture = new Future(futureVaultAddress.toHex())
     newFuture.chainId = getNetwork().chainId
     newFuture.address = futureVaultAddress
@@ -96,24 +96,24 @@ export function handleFutureVaultDeployed(event: FutureVaultDeployed): void {
 
     // PT Asset - Future relation
     let ptToken = getAsset(
-        event.params._futureVault.toHex(),
+        event.params._principalToken.toHex(),
         event.block.timestamp,
         AssetType.PT
     )
-    ptToken.futureVault = event.params._futureVault.toHex()
+    ptToken.futureVault = event.params._principalToken.toHex()
     ptToken.save()
 
     // YT Asset - Future relation
     let ytToken = getAsset(
-        getYT(event.params._futureVault).toHex(),
+        getYT(event.params._principalToken).toHex(),
         event.block.timestamp,
         AssetType.YT
     )
-    ytToken.futureVault = event.params._futureVault.toHex()
+    ytToken.futureVault = event.params._principalToken.toHex()
     ytToken.save()
 
     // Create dynamic data source for PT token events
-    ERC20.create(event.params._futureVault)
+    ERC20.create(event.params._principalToken)
 
     // Create dynamic data source for YT token events
     ERC20.create(Address.fromBytes(ytToken.address))

@@ -1,17 +1,13 @@
 import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
-import { FutureVault } from "../../generated/FutureVault/FutureVault"
 import { FutureVaultFactory } from "../../generated/schema"
 import { ZERO_ADDRESS } from "../constants"
-import { logWarning } from "../utils"
 
 export function createFutureVaultFactory(
     address: Address,
-    name: string,
     timestamp: BigInt
 ): FutureVaultFactory {
     let newContract = new FutureVaultFactory(address.toHex())
-    newContract.name = name
     newContract.address = address
     newContract.createdAtTimestamp = timestamp
 

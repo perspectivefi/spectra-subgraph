@@ -2,12 +2,12 @@ import { Address } from "@graphprotocol/graph-ts"
 import { BigInt, ethereum } from "@graphprotocol/graph-ts/index"
 import { newMockEvent } from "matchstick-as/assembly/index"
 
-import { Deposit } from "../../../generated/FutureVault/FutureVault"
+import { Deposit } from "../../../generated/PrincipalToken/PrincipalToken"
 import {
     CurveFactoryChanged,
     CurvePoolDeployed,
-    FutureVaultDeployed,
-} from "../../../generated/FutureVaultFactory/FutureVaultFactory"
+    PrincipalTokenDeployed,
+} from "../../../generated/PrincipalTokenFactory/PrincipalTokenFactory"
 import {
     handleCurveFactoryChanged,
     handleCurvePoolDeployed,
@@ -33,7 +33,7 @@ export const SHARES_RETURN = 51
 export const IBT_DEPOSIT = 15
 
 export const emitFutureVaultDeployed = (futureVaultAddress: Address): void => {
-    let futureVaultDeployedEvent = changetype<FutureVaultDeployed>(
+    let futureVaultDeployedEvent = changetype<PrincipalTokenDeployed>(
         newMockEvent()
     )
     futureVaultDeployedEvent.address = FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK

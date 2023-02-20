@@ -1,9 +1,11 @@
-import { RegistryUpdate } from "../../generated/Registry/Registry"
+import { PrincipalTokenFactoryUpdated } from "../../generated/Registry/Registry"
 import { FutureVaultFactory } from "../../generated/schema"
 import { createFutureVaultFactory } from "../entities/FutureVaultFactory"
 import { setNetwork } from "../entities/Network"
 
-export function handleRegistryUpdate(event: RegistryUpdate): void {
+export function handlePrincipalTokenFactoryUpdated(
+    event: PrincipalTokenFactoryUpdated
+): void {
     setNetwork()
 
     let contractAddress = event.params._new
@@ -12,7 +14,6 @@ export function handleRegistryUpdate(event: RegistryUpdate): void {
     if (!futureVaultFactory) {
         futureVaultFactory = createFutureVaultFactory(
             contractAddress,
-            event.params._contractName,
             event.block.timestamp
         )
     }
@@ -23,7 +24,6 @@ export function handleRegistryUpdate(event: RegistryUpdate): void {
     if (!oldFutureVaultFactory) {
         oldFutureVaultFactory = createFutureVaultFactory(
             oldAddress,
-            event.params._contractName,
             event.block.timestamp
         )
         oldFutureVaultFactory.save()
