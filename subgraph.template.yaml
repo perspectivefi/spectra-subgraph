@@ -153,6 +153,56 @@ dataSources:
           handler: handleCommitNewParameters
         - event: NewParameters(uint256,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleNewParameters
+  - name: LPVaultFactory
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: LPVaultFactory
+      startBlock: {{ startBlock }}
+    mapping:
+      kind: ethereum/events
+      language: wasm/assemblyscript
+      apiVersion: 0.0.5
+      entities: [ ]
+      file: ./src/mappings/lpVaults.ts
+      abis:
+        - name: LPVaultFactory
+          file: ./abis/LPVaultFactory.json
+      eventHandlers:
+        - event: RegistryUpdated(indexed address,indexed address)
+          handler: handleRegistryUpdated
+        - event: LPVaultDeployed(indexed address,indexed address,indexed address)
+          handler: handleLPVaultDeployed
+  - name: LPVault
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: LPVault
+      startBlock: {{ startBlock }}
+    mapping:
+      kind: ethereum/events
+      language: wasm/assemblyscript
+      apiVersion: 0.0.5
+      entities: [ ]
+      file: ./src/mappings/lpVaults.ts
+      abis:
+        - name: LPVault
+          file: ./abis/LPVault.json
+      eventHandlers:
+        - event: Deposit(indexed address,indexed address,uint256,uint256)
+          handler: handleDeposit
+        - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleWithdraw
+        - event: FeeUpdated(indexed uint256)
+          handler: handleFeeUpdated
+        - event: InterestCompounded(indexed uint256,indexed uint256)
+          handler: handleInterestCompounded
+        - event: Paused(address)
+          handler: handlePaused
+        - event: Unpaused(address)
+          handler: handleUnpaused
+        - event: PoolIndexUpdated(uint256)
+          handler: handlePoolIndexUpdated
 templates:
   - name: ERC20
     kind: ethereum/contract

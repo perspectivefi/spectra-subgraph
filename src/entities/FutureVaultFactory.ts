@@ -1,5 +1,4 @@
-import { Address, BigInt, log } from "@graphprotocol/graph-ts"
-
+import { Address, BigInt, log } from "@graphprotocol/graph-ts";
 import { FutureVaultFactory } from "../../generated/schema"
 import { ZERO_ADDRESS } from "../constants"
 
@@ -11,20 +10,20 @@ export function createFutureVaultFactory(
     newContract.address = address
     newContract.createdAtTimestamp = timestamp
 
-    return newContract
+  return newContract;
 }
 
-// TODO on the protocol side
-export function getCurveFactory(address: Address): Address {
-    const futureVaultFactoryContract = FutureVaultFactory.bind(address)
+export function getPool(factoryAddress: Address, futureVaultAddress: Address, poolIndex: BigInt): Address {
+  const futureVaultFactoryContract = FutureVaultFactory.bind(factoryAddress);
 
-    let curveFactoryCall = futureVaultFactoryContract.try_curveFactory()
+  // TODO: ABI update necessary to use this method
+  let poolCall = futureVaultFactoryContract.try_getPool(futureVaultAddress, poolIndex);
 
-    if (!curveFactoryCall.reverted) {
-        return curveFactoryCall.value
-    }
+  if (!poolCall.reverted) {
+    return poolCall.value;
+  }
 
-    log.warning("curveFactory() call reverted for {}", [address.toHex()])
+  log.warning("getPool() call reverted for {}", [factoryAddress.toHex()]);
 
-    return ZERO_ADDRESS
+  return ZERO_ADDRESS;
 }

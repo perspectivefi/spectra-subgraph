@@ -19,6 +19,7 @@ enum AssetType {
     YT
     FYT
     LP
+    LP_VAULT_SHARE
     UNKNOWN
 }
 
@@ -30,6 +31,10 @@ enum TransactionType {
     # if only one coin has been withdrawn
     AMM_REMOVE_LIQUIDITY_ONE
     AMM_EXCHANGE
+    LP_VAULT_UNDERLYING_DEPOSIT
+    LP_VAULT_IBT_DEPOSIT
+    LP_VAULT_WITHDRAW
+    LP_VAULT_REDEEM
 }
 
 enum AMM {
@@ -90,7 +95,7 @@ type ValueInTime @entity {
 }
 
 ####################
-# Registry
+# Factory
 ####################
 
 type FutureVaultFactory @entity {
@@ -163,6 +168,8 @@ type AccountAsset @entity {
     account: Account!
     "if lp position"
     pool: Pool
+    "if lp vault position"
+    lpVault: LPVault
     #    fytTokenDetails: FYTTokenDetails
 }
 
@@ -290,6 +297,8 @@ type Transaction @entity {
     userInTransaction: Account
     "if there is any pool on any side of the transaction to be able to list this pool's transactions"
     poolInTransaction: Pool
+    "if there is any LPVault on any side of the transaction to be able to list this pool's transactions"
+    lpVaultInTransaction: LPVault
 
     "in case if more than one token was sent"
     amountsIn: [AssetAmount!]!
@@ -363,4 +372,55 @@ type Transfer @entity {
     to: Account!
 
     amountOut: AssetAmount!
+}
+
+####################
+# LPVaults
+####################
+
+type LPVaultFactory @entity {
+    id: ID!
+    createdAtTimestamp: BigInt!
+    address: Bytes!
+
+    oldFactory: LPVaultFactory
+
+    deployedLPVaults: [LPVault!]! @derivedFrom(field: "lpVaultFactory")
+}
+
+type LPVaultInterest @entity {
+    id: ID!
+    chainId: Int!
+    createdAtTimestamp: BigInt!
+
+    lpVault: LPVault!
+    interest: BigInt!
+}
+
+type LPVault @entity {
+    id: ID!
+    chainId: Int!
+    address: Bytes!
+    createdAtTimestamp: BigInt!
+    expirationAtTimestamp: BigInt!
+
+    lpVaultFactory: LPVaultFactory!
+    future: Future!
+    pool: Pool
+
+    state: FutureState!
+    fee: BigInt
+
+    poolIndex: Int
+    underlying: Asset!
+    ibt: Asset!
+    totalAssets: BigInt!
+
+    name: String!
+    symbol: String!
+
+    # positions: [AccountAsset!]! @derivedFrom(field: "lpVault")
+    transactions: [Transaction!]! @derivedFrom(field: "lpVaultInTransaction")
+
+    interestInTime: [LPVaultInterest!]! @derivedFrom(field: "lpVault")
 }

@@ -117,6 +117,7 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: event.params.provider,
             poolInTransaction: event.address,
+            lpVaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [ibtAmountIn.id, ptAmountIn.id],
             amountsOut: [lpAmountOut.id],
@@ -237,6 +238,7 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: event.params.provider,
             poolInTransaction: event.address,
+            lpVaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [lpAmountIn.id],
             amountsOut: [ibtAmountOut.id, ptAmountOut.id],
@@ -365,6 +367,7 @@ export function handleTokenExchange(event: TokenExchange): void {
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: Address.fromBytes(account.address),
             poolInTransaction: Address.fromBytes(pool.address),
+            lpVaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [amountIn.id],
             amountsOut: [amountOut.id],
@@ -500,6 +503,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: Address.fromString(accountAddress),
             poolInTransaction: event.address,
+            lpVaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [lpAmountIn.id],
             amountsOut: [withdrawnAmountOut.id],

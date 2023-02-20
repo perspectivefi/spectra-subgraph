@@ -244,6 +244,7 @@ export function handleDeposit(event: Deposit): void {
             futureInTransaction: Address.fromBytes(future.address),
             userInTransaction: event.params.sender,
             poolInTransaction: ZERO_ADDRESS,
+            lpVaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [amountIn.id],
             amountsOut: [firstAmountOut.id, secondAmountOut.id],
@@ -338,6 +339,7 @@ export function handleWithdraw(event: Withdraw): void {
             futureInTransaction: Address.fromBytes(future.address),
             userInTransaction: event.params.sender,
             poolInTransaction: ZERO_ADDRESS,
+            lpVaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [firstAmountIn.id, secondAmountIn.id],
             amountsOut: [amountOut.id],
