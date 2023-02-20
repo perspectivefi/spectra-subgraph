@@ -96,7 +96,6 @@ type ValueInTime @entity {
 type FutureVaultFactory @entity {
     id: ID!
     createdAtTimestamp: BigInt!
-    name: String!
     old: FutureVaultFactory
     address: Bytes!
 
