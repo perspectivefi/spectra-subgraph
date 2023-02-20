@@ -1,3 +1,1 @@
-{
-  testsFolder: "src/tests"
-}
+{ testsFolder: "src/tests" }

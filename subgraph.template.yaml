@@ -2,174 +2,174 @@ specVersion: 0.0.2
 description: APWine Subgraph
 repository: https://github.com/APWine/apwine-v2-subgraph
 schema:
-  file: ./schema.graphql
+    file: ./schema.graphql
 features:
-  - nonFatalErrors
+    - nonFatalErrors
 dataSources:
-  - name: ChainlinkAggregatorDataSource
-    kind: ethereum/contract
-    network: {{ network }}
-    source:
-      abi: ChainlinkAggregatorProxyContract
-      startBlock: {{ startBlock }}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.5
-      language: wasm/assemblyscript
-      entities: []
-      file: ./src/mappings/chainlinkAggregator.ts
-      abis:
-        - name: ChainlinkAggregatorProxyContract
-          file: ./node_modules/@chainlink/contracts/abi/v0.8/AggregatorProxy.json
-        - name: FeedRegistryInterface
-          file: ./node_modules/@chainlink/contracts/abi/v0.8/FeedRegistryInterface.json
-        - name: ERC20
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
-      eventHandlers:
-        - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
-          handler: handleAnswerUpdated
-  - name: Registry
-    kind: ethereum/contract
-    network: {{ network }}
-    source:
-      abi: Registry
-      address: '{{ registry }}'
-      startBlock: {{ startBlock }}
-    mapping:
-      kind: ethereum/events
-      language: wasm/assemblyscript
-      apiVersion: 0.0.5
-      entities: [ ]
-      file: ./src/mappings/registry.ts
-      abis:
-        - name: Registry
-          file: ./abis/Registry.json
-      eventHandlers:
-        - event: RegistryUpdate(string,address,address)
-          handler: handleRegistryUpdate
-  - name: FutureVaultFactory
-    kind: ethereum/contract
-    network: {{ network }}
-    source:
-      abi: FutureVaultFactory
-      address: '{{ futureVaultFactory }}'
-      startBlock: {{ startBlock }}
-    mapping:
-      kind: ethereum/events
-      language: wasm/assemblyscript
-      apiVersion: 0.0.5
-      entities: [ ]
-      file: ./src/mappings/futures.ts
-      abis:
-        - name: FutureVaultFactory
-          file: ./abis/FutureVaultFactory.json
-        - name: FutureVault
-          file: ./abis/FutureVault.json
-        - name: ERC20
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
-        - name: ERC4626
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
-        - name: FeedRegistryInterface
-          file: ./node_modules/@chainlink/contracts/abi/v0.8/FeedRegistryInterface.json
-        - name: CurvePoolFactory
-          file: ./abis/CurvePoolFactory.json
-        - name: CurvePool
-          file: ./abis/CurvePool.json
-      eventHandlers:
-        - event: FutureVaultDeployed(indexed address,indexed address)
-          handler: handleFutureVaultDeployed
-        - event: CurveFactoryChanged(indexed address)
-          handler: handleCurveFactoryChanged
-        - event: CurvePoolDeployed(indexed address,address,address)
-          handler: handleCurvePoolDeployed
-  - name: FutureVault
-    kind: ethereum/contract
-    network: {{ network }}
-    source:
-      abi: FutureVault
-      address: '{{ futureVault }}'
-      startBlock: {{ startBlock }}
-    mapping:
-      kind: ethereum/events
-      language: wasm/assemblyscript
-      apiVersion: 0.0.5
-      entities: [ ]
-      file: ./src/mappings/futures.ts
-      abis:
-        - name: FutureVault
-          file: ./abis/FutureVault.json
-        - name: ERC4626
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
-        - name: ERC20
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
-      eventHandlers:
-        - event: Paused(address)
-          handler: handlePaused
-        - event: Unpaused(address)
-          handler: handleUnpaused
-        - event: FeeClaimed(indexed address,uint256)
-          handler: handleFeeClaimed
-        - event: Deposit(indexed address,indexed address,uint256,uint256)
-          handler: handleDeposit
-        - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
-          handler: handleWithdraw
-        - event: Redeem(indexed address,indexed address,uint256)
-          handler: handleRedeem
-        - event: YieldTransferred(indexed address,uint256)
-          handler: handleYieldTransferred
-  - name: CurvePool
-    kind: ethereum/contract
-    network: {{ network }}
-    source:
-      abi: CurvePool
-      startBlock: {{ startBlock }}
-    mapping:
-      kind: ethereum/events
-      language: wasm/assemblyscript
-      apiVersion: 0.0.5
-      entities: [ ]
-      file: ./src/mappings/amm.ts
-      abis:
-        - name: CurvePool
-          file: ./abis/CurvePool.json
-        - name: CurvePoolFactory
-          file: ./abis/CurvePoolFactory.json
-        - name: ERC20
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
-        - name: ERC4626
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
-      eventHandlers:
-        - event: AddLiquidity(indexed address,uint256[2],uint256,uint256)
-          handler: handleAddLiquidity
-        - event: RemoveLiquidity(indexed address,uint256[2],uint256)
-          handler: handleRemoveLiquidity
-        - event: TokenExchange(indexed address,uint256,uint256,uint256,uint256)
-          handler: handleTokenExchange
-        - event: RemoveLiquidityOne(indexed address,uint256,uint256,uint256)
-          handler: handleRemoveLiquidityOne
-        - event: ClaimAdminFee(indexed address,uint256)
-          handler: handleClaimAdminFee
-        - event: CommitNewParameters(indexed uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
-          handler: handleCommitNewParameters
-        - event: NewParameters(uint256,uint256,uint256,uint256,uint256,uint256,uint256)
-          handler: handleNewParameters
+    - name: ChainlinkAggregatorDataSource
+      kind: ethereum/contract
+      network: { { network } }
+      source:
+          abi: ChainlinkAggregatorProxyContract
+          startBlock: { { startBlock } }
+      mapping:
+          kind: ethereum/events
+          apiVersion: 0.0.5
+          language: wasm/assemblyscript
+          entities: []
+          file: ./src/mappings/chainlinkAggregator.ts
+          abis:
+              - name: ChainlinkAggregatorProxyContract
+                file: ./node_modules/@chainlink/contracts/abi/v0.8/AggregatorProxy.json
+              - name: FeedRegistryInterface
+                file: ./node_modules/@chainlink/contracts/abi/v0.8/FeedRegistryInterface.json
+              - name: ERC20
+                file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+          eventHandlers:
+              - event: AnswerUpdated(indexed int256,indexed uint256,uint256)
+                handler: handleAnswerUpdated
+    - name: Registry
+      kind: ethereum/contract
+      network: { { network } }
+      source:
+          abi: Registry
+          address: "{{ registry }}"
+          startBlock: { { startBlock } }
+      mapping:
+          kind: ethereum/events
+          language: wasm/assemblyscript
+          apiVersion: 0.0.5
+          entities: []
+          file: ./src/mappings/registry.ts
+          abis:
+              - name: Registry
+                file: ./abis/Registry.json
+          eventHandlers:
+              - event: RegistryUpdate(string,address,address)
+                handler: handleRegistryUpdate
+    - name: FutureVaultFactory
+      kind: ethereum/contract
+      network: { { network } }
+      source:
+          abi: FutureVaultFactory
+          address: "{{ futureVaultFactory }}"
+          startBlock: { { startBlock } }
+      mapping:
+          kind: ethereum/events
+          language: wasm/assemblyscript
+          apiVersion: 0.0.5
+          entities: []
+          file: ./src/mappings/futures.ts
+          abis:
+              - name: FutureVaultFactory
+                file: ./abis/FutureVaultFactory.json
+              - name: FutureVault
+                file: ./abis/FutureVault.json
+              - name: ERC20
+                file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+              - name: ERC4626
+                file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
+              - name: FeedRegistryInterface
+                file: ./node_modules/@chainlink/contracts/abi/v0.8/FeedRegistryInterface.json
+              - name: CurvePoolFactory
+                file: ./abis/CurvePoolFactory.json
+              - name: CurvePool
+                file: ./abis/CurvePool.json
+          eventHandlers:
+              - event: FutureVaultDeployed(indexed address,indexed address)
+                handler: handleFutureVaultDeployed
+              - event: CurveFactoryChanged(indexed address)
+                handler: handleCurveFactoryChanged
+              - event: CurvePoolDeployed(indexed address,address,address)
+                handler: handleCurvePoolDeployed
+    - name: FutureVault
+      kind: ethereum/contract
+      network: { { network } }
+      source:
+          abi: FutureVault
+          address: "{{ futureVault }}"
+          startBlock: { { startBlock } }
+      mapping:
+          kind: ethereum/events
+          language: wasm/assemblyscript
+          apiVersion: 0.0.5
+          entities: []
+          file: ./src/mappings/futures.ts
+          abis:
+              - name: FutureVault
+                file: ./abis/FutureVault.json
+              - name: ERC4626
+                file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
+              - name: ERC20
+                file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+          eventHandlers:
+              - event: Paused(address)
+                handler: handlePaused
+              - event: Unpaused(address)
+                handler: handleUnpaused
+              - event: FeeClaimed(indexed address,uint256)
+                handler: handleFeeClaimed
+              - event: Deposit(indexed address,indexed address,uint256,uint256)
+                handler: handleDeposit
+              - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
+                handler: handleWithdraw
+              - event: Redeem(indexed address,indexed address,uint256)
+                handler: handleRedeem
+              - event: YieldTransferred(indexed address,uint256)
+                handler: handleYieldTransferred
+    - name: CurvePool
+      kind: ethereum/contract
+      network: { { network } }
+      source:
+          abi: CurvePool
+          startBlock: { { startBlock } }
+      mapping:
+          kind: ethereum/events
+          language: wasm/assemblyscript
+          apiVersion: 0.0.5
+          entities: []
+          file: ./src/mappings/amm.ts
+          abis:
+              - name: CurvePool
+                file: ./abis/CurvePool.json
+              - name: CurvePoolFactory
+                file: ./abis/CurvePoolFactory.json
+              - name: ERC20
+                file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+              - name: ERC4626
+                file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
+          eventHandlers:
+              - event: AddLiquidity(indexed address,uint256[2],uint256,uint256)
+                handler: handleAddLiquidity
+              - event: RemoveLiquidity(indexed address,uint256[2],uint256)
+                handler: handleRemoveLiquidity
+              - event: TokenExchange(indexed address,uint256,uint256,uint256,uint256)
+                handler: handleTokenExchange
+              - event: RemoveLiquidityOne(indexed address,uint256,uint256,uint256)
+                handler: handleRemoveLiquidityOne
+              - event: ClaimAdminFee(indexed address,uint256)
+                handler: handleClaimAdminFee
+              - event: CommitNewParameters(indexed uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+                handler: handleCommitNewParameters
+              - event: NewParameters(uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+                handler: handleNewParameters
 templates:
-  - name: ERC20
-    kind: ethereum/contract
-    network: {{ network }}
-    source:
-      abi: ERC20
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.5
-      language: wasm/assemblyscript
-      entities: [ ]
-      file: ./src/mappings/transfers.ts
-      abis:
-        - name: ERC20
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
-        - name: ERC4626
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
-      eventHandlers:
-        - event: Transfer(indexed address,indexed address,uint256)
-          handler: handleTransfer
+    - name: ERC20
+      kind: ethereum/contract
+      network: { { network } }
+      source:
+          abi: ERC20
+      mapping:
+          kind: ethereum/events
+          apiVersion: 0.0.5
+          language: wasm/assemblyscript
+          entities: []
+          file: ./src/mappings/transfers.ts
+          abis:
+              - name: ERC20
+                file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+              - name: ERC4626
+                file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
+          eventHandlers:
+              - event: Transfer(indexed address,indexed address,uint256)
+                handler: handleTransfer
