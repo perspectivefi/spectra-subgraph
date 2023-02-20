@@ -45,14 +45,14 @@ dataSources:
         - name: Registry
           file: ./abis/Registry.json
       eventHandlers:
-        - event: RegistryUpdate(string,address,address)
-          handler: handleRegistryUpdate
-  - name: FutureVaultFactory
+        - event: PrincipalTokenFactoryUpdated(indexed address,indexed address)
+          handler: handlePrincipalTokenFactoryUpdated
+  - name: PrincipalTokenFactory
     kind: ethereum/contract
     network: {{ network }}
     source:
-      abi: FutureVaultFactory
-      address: '{{ futureVaultFactory }}'
+      abi: PrincipalTokenFactory
+      address: '{{ principalTokenFactory }}'
       startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
@@ -61,10 +61,10 @@ dataSources:
       entities: [ ]
       file: ./src/mappings/futures.ts
       abis:
-        - name: FutureVaultFactory
-          file: ./abis/FutureVaultFactory.json
-        - name: FutureVault
-          file: ./abis/FutureVault.json
+        - name: PrincipalTokenFactory
+          file: ./abis/PrincipalTokenFactory.json
+        - name: PrincipalToken
+          file: ./abis/PrincipalToken.json
         - name: ERC20
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
         - name: ERC4626
@@ -76,18 +76,18 @@ dataSources:
         - name: CurvePool
           file: ./abis/CurvePool.json
       eventHandlers:
-        - event: FutureVaultDeployed(indexed address,indexed address)
-          handler: handleFutureVaultDeployed
+        - event: PrincipalTokenDeployed(indexed address,indexed address)
+          handler: handlePrincipalTokenDeployed
         - event: CurveFactoryChanged(indexed address)
           handler: handleCurveFactoryChanged
         - event: CurvePoolDeployed(indexed address,address,address)
           handler: handleCurvePoolDeployed
-  - name: FutureVault
+  - name: PrincipalToken
     kind: ethereum/contract
     network: {{ network }}
     source:
-      abi: FutureVault
-      address: '{{ futureVault }}'
+      abi: PrincipalToken
+      address: '{{ principalToken }}'
       startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
@@ -96,8 +96,8 @@ dataSources:
       entities: [ ]
       file: ./src/mappings/futures.ts
       abis:
-        - name: FutureVault
-          file: ./abis/FutureVault.json
+        - name: PrincipalToken
+          file: ./abis/PrincipalToken.json
         - name: ERC4626
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
         - name: ERC20
