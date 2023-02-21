@@ -1,5 +1,5 @@
 import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
-import { createMockedFunction } from "matchstick-as/assembly/index"
+import { createMockedFunction } from "matchstick-as"
 
 import { POOL_LP_ADDRESS_MOCK } from "./CurvePool"
 import { POOL_IBT_ADDRESS_MOCK, POOL_PT_ADDRESS_MOCK } from "./CurvePoolFactory"

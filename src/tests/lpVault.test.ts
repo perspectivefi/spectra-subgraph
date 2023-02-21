@@ -1,42 +1,39 @@
 import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
 import { assert, clearStore, describe, newMockEvent, test } from "matchstick-as"
 import { beforeAll } from "matchstick-as"
+import { createMockedFunction } from "matchstick-as/assembly/index"
 
 import {
     Deposit,
     FeeUpdated,
     Paused,
+    PoolIndexUpdated,
     Unpaused,
     Withdraw,
 } from "../../generated/LPVault/LPVault"
+import { PrincipalTokenFactory__getPoolResultPoolStruct } from "../../generated/PrincipalTokenFactory/PrincipalTokenFactory"
 import {
     handleDeposit,
     handleWithdraw,
     handlePaused,
     handleUnpaused,
     handleFeeUpdated,
+    handlePoolIndexUpdated,
 } from "../mappings/lpVaults"
-import { generateAccountAssetId, generateAssetAmountId } from "../utils"
+import { generateAssetAmountId } from "../utils"
 import AssetType from "../utils/AssetType"
-import { emitFutureVaultDeployed } from "./events/FutureVault"
+import { emiCurveFactoryChanged, emitCurvePoolDeployed, emitFutureVaultDeployed } from "./events/FutureVault";
 import { emitLPVaultDeployed } from "./events/LPVault"
 import { emitLPVaultFactoryUpdate } from "./events/LPVaultFactory"
-import { POOL_ADD_LIQUIDITY_TRANSACTION_HASH } from "./mocks/CurvePool"
-import { POOL_PT_ADDRESS_MOCK } from "./mocks/CurvePoolFactory"
-import {
-    mockERC20Functions,
-    POOL_IBT_BALANCE_MOCK,
-    POOL_PT_BALANCE_MOCK,
-    YT_BALANCE_MOCK,
-} from "./mocks/ERC20"
+import { FIRST_POOL_ADDRESS_MOCK, mockCurvePoolFunctions } from "./mocks/CurvePool";
+import { mockERC20Functions } from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
-import { FIRST_USER_MOCK, mockFutureVaultFunctions } from "./mocks/FutureVault"
+import { FIRST_FUTURE_VAULT_ADDRESS_MOCK, FIRST_USER_MOCK, mockFutureVaultFunctions } from "./mocks/FutureVault";
 import {
     LP_VAULT_ASSET_ADDRESS_MOCK,
     LP_VAULT_ADDRESS_MOCK,
     mockLPVaultFunctions,
     PRINCIPAL_TOKEN_ADDRESS_MOCK,
-    IMPLEMENTATION_ADDRESS_MOCK,
     DEPOSIT_TRANSACTION_HASH,
     WITHDRAW_TRANSACTION_HASH,
 } from "./mocks/LPVault"
@@ -45,14 +42,15 @@ import {
     OLD_LP_VAULT_FACTORY_ADDRESS_MOCK,
 } from "./mocks/LPVaultFactory"
 import {
-    ACCOUNT_ASSET_ENTITY,
-    ACCOUNT_ENTITY,
     ASSET_AMOUNT_ENTITY,
     ASSET_ENTITY,
     LP_VAULT_ENTITY,
     LP_VAULT_FACTORY_ENTITY,
     TRANSACTION_ENTITY,
 } from "./utils/entities"
+import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory";
+import { mockMetaPoolFactoryFunctions } from "./mocks/CurvePoolFactory";
+import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory";
 
 describe("handleRegistryUpdated()", () => {
     beforeAll(() => {
@@ -87,8 +85,11 @@ describe("handleLPVaultDeployed()", () => {
         mockFeedRegistryInterfaceFunctions()
         mockERC20Functions()
         mockFutureVaultFunctions()
+        mockFutureVaultFactoryFunctions()
         mockLPVaultFunctions()
 
+        emitPrincipalTokenFactoryUpdated()
+        emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emitFutureVaultDeployed(PRINCIPAL_TOKEN_ADDRESS_MOCK)
         emitLPVaultDeployed()
     })
@@ -494,6 +495,45 @@ describe("handleFeeUpdated()", () => {
             LP_VAULT_ADDRESS_MOCK.toHex(),
             "fee",
             BigInt.fromI32(15).toString()
+        )
+    })
+})
+
+describe("handlePoolIndexUpdated()", () => {
+    beforeAll(() => {
+        mockMetaPoolFactoryFunctions()
+        mockCurvePoolFunctions()
+
+        emiCurveFactoryChanged()
+        emitCurvePoolDeployed()
+
+        let poolIndexUpdatedEvent = changetype<PoolIndexUpdated>(newMockEvent())
+        poolIndexUpdatedEvent.address = LP_VAULT_ADDRESS_MOCK
+
+        let newIndexParam = new ethereum.EventParam(
+            "_newIndex",
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(2))
+        )
+
+        poolIndexUpdatedEvent.parameters = [newIndexParam]
+        handlePoolIndexUpdated(poolIndexUpdatedEvent)
+    })
+
+    test("Should assign new pool index", () => {
+        assert.fieldEquals(
+            LP_VAULT_ENTITY,
+            LP_VAULT_ADDRESS_MOCK.toHex(),
+            "poolIndex",
+            BigInt.fromI32(2).toString()
+        )
+    })
+
+    test("Should assign relation between LPVault and Pool", () => {
+        assert.fieldEquals(
+            LP_VAULT_ENTITY,
+            LP_VAULT_ADDRESS_MOCK.toHex(),
+            "pool",
+            FIRST_POOL_ADDRESS_MOCK.toHex()
         )
     })
 })

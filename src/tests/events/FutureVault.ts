@@ -25,7 +25,6 @@ import {
     DEPOSIT_TRANSACTION_HASH,
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
     FIRST_USER_MOCK,
-    SECOND_FUTURE_VAULT_ADDRESS_MOCK,
 } from "../mocks/FutureVault"
 import { FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK } from "../mocks/FutureVaultFactory"
 

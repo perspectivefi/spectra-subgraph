@@ -1,4 +1,4 @@
-import { Address, log } from "@graphprotocol/graph-ts"
+import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
 import {
     Deposit,
@@ -27,7 +27,8 @@ import {
 import { createLPVaultFactory } from "../entities/LPVaultFactory"
 import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
-import { AssetType } from "../utils"
+import { PRINCIPAL_TOKEN_ADDRESS_MOCK } from "../tests/mocks/LPVault"
+import { AssetType, logWarning } from "../utils"
 import FutureState from "../utils/FutureState"
 import transactionType from "../utils/TransactionType"
 
@@ -97,21 +98,24 @@ export function handleLPVaultDeployed(event: LPVaultDeployed): void {
     lpVault.save()
 }
 
-// TODO: Update ABIs to use `getPool` method
 export function handlePoolIndexUpdated(event: PoolIndexUpdated): void {
     let lpVault = LPVault.load(event.address.toHex())!
 
     lpVault.poolIndex = event.params._newIndex
 
+    let future = Future.load(lpVault.future)!
+
     let poolAddress = getPool(
-        Address.fromString(lpVault.lpVaultFactory),
+        Address.fromString(future.futureVaultFactory!),
         Address.fromString(lpVault.future),
         event.params._newIndex
     )
+
     let pool = Pool.load(poolAddress.toHex())
     if (pool) {
         lpVault.pool = pool.id
     }
+
     lpVault.save()
 }
 

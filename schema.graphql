@@ -411,7 +411,7 @@ type LPVault @entity {
     state: FutureState!
     fee: BigInt
 
-    poolIndex: Int
+    poolIndex: BigInt
     underlying: Asset!
     ibt: Asset!
     totalAssets: BigInt!
@@ -422,5 +422,5 @@ type LPVault @entity {
     # positions: [AccountAsset!]! @derivedFrom(field: "lpVault")
     transactions: [Transaction!]! @derivedFrom(field: "lpVaultInTransaction")
 
-    interestInTime: [LPVaultInterest!]! @derivedFrom(field: "lpVault")
+    # interestInTime: [LPVaultInterest!]! @derivedFrom(field: "lpVault")
 }
