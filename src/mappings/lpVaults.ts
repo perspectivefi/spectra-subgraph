@@ -127,7 +127,7 @@ export function handlePaused(event: Paused): void {
 
         lpVault.save()
     } else {
-        log.warning("Paused event call for not existing LPVault {}", [
+        log.warning("Paused event call for nonexistent LPVault {}", [
             event.address.toHex(),
         ])
     }
@@ -141,7 +141,7 @@ export function handleUnpaused(event: Unpaused): void {
 
         lpVault.save()
     } else {
-        log.warning("Unpaused event call for not existing LPVault {}", [
+        log.warning("Unpaused event call for nonexistent LPVault {}", [
             event.address.toHex(),
         ])
     }
