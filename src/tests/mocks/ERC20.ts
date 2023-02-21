@@ -74,6 +74,7 @@ const createBalanceOfCallMock = (
 
 export const FIRST_FUTURE_VAULT_PT_BALANCE_MOCK = BigInt.fromString("100")
 export const SECOND_FUTURE_VAULT_PT_BALANCE_MOCK = BigInt.fromString("200")
+export const UNDERLYING_BALANCE_MOCK = BigInt.fromString("1100")
 export const IBT_BALANCE_MOCK = BigInt.fromString("300")
 export const YT_BALANCE_MOCK = BigInt.fromString("400")
 export const POOL_IBT_BALANCE_MOCK = BigInt.fromString("500")
@@ -81,6 +82,10 @@ export const POOL_PT_BALANCE_MOCK = BigInt.fromString("600")
 export const POOL_LP_BALANCE_MOCK = BigInt.fromString("700")
 
 export function mockERC20Balances(): void {
+    createBalanceOfCallMock(
+        Address.fromString(ETH_ADDRESS_MOCK),
+        UNDERLYING_BALANCE_MOCK
+    )
     createBalanceOfCallMock(
         FIRST_FUTURE_VAULT_ADDRESS_MOCK,
         FIRST_FUTURE_VAULT_PT_BALANCE_MOCK

@@ -34,8 +34,8 @@ import {
     emitCurvePoolDeployed,
     emitDeposit,
     emitFutureVaultDeployed,
-    IBT_DEPOSIT,
     SHARES_RETURN,
+    UNDERLYING_DEPOSIT,
 } from "./events/FutureVault"
 import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
 import { mockCurvePoolFunctions, POOL_LP_ADDRESS_MOCK } from "./mocks/CurvePool"
@@ -54,6 +54,7 @@ import {
     mockERC20Functions,
     POOL_IBT_BALANCE_MOCK,
     POOL_PT_BALANCE_MOCK,
+    UNDERLYING_BALANCE_MOCK,
     YT_BALANCE_MOCK,
 } from "./mocks/ERC20"
 import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
@@ -366,12 +367,12 @@ describe("handleDeposit()", () => {
         )
     })
     test("Should create Asset entities for all the tokens in the transaction", () => {
-        // IBT
+        // Underlying
         assert.fieldEquals(
             ASSET_ENTITY,
-            IBT_ADDRESS_MOCK.toHex(),
+            ETH_ADDRESS_MOCK,
             "address",
-            IBT_ADDRESS_MOCK.toHex()
+            ETH_ADDRESS_MOCK
         )
 
         // PT
@@ -399,7 +400,7 @@ describe("handleDeposit()", () => {
             "amountsIn",
             `[${generateAssetAmountId(
                 DEPOSIT_TRANSACTION_HASH.toHex(),
-                IBT_ADDRESS_MOCK.toHex()
+                ETH_ADDRESS_MOCK
             )}]`
         )
 
@@ -431,17 +432,14 @@ describe("handleDeposit()", () => {
             "1"
         )
     })
-    test("Should create three AccountAsset entities and fetch IBT token balance", () => {
+    test("Should create three AccountAsset entities and fetch Underlying token balance", () => {
         assert.entityCount(ACCOUNT_ASSET_ENTITY, 3)
 
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
-            generateAccountAssetId(
-                FIRST_USER_MOCK.toHex(),
-                IBT_ADDRESS_MOCK.toHex()
-            ),
+            generateAccountAssetId(FIRST_USER_MOCK.toHex(), ETH_ADDRESS_MOCK),
             "balance",
-            POOL_IBT_BALANCE_MOCK.toString()
+            UNDERLYING_BALANCE_MOCK.toString()
         )
 
         assert.fieldEquals(
@@ -471,7 +469,7 @@ describe("handleDeposit()", () => {
             "portfolio",
             `[${generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
-                IBT_ADDRESS_MOCK.toHex()
+                ETH_ADDRESS_MOCK
             )}, ${generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
@@ -547,7 +545,7 @@ describe("handleWithdraw()", () => {
 
         let assetsParam = new ethereum.EventParam(
             "assets",
-            ethereum.Value.fromI32(IBT_DEPOSIT)
+            ethereum.Value.fromI32(UNDERLYING_DEPOSIT)
         )
 
         let sharesParam = new ethereum.EventParam(
@@ -609,7 +607,7 @@ describe("handleWithdraw()", () => {
             )}]`
         )
     })
-    test("Should update createAccountAsset entities and fetch IBT token balance", () => {
+    test("Should update createAccountAsset entities and fetch Underlying token balance", () => {
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
             generateAccountAssetId(

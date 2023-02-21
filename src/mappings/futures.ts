@@ -184,26 +184,24 @@ export function handleDeposit(event: Deposit): void {
     let future = Future.load(event.address.toHex())
 
     if (future) {
-        let ibtAddress = getIBT(event.address)
+        let underlyingAddress = getUnderlying(event.address)
         let ptAddress = event.address
         let ytAddress = getYT(event.address)
 
-        // we should cover both kind of deposits - Underlying andIBT deposits but at this moment
-        // there is no difference on the protocol side
         let amountIn = getAssetAmount(
             event.transaction.hash,
-            ibtAddress,
+            underlyingAddress,
             event.params.assets,
-            AssetType.IBT,
+            AssetType.UNDERLYING,
             event.block.timestamp
         )
 
         updateAccountAssetBalance(
             event.params.owner.toHex(),
-            ibtAddress.toHex(),
+            underlyingAddress.toHex(),
             ZERO_BI.minus(event.params.assets),
             event.block.timestamp,
-            AssetType.IBT
+            AssetType.UNDERLYING
         )
 
         let firstAmountOut = getAssetAmount(

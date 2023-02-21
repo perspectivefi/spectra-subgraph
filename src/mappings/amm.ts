@@ -1,5 +1,4 @@
-import { BigInt } from "@graphprotocol/graph-ts"
-import { Address } from "@graphprotocol/graph-ts/index"
+import { BigInt, Address } from "@graphprotocol/graph-ts"
 
 import {
     AddLiquidity,

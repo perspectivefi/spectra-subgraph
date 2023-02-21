@@ -147,7 +147,6 @@ export function handleUnpaused(event: Unpaused): void {
     }
 }
 
-// TODO: deposit IBT
 export function handleDeposit(event: Deposit): void {
     let lpVault = LPVault.load(event.address.toHex())
 
