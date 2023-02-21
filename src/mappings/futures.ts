@@ -457,16 +457,18 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
 
     pool.transactionCount = 0
 
-    let future = Future.load(event.params.pt.toHex())!
-    pool.futureVault = future.address.toHex()
-
     // Asset - Future relation
     let lpToken = getAsset(
         getPoolLPToken(poolAddress).toHex(),
         event.block.timestamp,
         AssetType.LP
     )
-    lpToken.futureVault = future.address.toHex()
+
+    let future = Future.load(event.params.pt.toHex())
+    if (future) {
+        pool.futureVault = future.address.toHex()
+        lpToken.futureVault = future.address.toHex()
+    }
     lpToken.save()
 
     pool.liquidityToken = lpToken.id

@@ -341,7 +341,7 @@ type Pool @entity {
     futureAdminFeeDeadline: BigInt!
 
     futureVaultFactory: FutureVaultFactory
-    futureVault: Future!
+    futureVault: Future
     "to be able to follow all the pools created by a factory"
     factory: PoolFactory
 

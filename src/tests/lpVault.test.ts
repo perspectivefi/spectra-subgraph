@@ -1,7 +1,6 @@
-import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
+import { BigInt, ethereum } from "@graphprotocol/graph-ts"
 import { assert, clearStore, describe, newMockEvent, test } from "matchstick-as"
 import { beforeAll } from "matchstick-as"
-import { createMockedFunction } from "matchstick-as/assembly/index"
 
 import {
     Deposit,
@@ -11,7 +10,6 @@ import {
     Unpaused,
     Withdraw,
 } from "../../generated/LPVault/LPVault"
-import { PrincipalTokenFactory__getPoolResultPoolStruct } from "../../generated/PrincipalTokenFactory/PrincipalTokenFactory"
 import {
     handleDeposit,
     handleWithdraw,
@@ -22,13 +20,27 @@ import {
 } from "../mappings/lpVaults"
 import { generateAssetAmountId } from "../utils"
 import AssetType from "../utils/AssetType"
-import { emiCurveFactoryChanged, emitCurvePoolDeployed, emitFutureVaultDeployed } from "./events/FutureVault";
+import {
+    emiCurveFactoryChanged,
+    emitCurvePoolDeployed,
+    emitFutureVaultDeployed,
+} from "./events/FutureVault"
+import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
 import { emitLPVaultDeployed } from "./events/LPVault"
 import { emitLPVaultFactoryUpdate } from "./events/LPVaultFactory"
-import { FIRST_POOL_ADDRESS_MOCK, mockCurvePoolFunctions } from "./mocks/CurvePool";
+import {
+    FIRST_POOL_ADDRESS_MOCK,
+    mockCurvePoolFunctions,
+} from "./mocks/CurvePool"
+import { mockMetaPoolFactoryFunctions } from "./mocks/CurvePoolFactory"
 import { mockERC20Functions } from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
-import { FIRST_FUTURE_VAULT_ADDRESS_MOCK, FIRST_USER_MOCK, mockFutureVaultFunctions } from "./mocks/FutureVault";
+import {
+    FIRST_FUTURE_VAULT_ADDRESS_MOCK,
+    FIRST_USER_MOCK,
+    mockFutureVaultFunctions,
+} from "./mocks/FutureVault"
+import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory"
 import {
     LP_VAULT_ASSET_ADDRESS_MOCK,
     LP_VAULT_ADDRESS_MOCK,
@@ -48,9 +60,6 @@ import {
     LP_VAULT_FACTORY_ENTITY,
     TRANSACTION_ENTITY,
 } from "./utils/entities"
-import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory";
-import { mockMetaPoolFactoryFunctions } from "./mocks/CurvePoolFactory";
-import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory";
 
 describe("handleRegistryUpdated()", () => {
     beforeAll(() => {
