@@ -87,7 +87,6 @@ dataSources:
     network: {{ network }}
     source:
       abi: PrincipalToken
-      address: '{{ principalToken }}'
       startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
@@ -113,8 +112,6 @@ dataSources:
           handler: handleDeposit
         - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleWithdraw
-        - event: Redeem(indexed address,indexed address,uint256)
-          handler: handleRedeem
         - event: YieldTransferred(indexed address,uint256)
           handler: handleYieldTransferred
   - name: CurvePool

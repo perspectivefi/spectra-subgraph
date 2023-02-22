@@ -1,9 +1,8 @@
 {
     "network": "goerli",
-    "startBlock": 8255000,
+    "startBlock": 8500000,
 
-    "registry": "0x28460580299d05DB0CC27FA7DA8d05b817b40b29",
-    "principalTokenFactory": "0x4F8e2A14F069e4aF9160Adba0156172C0F361a1a",
-    "principalToken": "0xE7bD3dE03fBf80e6E4F05c1Ffa03DC07B28EB648",
+    "registry": "0xBd76DA67cbE95DcB8fF9d697cB70a91F6C9DADf4",
+    "principalTokenFactory": "0x335d519C4E84c027c1E7E464b797aFa7F4e6A19c",
     "curvePool": "0xd144B98d723FCc432419B73b6359C0B5C7aFF122"
 }

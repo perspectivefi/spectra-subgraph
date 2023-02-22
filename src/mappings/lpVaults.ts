@@ -1,4 +1,4 @@
-import { Address, BigInt, log } from "@graphprotocol/graph-ts"
+import { Address, log } from "@graphprotocol/graph-ts"
 
 import {
     Deposit,
@@ -27,8 +27,7 @@ import {
 import { createLPVaultFactory } from "../entities/LPVaultFactory"
 import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
-import { PRINCIPAL_TOKEN_ADDRESS_MOCK } from "../tests/mocks/LPVault"
-import { AssetType, logWarning } from "../utils"
+import { AssetType } from "../utils"
 import FutureState from "../utils/FutureState"
 import transactionType from "../utils/TransactionType"
 
@@ -61,7 +60,6 @@ export function handleRegistryUpdated(event: RegistryUpdated): void {
 
 export function handleLPVaultDeployed(event: LPVaultDeployed): void {
     let lpVault = new LPVault(event.params.lpVault.toHex())
-
     let future = Future.load(event.params.principalToken.toHex())!
 
     lpVault.chainId = getNetwork().chainId

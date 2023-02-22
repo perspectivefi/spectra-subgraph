@@ -4,7 +4,6 @@ import {
     Deposit,
     FeeClaimed,
     Paused,
-    Redeem,
     Unpaused,
     Withdraw,
     YieldTransferred,
@@ -53,7 +52,7 @@ import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
 
-export function handleFutureVaultDeployed(event: PrincipalTokenDeployed): void {
+export function handlePrincipalTokenDeployed(event: PrincipalTokenDeployed): void {
     let futureVaultAddress = event.params._principalToken
     const newFuture = new Future(futureVaultAddress.toHex())
     newFuture.chainId = getNetwork().chainId
