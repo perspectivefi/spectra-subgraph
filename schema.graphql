@@ -19,7 +19,7 @@ enum AssetType {
     YT
     FYT
     LP
-    LP_VAULT_SHARE
+    LP_VAULT_SHARES
     UNKNOWN
 }
 
@@ -419,7 +419,7 @@ type LPVault @entity {
     name: String!
     symbol: String!
 
-    # positions: [AccountAsset!]! @derivedFrom(field: "lpVault")
+    positions: [AccountAsset!]! @derivedFrom(field: "lpVault")
     transactions: [Transaction!]! @derivedFrom(field: "lpVaultInTransaction")
 
     # interestInTime: [LPVaultInterest!]! @derivedFrom(field: "lpVault")

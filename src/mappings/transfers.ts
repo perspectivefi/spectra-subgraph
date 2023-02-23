@@ -47,7 +47,6 @@ export function handleTransfer(event: TransferEvent): void {
         updateAccountAssetBalance(
             accountFrom.address.toHex(),
             event.address.toHex(),
-            event.params.value.neg(),
             eventTimestamp,
             asset.type
         )
@@ -55,7 +54,6 @@ export function handleTransfer(event: TransferEvent): void {
         updateAccountAssetBalance(
             accountTo.address.toHex(),
             event.address.toHex(),
-            event.params.value,
             eventTimestamp,
             asset.type
         )

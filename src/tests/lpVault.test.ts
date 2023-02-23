@@ -18,7 +18,7 @@ import {
     handleFeeUpdated,
     handlePoolIndexUpdated,
 } from "../mappings/lpVaults"
-import { generateAssetAmountId } from "../utils"
+import { generateAccountAssetId, generateAssetAmountId } from "../utils"
 import AssetType from "../utils/AssetType"
 import {
     emiCurveFactoryChanged,
@@ -33,7 +33,12 @@ import {
     mockCurvePoolFunctions,
 } from "./mocks/CurvePool"
 import { mockMetaPoolFactoryFunctions } from "./mocks/CurvePoolFactory"
-import { mockERC20Functions } from "./mocks/ERC20"
+import {
+    LP_VAULT_SHARES_BALANCE_MOCK,
+    LP_VAULT_UNDERLYING_BALANCE_MOCK,
+    mockERC20Balances,
+    mockERC20Functions,
+} from "./mocks/ERC20"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
@@ -54,6 +59,8 @@ import {
     OLD_LP_VAULT_FACTORY_ADDRESS_MOCK,
 } from "./mocks/LPVaultFactory"
 import {
+    ACCOUNT_ASSET_ENTITY,
+    ACCOUNT_ENTITY,
     ASSET_AMOUNT_ENTITY,
     ASSET_ENTITY,
     LP_VAULT_ENTITY,
@@ -229,6 +236,8 @@ describe("handleUnpaused()", () => {
 
 describe("handleDeposit()", () => {
     beforeAll(() => {
+        mockERC20Balances()
+
         let depositEvent = changetype<Deposit>(newMockEvent())
         depositEvent.address = LP_VAULT_ADDRESS_MOCK
         depositEvent.transaction.hash = DEPOSIT_TRANSACTION_HASH
@@ -348,6 +357,7 @@ describe("handleDeposit()", () => {
             BigInt.fromString("150").toString()
         )
     })
+
     test("Should create Transaction entity with full of information about gas, gas price, block number, sender and receiver", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
@@ -361,6 +371,57 @@ describe("handleDeposit()", () => {
             DEPOSIT_TRANSACTION_HASH.toHex(),
             "gasPrice",
             "1"
+        )
+    })
+
+    test("Should create two AccountAsset entities and fetch Underlying token balance", () => {
+        assert.entityCount(ACCOUNT_ASSET_ENTITY, 2)
+
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                FIRST_USER_MOCK.toHex(),
+                LP_VAULT_ASSET_ADDRESS_MOCK.toHex()
+            ),
+            "balance",
+            LP_VAULT_UNDERLYING_BALANCE_MOCK.toString()
+        )
+
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                FIRST_USER_MOCK.toHex(),
+                LP_VAULT_ADDRESS_MOCK.toHex()
+            ),
+            "balance",
+            LP_VAULT_SHARES_BALANCE_MOCK.toString()
+        )
+    })
+
+    test("Should assign all AccountAsset entities to the sender Account in the transaction", () => {
+        assert.fieldEquals(
+            ACCOUNT_ENTITY,
+            FIRST_USER_MOCK.toHex(),
+            "portfolio",
+            `[${generateAccountAssetId(
+                FIRST_USER_MOCK.toHex(),
+                LP_VAULT_ASSET_ADDRESS_MOCK.toHex()
+            )}, ${generateAccountAssetId(
+                FIRST_USER_MOCK.toHex(),
+                LP_VAULT_ADDRESS_MOCK.toHex()
+            )}]`
+        )
+    })
+
+    test("Should add relation between LPVault and transaction sender by AccountAsset entity", () => {
+        assert.fieldEquals(
+            LP_VAULT_ENTITY,
+            LP_VAULT_ADDRESS_MOCK.toHex(),
+            "positions",
+            `[${generateAccountAssetId(
+                FIRST_USER_MOCK.toHex(),
+                LP_VAULT_ADDRESS_MOCK.toHex()
+            )}]`
         )
     })
 })
@@ -480,6 +541,30 @@ describe("handleWithdraw()", () => {
             WITHDRAW_TRANSACTION_HASH.toHex(),
             "gasPrice",
             "1"
+        )
+    })
+
+    test("Should update AccountAsset entities used in the previous deposit event", () => {
+        assert.entityCount(ACCOUNT_ASSET_ENTITY, 2)
+
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                FIRST_USER_MOCK.toHex(),
+                LP_VAULT_ASSET_ADDRESS_MOCK.toHex()
+            ),
+            "balance",
+            LP_VAULT_UNDERLYING_BALANCE_MOCK.toString()
+        )
+
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                FIRST_USER_MOCK.toHex(),
+                LP_VAULT_ADDRESS_MOCK.toHex()
+            ),
+            "balance",
+            LP_VAULT_SHARES_BALANCE_MOCK.toString()
         )
     })
 })
