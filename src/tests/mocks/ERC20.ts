@@ -101,6 +101,9 @@ export function mockERC20Balances(): void {
     createBalanceOfCallMock(POOL_IBT_ADDRESS_MOCK, POOL_IBT_BALANCE_MOCK)
     createBalanceOfCallMock(POOL_PT_ADDRESS_MOCK, POOL_PT_BALANCE_MOCK)
     createBalanceOfCallMock(POOL_LP_ADDRESS_MOCK, POOL_LP_BALANCE_MOCK)
-    createBalanceOfCallMock(LP_VAULT_ASSET_ADDRESS_MOCK, LP_VAULT_UNDERLYING_BALANCE_MOCK)
+    createBalanceOfCallMock(
+        LP_VAULT_ASSET_ADDRESS_MOCK,
+        LP_VAULT_UNDERLYING_BALANCE_MOCK
+    )
     createBalanceOfCallMock(LP_VAULT_ADDRESS_MOCK, LP_VAULT_SHARES_BALANCE_MOCK)
 }
