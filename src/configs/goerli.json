@@ -3,6 +3,5 @@
     "startBlock": 8500000,
 
     "registry": "0xBd76DA67cbE95DcB8fF9d697cB70a91F6C9DADf4",
-    "principalTokenFactory": "0x335d519C4E84c027c1E7E464b797aFa7F4e6A19c",
-    "curvePool": "0xd144B98d723FCc432419B73b6359C0B5C7aFF122"
+    "principalTokenFactory": "0x335d519C4E84c027c1E7E464b797aFa7F4e6A19c"
 }
