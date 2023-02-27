@@ -33,28 +33,17 @@ import FutureState from "../utils/FutureState"
 import transactionType from "../utils/TransactionType"
 
 export function handleRegistryUpdated(event: RegistryUpdated): void {
-    let contractAddress = event.params.newRegistry
-    let lpVaultFactory = LPVaultFactory.load(contractAddress.toHex())
+    let lpVaultFactory = LPVaultFactory.load(event.address.toHex())
 
     if (!lpVaultFactory) {
         lpVaultFactory = createLPVaultFactory(
-            contractAddress,
+            event.address,
             event.block.timestamp
         )
     }
 
-    let oldAddress = event.params.oldRegistry
-    let oldLPVaultFactory = LPVaultFactory.load(oldAddress.toHex())
-
-    if (!oldLPVaultFactory) {
-        oldLPVaultFactory = createLPVaultFactory(
-            oldAddress,
-            event.block.timestamp
-        )
-        oldLPVaultFactory.save()
-    }
-
-    lpVaultFactory.oldFactory = oldLPVaultFactory.address.toHex()
+    lpVaultFactory.oldRegistry = event.params.oldRegistry
+    lpVaultFactory.registry = event.params.newRegistry
 
     lpVaultFactory.save()
 }
