@@ -27,7 +27,7 @@ import {
 } from "./events/FutureVault"
 import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
 import { emitLPVaultDeployed } from "./events/LPVault"
-import { emitLPVaultFactoryUpdate } from "./events/LPVaultFactory"
+import { emitLPVaultRegistryUpdate } from "./events/LPVaultFactory"
 import {
     FIRST_POOL_ADDRESS_MOCK,
     mockCurvePoolFunctions,
@@ -55,8 +55,9 @@ import {
     WITHDRAW_TRANSACTION_HASH,
 } from "./mocks/LPVault"
 import {
-    NEW_LP_VAULT_FACTORY_ADDRESS_MOCK,
-    OLD_LP_VAULT_FACTORY_ADDRESS_MOCK,
+    LP_VAULT_FACTORY_ADDRESS_MOCK,
+    NEW_LP_VAULT_REGISTRY_ADDRESS_MOCK,
+    OLD_LP_VAULT_REGISTRY_ADDRESS_MOCK,
 } from "./mocks/LPVaultFactory"
 import {
     ACCOUNT_ASSET_ENTITY,
@@ -72,26 +73,26 @@ describe("handleRegistryUpdated()", () => {
     beforeAll(() => {
         clearStore()
 
-        emitLPVaultFactoryUpdate()
+        emitLPVaultRegistryUpdate()
     })
 
     test("Should create new LPVaultFactory entity for both - old and new factories", () => {
-        assert.entityCount(LP_VAULT_FACTORY_ENTITY, 2)
+        assert.entityCount(LP_VAULT_FACTORY_ENTITY, 1)
     })
 
     test("Should should save new address and add the old one to the entity", () => {
         assert.fieldEquals(
             LP_VAULT_FACTORY_ENTITY,
-            NEW_LP_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
+            LP_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
             "address",
-            NEW_LP_VAULT_FACTORY_ADDRESS_MOCK.toHexString()
+            LP_VAULT_FACTORY_ADDRESS_MOCK.toHexString()
         )
 
         assert.fieldEquals(
             LP_VAULT_FACTORY_ENTITY,
-            NEW_LP_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
-            "oldFactory",
-            OLD_LP_VAULT_FACTORY_ADDRESS_MOCK.toHexString()
+            LP_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
+            "oldRegistry",
+            OLD_LP_VAULT_REGISTRY_ADDRESS_MOCK.toHexString()
         )
     })
 })
@@ -126,7 +127,7 @@ describe("handleLPVaultDeployed()", () => {
             LP_VAULT_ENTITY,
             LP_VAULT_ADDRESS_MOCK.toHex(),
             "lpVaultFactory",
-            NEW_LP_VAULT_FACTORY_ADDRESS_MOCK.toHexString()
+            LP_VAULT_FACTORY_ADDRESS_MOCK.toHexString()
         )
     })
 
