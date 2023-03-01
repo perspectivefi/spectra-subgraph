@@ -1,12 +1,20 @@
-import { Address, Bytes, ethereum } from "@graphprotocol/graph-ts"
-import { createMockedFunction } from "matchstick-as/assembly/index"
+import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
+import { createMockedFunction } from "matchstick-as"
 
-import { POOL_FACTORY_ADDRESS_MOCK } from "./CurvePoolFactory"
+import { FIRST_POOL_ADDRESS_MOCK } from "./CurvePool"
 import { ETH_ADDRESS_MOCK } from "./ERC20"
+import { PRINCIPAL_TOKEN_ADDRESS_MOCK } from "./LPVault"
 
 export const FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK = Address.fromString(
     "0x0000000000000000000000000000000000000091"
 )
+
+let tupleArray: Array<ethereum.Value> = [
+    ethereum.Value.fromAddress(FIRST_POOL_ADDRESS_MOCK),
+    ethereum.Value.fromString("Test"),
+]
+let tuple = changetype<ethereum.Tuple>(tupleArray)
+let tupleValue = ethereum.Value.fromTuple(tuple)
 
 export function mockFutureVaultFactoryFunctions(): void {
     ;[
@@ -15,8 +23,13 @@ export function mockFutureVaultFactoryFunctions(): void {
     ].forEach((addressMock) => {
         createMockedFunction(
             addressMock,
-            "curveFactory",
-            "curveFactory():(address)"
-        ).returns([ethereum.Value.fromAddress(POOL_FACTORY_ADDRESS_MOCK)])
+            "getPool",
+            "getPool(address,uint256):((address,string))"
+        )
+            .withArgs([
+                ethereum.Value.fromAddress(PRINCIPAL_TOKEN_ADDRESS_MOCK),
+                ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(2)),
+            ])
+            .returns([tupleValue])
     })
 }

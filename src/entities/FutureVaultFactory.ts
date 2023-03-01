@@ -1,5 +1,6 @@
 import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
+import { PrincipalTokenFactory } from "../../generated/PrincipalTokenFactory/PrincipalTokenFactory"
 import { FutureVaultFactory } from "../../generated/schema"
 import { ZERO_ADDRESS } from "../constants"
 
@@ -7,24 +8,34 @@ export function createFutureVaultFactory(
     address: Address,
     timestamp: BigInt
 ): FutureVaultFactory {
-    let newContract = new FutureVaultFactory(address.toHex())
-    newContract.address = address
-    newContract.createdAtTimestamp = timestamp
+    let futureVaultFactory = new FutureVaultFactory(address.toHex())
+    futureVaultFactory.address = address
+    futureVaultFactory.createdAtTimestamp = timestamp
 
-    return newContract
+    return futureVaultFactory
 }
 
-// TODO on the protocol side
-export function getCurveFactory(address: Address): Address {
-    const futureVaultFactoryContract = FutureVaultFactory.bind(address)
+export function getPool(
+    principalTokenFactoryAddress: Address,
+    futureVaultAddress: Address,
+    poolIndex: BigInt
+): Address {
+    const principalTokenFactoryContract = PrincipalTokenFactory.bind(
+        principalTokenFactoryAddress
+    )
 
-    let curveFactoryCall = futureVaultFactoryContract.try_curveFactory()
+    let poolCall = principalTokenFactoryContract.try_getPool(
+        futureVaultAddress,
+        poolIndex
+    )
 
-    if (!curveFactoryCall.reverted) {
-        return curveFactoryCall.value
+    if (!poolCall.reverted) {
+        return poolCall.value.pool
     }
 
-    log.warning("curveFactory() call reverted for {}", [address.toHex()])
+    log.warning("getPool() call reverted for {}", [
+        principalTokenFactoryAddress.toHex(),
+    ])
 
     return ZERO_ADDRESS
 }

@@ -4,7 +4,6 @@ import {
     Deposit,
     FeeClaimed,
     Paused,
-    Redeem,
     Unpaused,
     Withdraw,
     YieldTransferred,
@@ -53,7 +52,9 @@ import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
 
-export function handleFutureVaultDeployed(event: PrincipalTokenDeployed): void {
+export function handlePrincipalTokenDeployed(
+    event: PrincipalTokenDeployed
+): void {
     let futureVaultAddress = event.params._principalToken
     const newFuture = new Future(futureVaultAddress.toHex())
     newFuture.chainId = getNetwork().chainId
@@ -184,26 +185,23 @@ export function handleDeposit(event: Deposit): void {
     let future = Future.load(event.address.toHex())
 
     if (future) {
-        let ibtAddress = getIBT(event.address)
+        let underlyingAddress = getUnderlying(event.address)
         let ptAddress = event.address
         let ytAddress = getYT(event.address)
 
-        // we should cover both kind of deposits - Underlying andIBT deposits but at this moment
-        // there is no difference on the protocol side
         let amountIn = getAssetAmount(
             event.transaction.hash,
-            ibtAddress,
+            underlyingAddress,
             event.params.assets,
-            AssetType.IBT,
+            AssetType.UNDERLYING,
             event.block.timestamp
         )
 
         updateAccountAssetBalance(
             event.params.owner.toHex(),
-            ibtAddress.toHex(),
-            ZERO_BI.minus(event.params.assets),
+            underlyingAddress.toHex(),
             event.block.timestamp,
-            AssetType.IBT
+            AssetType.UNDERLYING
         )
 
         let firstAmountOut = getAssetAmount(
@@ -217,7 +215,6 @@ export function handleDeposit(event: Deposit): void {
         updateAccountAssetBalance(
             event.params.owner.toHex(),
             ptAddress.toHex(),
-            event.params.shares,
             event.block.timestamp,
             AssetType.PT
         )
@@ -233,7 +230,6 @@ export function handleDeposit(event: Deposit): void {
         updateAccountAssetBalance(
             event.params.owner.toHex(),
             ytAddress.toHex(),
-            event.params.shares,
             event.block.timestamp,
             AssetType.YT
         )
@@ -244,6 +240,7 @@ export function handleDeposit(event: Deposit): void {
             futureInTransaction: Address.fromBytes(future.address),
             userInTransaction: event.params.sender,
             poolInTransaction: ZERO_ADDRESS,
+            lpVaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [amountIn.id],
             amountsOut: [firstAmountOut.id, secondAmountOut.id],
@@ -295,7 +292,6 @@ export function handleWithdraw(event: Withdraw): void {
         updateAccountAssetBalance(
             event.params.owner.toHex(),
             ptAddress.toHex(),
-            ZERO_BI.minus(event.params.shares),
             event.block.timestamp,
             AssetType.PT
         )
@@ -311,7 +307,6 @@ export function handleWithdraw(event: Withdraw): void {
         updateAccountAssetBalance(
             event.params.owner.toHex(),
             ytAddress.toHex(),
-            ZERO_BI.minus(event.params.shares),
             event.block.timestamp,
             AssetType.YT
         )
@@ -327,7 +322,6 @@ export function handleWithdraw(event: Withdraw): void {
         updateAccountAssetBalance(
             event.params.receiver.toHex(),
             ibtAddress.toHex(),
-            event.params.assets,
             event.block.timestamp,
             AssetType.IBT
         )
@@ -338,6 +332,7 @@ export function handleWithdraw(event: Withdraw): void {
             futureInTransaction: Address.fromBytes(future.address),
             userInTransaction: event.params.sender,
             poolInTransaction: ZERO_ADDRESS,
+            lpVaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [firstAmountIn.id, secondAmountIn.id],
             amountsOut: [amountOut.id],
@@ -455,16 +450,18 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
 
     pool.transactionCount = 0
 
-    let future = Future.load(event.params.pt.toHex())!
-    pool.futureVault = future.address.toHex()
-
     // Asset - Future relation
     let lpToken = getAsset(
         getPoolLPToken(poolAddress).toHex(),
         event.block.timestamp,
         AssetType.LP
     )
-    lpToken.futureVault = future.address.toHex()
+
+    let future = Future.load(event.params.pt.toHex())
+    if (future) {
+        pool.futureVault = future.address.toHex()
+        lpToken.futureVault = future.address.toHex()
+    }
     lpToken.save()
 
     pool.liquidityToken = lpToken.id

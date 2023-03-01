@@ -21,7 +21,6 @@ export function getNetwork(): Network {
 
     if (!network) {
         const chainName = dataSource.network()
-
         network = new Network("1")
         network.chainId = getChainId(chainName)
         network.name = chainName

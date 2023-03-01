@@ -16,3 +16,7 @@ export let POOL_ENTITY = "Pool"
 export let TRANSFER_ENTITY = "Transfer"
 
 export let NETWORK_ENTITY = "Network"
+
+export let LP_VAULT_FACTORY_ENTITY = "LPVaultFactory"
+export let LP_VAULT_INTEREST_ENTITY = "LPVaultInterest"
+export let LP_VAULT_ENTITY = "LPVault"
