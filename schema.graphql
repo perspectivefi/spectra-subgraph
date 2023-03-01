@@ -383,7 +383,8 @@ type LPVaultFactory @entity {
     createdAtTimestamp: BigInt!
     address: Bytes!
 
-    oldFactory: LPVaultFactory
+    registry: Bytes
+    oldRegistry: Bytes
 
     deployedLPVaults: [LPVault!]! @derivedFrom(field: "lpVaultFactory")
 }

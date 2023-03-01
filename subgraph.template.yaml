@@ -155,6 +155,7 @@ dataSources:
     network: {{ network }}
     source:
       abi: LPVaultFactory
+      address: '{{ lpVaultFactory }}'
       startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
@@ -165,6 +166,10 @@ dataSources:
       abis:
         - name: LPVaultFactory
           file: ./abis/LPVaultFactory.json
+        - name: LPVault
+          file: ./abis/LPVault.json
+        - name: PrincipalToken
+          file: ./abis/PrincipalToken.json
       eventHandlers:
         - event: RegistryUpdated(indexed address,indexed address)
           handler: handleRegistryUpdated

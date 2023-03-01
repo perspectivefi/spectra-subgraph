@@ -8,11 +8,11 @@ import {
     LP_VAULT_ADDRESS_MOCK,
     PRINCIPAL_TOKEN_ADDRESS_MOCK,
 } from "../mocks/LPVault"
-import { NEW_LP_VAULT_FACTORY_ADDRESS_MOCK } from "../mocks/LPVaultFactory"
+import { LP_VAULT_FACTORY_ADDRESS_MOCK } from "../mocks/LPVaultFactory"
 
 export const emitLPVaultDeployed = (): void => {
     let lpVaultDeployedEvent = changetype<LPVaultDeployed>(newMockEvent())
-    lpVaultDeployedEvent.address = NEW_LP_VAULT_FACTORY_ADDRESS_MOCK
+    lpVaultDeployedEvent.address = LP_VAULT_FACTORY_ADDRESS_MOCK
 
     let lpVaultParam = new ethereum.EventParam(
         "lpVault",
