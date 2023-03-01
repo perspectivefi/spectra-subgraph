@@ -1,5 +1,4 @@
-import { BigInt } from "@graphprotocol/graph-ts"
-import { Address } from "@graphprotocol/graph-ts/index"
+import { BigInt, Address } from "@graphprotocol/graph-ts"
 
 import {
     AddLiquidity,
@@ -52,7 +51,6 @@ export function handleAddLiquidity(event: AddLiquidity): void {
         updateAccountAssetBalance(
             account.address.toHex(),
             ibtAddress,
-            ZERO_BI.minus(event.params.token_amounts[0]),
             eventTimestamp,
             AssetType.IBT
         )
@@ -68,7 +66,6 @@ export function handleAddLiquidity(event: AddLiquidity): void {
         updateAccountAssetBalance(
             account.address.toHex(),
             ptAddress,
-            ZERO_BI.minus(event.params.token_amounts[1]),
             eventTimestamp,
             AssetType.PT
         )
@@ -87,7 +84,6 @@ export function handleAddLiquidity(event: AddLiquidity): void {
         let lpPosition = updateAccountAssetBalance(
             account.address.toHex(),
             lpTokenAddress.toHex(),
-            lpTokenDiff,
             eventTimestamp,
             AssetType.LP
         )
@@ -186,7 +182,6 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
         let lpPosition = updateAccountAssetBalance(
             account.address.toHex(),
             lpTokenAddress.toHex(),
-            ZERO_BI.minus(lpTokenDiff),
             eventTimestamp,
             AssetType.LP
         )
@@ -216,7 +211,6 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
         updateAccountAssetBalance(
             account.address.toHex(),
             ibtAddress,
-            event.params.token_amounts[0],
             event.block.timestamp,
             AssetType.IBT
         )
@@ -232,7 +226,6 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
         updateAccountAssetBalance(
             account.address.toHex(),
             ptAddress,
-            event.params.token_amounts[1],
             event.block.timestamp,
             AssetType.PT
         )
@@ -312,7 +305,6 @@ export function handleTokenExchange(event: TokenExchange): void {
         updateAccountAssetBalance(
             account.address.toHex(),
             poolAssetInAmount.asset,
-            ZERO_BI.minus(event.params.tokens_sold),
             event.block.timestamp,
             event.params.sold_id.equals(ZERO_BI) ? AssetType.IBT : AssetType.PT
         )
@@ -330,7 +322,6 @@ export function handleTokenExchange(event: TokenExchange): void {
         updateAccountAssetBalance(
             account.address.toHex(),
             poolAssetOutAmount.asset,
-            event.params.tokens_bought,
             event.block.timestamp,
             event.params.bought_id.equals(ZERO_BI)
                 ? AssetType.PT
@@ -447,7 +438,6 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
         let lpPosition = updateAccountAssetBalance(
             account.address.toHex(),
             lpTokenAddress.toHex(),
-            ZERO_BI.minus(event.params.token_amount),
             eventTimestamp,
             AssetType.LP
         )
@@ -476,7 +466,6 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
         updateAccountAssetBalance(
             account.address.toHex(),
             withdrawnTokenAddress,
-            event.params.coin_amount,
             event.block.timestamp,
             withdrawnAssetType
         )

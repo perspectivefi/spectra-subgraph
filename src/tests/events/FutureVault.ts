@@ -12,7 +12,7 @@ import {
     handleCurveFactoryChanged,
     handleCurvePoolDeployed,
     handleDeposit,
-    handleFutureVaultDeployed,
+    handlePrincipalTokenDeployed,
 } from "../../mappings/futures"
 import {
     POOL_DEPLOY_TRANSACTION_HASH,
@@ -29,7 +29,7 @@ import {
 import { FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK } from "../mocks/FutureVaultFactory"
 
 export const SHARES_RETURN = 51
-export const IBT_DEPOSIT = 15
+export const UNDERLYING_DEPOSIT = 15
 
 export const emitFutureVaultDeployed = (futureVaultAddress: Address): void => {
     let futureVaultDeployedEvent = changetype<PrincipalTokenDeployed>(
@@ -42,7 +42,7 @@ export const emitFutureVaultDeployed = (futureVaultAddress: Address): void => {
         ethereum.Value.fromAddress(futureVaultAddress)
     )
     futureVaultDeployedEvent.parameters = [futureVaultParam]
-    handleFutureVaultDeployed(futureVaultDeployedEvent)
+    handlePrincipalTokenDeployed(futureVaultDeployedEvent)
 }
 
 export const emitDeposit = (timestamp: number = 0): Deposit => {
@@ -64,7 +64,7 @@ export const emitDeposit = (timestamp: number = 0): Deposit => {
 
     let assetsParam = new ethereum.EventParam(
         "assets",
-        ethereum.Value.fromI32(IBT_DEPOSIT)
+        ethereum.Value.fromI32(UNDERLYING_DEPOSIT)
     )
 
     let sharesParam = new ethereum.EventParam(
