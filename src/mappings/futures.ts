@@ -4,7 +4,6 @@ import {
     Deposit,
     FeeClaimed,
     Paused,
-    Redeem,
     Unpaused,
     Withdraw,
     YieldTransferred,
@@ -53,7 +52,9 @@ import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
 
-export function handleFutureVaultDeployed(event: PrincipalTokenDeployed): void {
+export function handlePrincipalTokenDeployed(
+    event: PrincipalTokenDeployed
+): void {
     let futureVaultAddress = event.params._principalToken
     const newFuture = new Future(futureVaultAddress.toHex())
     newFuture.chainId = getNetwork().chainId
@@ -199,7 +200,6 @@ export function handleDeposit(event: Deposit): void {
         updateAccountAssetBalance(
             event.params.owner.toHex(),
             underlyingAddress.toHex(),
-            ZERO_BI.minus(event.params.assets),
             event.block.timestamp,
             AssetType.UNDERLYING
         )
@@ -215,7 +215,6 @@ export function handleDeposit(event: Deposit): void {
         updateAccountAssetBalance(
             event.params.owner.toHex(),
             ptAddress.toHex(),
-            event.params.shares,
             event.block.timestamp,
             AssetType.PT
         )
@@ -231,7 +230,6 @@ export function handleDeposit(event: Deposit): void {
         updateAccountAssetBalance(
             event.params.owner.toHex(),
             ytAddress.toHex(),
-            event.params.shares,
             event.block.timestamp,
             AssetType.YT
         )
@@ -294,7 +292,6 @@ export function handleWithdraw(event: Withdraw): void {
         updateAccountAssetBalance(
             event.params.owner.toHex(),
             ptAddress.toHex(),
-            ZERO_BI.minus(event.params.shares),
             event.block.timestamp,
             AssetType.PT
         )
@@ -310,7 +307,6 @@ export function handleWithdraw(event: Withdraw): void {
         updateAccountAssetBalance(
             event.params.owner.toHex(),
             ytAddress.toHex(),
-            ZERO_BI.minus(event.params.shares),
             event.block.timestamp,
             AssetType.YT
         )
@@ -326,7 +322,6 @@ export function handleWithdraw(event: Withdraw): void {
         updateAccountAssetBalance(
             event.params.receiver.toHex(),
             ibtAddress.toHex(),
-            event.params.assets,
             event.block.timestamp,
             AssetType.IBT
         )

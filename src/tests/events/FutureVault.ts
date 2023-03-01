@@ -12,7 +12,7 @@ import {
     handleCurveFactoryChanged,
     handleCurvePoolDeployed,
     handleDeposit,
-    handleFutureVaultDeployed,
+    handlePrincipalTokenDeployed,
 } from "../../mappings/futures"
 import {
     POOL_DEPLOY_TRANSACTION_HASH,
@@ -42,7 +42,7 @@ export const emitFutureVaultDeployed = (futureVaultAddress: Address): void => {
         ethereum.Value.fromAddress(futureVaultAddress)
     )
     futureVaultDeployedEvent.parameters = [futureVaultParam]
-    handleFutureVaultDeployed(futureVaultDeployedEvent)
+    handlePrincipalTokenDeployed(futureVaultDeployedEvent)
 }
 
 export const emitDeposit = (timestamp: number = 0): Deposit => {

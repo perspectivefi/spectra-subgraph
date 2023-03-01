@@ -87,7 +87,6 @@ dataSources:
     network: {{ network }}
     source:
       abi: PrincipalToken
-      address: '{{ principalToken }}'
       startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
@@ -113,8 +112,6 @@ dataSources:
           handler: handleDeposit
         - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleWithdraw
-        - event: Redeem(indexed address,indexed address,uint256)
-          handler: handleRedeem
         - event: YieldTransferred(indexed address,uint256)
           handler: handleYieldTransferred
   - name: CurvePool
@@ -158,6 +155,7 @@ dataSources:
     network: {{ network }}
     source:
       abi: LPVaultFactory
+      address: '{{ lpVaultFactory }}'
       startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
@@ -168,6 +166,10 @@ dataSources:
       abis:
         - name: LPVaultFactory
           file: ./abis/LPVaultFactory.json
+        - name: LPVault
+          file: ./abis/LPVault.json
+        - name: PrincipalToken
+          file: ./abis/PrincipalToken.json
       eventHandlers:
         - event: RegistryUpdated(indexed address,indexed address)
           handler: handleRegistryUpdated
