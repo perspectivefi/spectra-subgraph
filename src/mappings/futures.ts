@@ -200,7 +200,6 @@ export function handleDeposit(event: Deposit): void {
         updateAccountAssetBalance(
             event.params.owner.toHex(),
             underlyingAddress.toHex(),
-            ZERO_BI.minus(event.params.assets),
             event.block.timestamp,
             AssetType.UNDERLYING
         )
@@ -216,7 +215,6 @@ export function handleDeposit(event: Deposit): void {
         updateAccountAssetBalance(
             event.params.owner.toHex(),
             ptAddress.toHex(),
-            event.params.shares,
             event.block.timestamp,
             AssetType.PT
         )
@@ -232,7 +230,6 @@ export function handleDeposit(event: Deposit): void {
         updateAccountAssetBalance(
             event.params.owner.toHex(),
             ytAddress.toHex(),
-            event.params.shares,
             event.block.timestamp,
             AssetType.YT
         )
@@ -295,7 +292,6 @@ export function handleWithdraw(event: Withdraw): void {
         updateAccountAssetBalance(
             event.params.owner.toHex(),
             ptAddress.toHex(),
-            ZERO_BI.minus(event.params.shares),
             event.block.timestamp,
             AssetType.PT
         )
@@ -311,7 +307,6 @@ export function handleWithdraw(event: Withdraw): void {
         updateAccountAssetBalance(
             event.params.owner.toHex(),
             ytAddress.toHex(),
-            ZERO_BI.minus(event.params.shares),
             event.block.timestamp,
             AssetType.YT
         )
@@ -327,7 +322,6 @@ export function handleWithdraw(event: Withdraw): void {
         updateAccountAssetBalance(
             event.params.receiver.toHex(),
             ibtAddress.toHex(),
-            event.params.assets,
             event.block.timestamp,
             AssetType.IBT
         )

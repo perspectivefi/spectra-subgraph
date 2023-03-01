@@ -14,6 +14,7 @@ import {
 } from "../../generated/LPVaultFactory/LPVaultFactory"
 import { Future, LPVault, LPVaultFactory, Pool } from "../../generated/schema"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
+import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import { getIBT } from "../entities/FutureVault"
@@ -32,28 +33,17 @@ import FutureState from "../utils/FutureState"
 import transactionType from "../utils/TransactionType"
 
 export function handleRegistryUpdated(event: RegistryUpdated): void {
-    let contractAddress = event.params.newRegistry
-    let lpVaultFactory = LPVaultFactory.load(contractAddress.toHex())
+    let lpVaultFactory = LPVaultFactory.load(event.address.toHex())
 
     if (!lpVaultFactory) {
         lpVaultFactory = createLPVaultFactory(
-            contractAddress,
+            event.address,
             event.block.timestamp
         )
     }
 
-    let oldAddress = event.params.oldRegistry
-    let oldLPVaultFactory = LPVaultFactory.load(oldAddress.toHex())
-
-    if (!oldLPVaultFactory) {
-        oldLPVaultFactory = createLPVaultFactory(
-            oldAddress,
-            event.block.timestamp
-        )
-        oldLPVaultFactory.save()
-    }
-
-    lpVaultFactory.oldFactory = oldLPVaultFactory.address.toHex()
+    lpVaultFactory.oldRegistry = event.params.oldRegistry
+    lpVaultFactory.registry = event.params.newRegistry
 
     lpVaultFactory.save()
 }
@@ -91,7 +81,6 @@ export function handleLPVaultDeployed(event: LPVaultDeployed): void {
     lpVault.symbol = symbol
     lpVault.totalAssets = ZERO_BI
 
-    // positions: [AccountAsset!]! @derivedFrom(field: "lpVault")
     // interestInTime: [LPVaultInterest!]! @derivedFrom(field: "lpVault")
     lpVault.save()
 }
@@ -161,13 +150,30 @@ export function handleDeposit(event: Deposit): void {
             event.block.timestamp
         )
 
+        updateAccountAssetBalance(
+            event.params.sender.toHex(),
+            underlyingAddress.toHex(),
+            event.block.timestamp,
+            AssetType.UNDERLYING
+        )
+
         let amountOut = getAssetAmount(
             event.transaction.hash,
             event.address,
             event.params.shares,
-            AssetType.LP_VAULT_SHARE,
+            AssetType.LP_VAULT_SHARES,
             event.block.timestamp
         )
+
+        let lpVaultPosition = updateAccountAssetBalance(
+            event.params.owner.toHex(),
+            event.address.toHex(),
+            event.block.timestamp,
+            AssetType.LP_VAULT_SHARES
+        )
+
+        lpVaultPosition.lpVault = lpVault.id
+        lpVaultPosition.save()
 
         let lpVaultAddress = Address.fromBytes(lpVault.address)
 
@@ -212,8 +218,15 @@ export function handleWithdraw(event: Withdraw): void {
             event.transaction.hash,
             event.address,
             event.params.shares,
-            AssetType.LP_VAULT_SHARE,
+            AssetType.LP_VAULT_SHARES,
             event.block.timestamp
+        )
+
+        updateAccountAssetBalance(
+            event.params.sender.toHex(),
+            event.address.toHex(),
+            event.block.timestamp,
+            AssetType.LP_VAULT_SHARES
         )
 
         let underlyingAddress = getUnderlying(
@@ -226,6 +239,13 @@ export function handleWithdraw(event: Withdraw): void {
             event.params.assets,
             AssetType.UNDERLYING,
             event.block.timestamp
+        )
+
+        updateAccountAssetBalance(
+            event.params.owner.toHex(),
+            underlyingAddress.toHex(),
+            event.block.timestamp,
+            AssetType.UNDERLYING
         )
 
         let lpVaultAddress = Address.fromBytes(lpVault.address)

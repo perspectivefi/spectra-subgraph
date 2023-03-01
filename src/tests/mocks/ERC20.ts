@@ -11,7 +11,7 @@ import {
     FIRST_USER_MOCK,
 } from "./FutureVault"
 import { LP_VAULT_ADDRESS_MOCK, LP_VAULT_ASSET_ADDRESS_MOCK } from "./LPVault"
-import { OLD_LP_VAULT_FACTORY_ADDRESS_MOCK } from "./LPVaultFactory"
+import { OLD_LP_VAULT_REGISTRY_ADDRESS_MOCK } from "./LPVaultFactory"
 import { RECEIVER_USER_MOCK } from "./Transaction"
 
 export const ETH_ADDRESS_MOCK = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
@@ -49,7 +49,7 @@ export function mockERC20Functions(): void {
         POOL_IBT_ADDRESS_MOCK,
         POOL_PT_ADDRESS_MOCK,
         POOL_LP_ADDRESS_MOCK,
-        OLD_LP_VAULT_FACTORY_ADDRESS_MOCK,
+        OLD_LP_VAULT_REGISTRY_ADDRESS_MOCK,
         LP_VAULT_ADDRESS_MOCK,
         LP_VAULT_ASSET_ADDRESS_MOCK,
     ].forEach((addressMock) => {
@@ -80,6 +80,8 @@ export const YT_BALANCE_MOCK = BigInt.fromString("400")
 export const POOL_IBT_BALANCE_MOCK = BigInt.fromString("500")
 export const POOL_PT_BALANCE_MOCK = BigInt.fromString("600")
 export const POOL_LP_BALANCE_MOCK = BigInt.fromString("700")
+export const LP_VAULT_UNDERLYING_BALANCE_MOCK = BigInt.fromString("800")
+export const LP_VAULT_SHARES_BALANCE_MOCK = BigInt.fromString("900")
 
 export function mockERC20Balances(): void {
     createBalanceOfCallMock(
@@ -99,4 +101,9 @@ export function mockERC20Balances(): void {
     createBalanceOfCallMock(POOL_IBT_ADDRESS_MOCK, POOL_IBT_BALANCE_MOCK)
     createBalanceOfCallMock(POOL_PT_ADDRESS_MOCK, POOL_PT_BALANCE_MOCK)
     createBalanceOfCallMock(POOL_LP_ADDRESS_MOCK, POOL_LP_BALANCE_MOCK)
+    createBalanceOfCallMock(
+        LP_VAULT_ASSET_ADDRESS_MOCK,
+        LP_VAULT_UNDERLYING_BALANCE_MOCK
+    )
+    createBalanceOfCallMock(LP_VAULT_ADDRESS_MOCK, LP_VAULT_SHARES_BALANCE_MOCK)
 }

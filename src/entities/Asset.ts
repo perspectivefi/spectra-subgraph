@@ -26,7 +26,7 @@ export function getAsset(
                 AssetType.PT,
                 AssetType.YT,
                 AssetType.LP,
-                AssetType.LP_VAULT_SHARE,
+                AssetType.LP_VAULT_SHARES,
             ].includes(type)
         ) {
             asset = createAsset(address, timestamp, type)

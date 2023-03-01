@@ -62,7 +62,6 @@ export function getAccountAsset(
 export function updateAccountAssetBalance(
     accountId: string,
     assetId: string,
-    balanceDiff: BigInt,
     timestamp: BigInt,
     assetType: string
 ): AccountAsset {
