@@ -170,6 +170,8 @@ dataSources:
           file: ./abis/LPVault.json
         - name: PrincipalToken
           file: ./abis/PrincipalToken.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
       eventHandlers:
         - event: RegistryUpdated(indexed address,indexed address)
           handler: handleRegistryUpdated
@@ -190,6 +192,10 @@ dataSources:
       abis:
         - name: LPVault
           file: ./abis/LPVault.json
+        - name: ERC4626
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
       eventHandlers:
         - event: Deposit(indexed address,indexed address,uint256,uint256)
           handler: handleDeposit
