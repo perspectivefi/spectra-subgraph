@@ -83,6 +83,14 @@ export function handleLPVaultDeployed(event: LPVaultDeployed): void {
 
     // interestInTime: [LPVaultInterest!]! @derivedFrom(field: "lpVault")
     lpVault.save()
+
+    let lpVaultShareAsset = getAsset(
+        lpVault.address.toHex(),
+        event.block.timestamp,
+        AssetType.LP_VAULT_SHARES
+    )
+    lpVaultShareAsset.futureVault = future.address.toHex()
+    lpVaultShareAsset.save()
 }
 
 export function handlePoolIndexUpdated(event: PoolIndexUpdated): void {
