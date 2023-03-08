@@ -1,6 +1,6 @@
 import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
-import { ERC20 } from "../../generated/ChainlinkAggregatorDataSource/ERC20"
+import { ERC20 } from "../../generated/templates/ERC20/ERC20"
 import { ZERO_BI } from "../constants"
 
 const UNKNOWN = "Unknown"

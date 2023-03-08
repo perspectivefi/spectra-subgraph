@@ -1,14 +1,6 @@
 import { Address, ethereum, log } from "@graphprotocol/graph-ts"
 
 import {
-    Deposit,
-    FeeClaimed,
-    Paused,
-    Unpaused,
-    Withdraw,
-    YieldTransferred,
-} from "../../generated/PrincipalToken/PrincipalToken"
-import {
     CurveFactoryChanged,
     CurvePoolDeployed,
     PrincipalTokenDeployed,
@@ -20,7 +12,18 @@ import {
     Pool,
     PoolFactory,
 } from "../../generated/schema"
-import { ERC20 } from "../../generated/templates"
+import {
+    ERC20,
+    PrincipalToken as PrincipalTokenTemplate,
+} from "../../generated/templates"
+import {
+    Deposit,
+    FeeClaimed,
+    Paused,
+    Unpaused,
+    Withdraw,
+    YieldTransferred,
+} from "../../generated/templates/PrincipalToken/PrincipalToken"
 import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
 import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
@@ -118,6 +121,9 @@ export function handlePrincipalTokenDeployed(
 
     // Create dynamic data source for YT token events
     ERC20.create(Address.fromBytes(ytToken.address))
+
+    // Create dynamic data source for PrincipalToken events
+    PrincipalTokenTemplate.create(event.params._principalToken)
 }
 
 export function handlePaused(event: Paused): void {

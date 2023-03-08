@@ -9,7 +9,7 @@ import {
     PoolIndexUpdated,
     Unpaused,
     Withdraw,
-} from "../../generated/LPVault/LPVault"
+} from "../../generated/templates/LPVault/LPVault"
 import {
     handleDeposit,
     handleWithdraw,

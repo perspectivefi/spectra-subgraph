@@ -1,7 +1,7 @@
 import { BigInt } from "@graphprotocol/graph-ts"
 import { Address, log } from "@graphprotocol/graph-ts"
 
-import { PrincipalToken } from "../../generated/PrincipalToken/PrincipalToken"
+import { PrincipalToken } from "../../generated/templates/PrincipalToken/PrincipalToken"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 
 export function getExpirationTimestamp(futureVault: Address): BigInt {

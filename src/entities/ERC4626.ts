@@ -1,6 +1,6 @@
 import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
-import { ERC4626 } from "../../generated/PrincipalToken/ERC4626"
+import { ERC4626 } from "../../generated/templates/PrincipalToken/ERC4626"
 import { UNIT_BI, ZERO_BI } from "../constants"
 
 export function getIBTRate(address: Address): BigInt {

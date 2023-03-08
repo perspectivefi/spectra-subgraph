@@ -2,7 +2,7 @@ import { Address } from "@graphprotocol/graph-ts"
 import { BigInt, ethereum } from "@graphprotocol/graph-ts/index"
 import { newMockEvent } from "matchstick-as/assembly/index"
 
-import { Deposit } from "../../../generated/PrincipalToken/PrincipalToken"
+import { Deposit } from "../../../generated/templates/PrincipalToken/PrincipalToken"
 import {
     CurveFactoryChanged,
     CurvePoolDeployed,

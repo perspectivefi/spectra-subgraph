@@ -14,7 +14,7 @@ import {
     Unpaused,
     Withdraw,
     YieldTransferred,
-} from "../../generated/PrincipalToken/PrincipalToken"
+} from "../../generated/templates/PrincipalToken/PrincipalToken"
 import { DAY_ID_0, ZERO_BI } from "../constants"
 import {
     handleFeeClaimed,
