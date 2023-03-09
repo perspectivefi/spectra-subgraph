@@ -9,8 +9,8 @@ import {
     beforeAll,
 } from "matchstick-as/assembly/index"
 
-import { AnswerUpdated } from "../../generated/ChainlinkAggregatorDataSource/ChainlinkAggregatorProxyContract"
-import { handleAnswerUpdated } from "../mappings/chainlinkAggregator"
+// import { AnswerUpdated } from "../../generated/ChainlinkAggregatorDataSource/ChainlinkAggregatorProxyContract"
+// import { handleAnswerUpdated } from "../mappings/chainlinkAggregator"
 import { generateAssetPriceId } from "../utils"
 import {
     ETH_ADDRESS_MOCK,
@@ -28,38 +28,39 @@ describe("handleAnswerUpdated()", () => {
         mockFeedRegistryInterfaceFunctions()
     })
 
-    test("Should create a new Asset Entity with AssetPrice relation", () => {
-        let newAnswerUpdatedEvent = changetype<AnswerUpdated>(newMockEvent())
-        newAnswerUpdatedEvent.parameters = new Array()
-
-        let currentParam = new ethereum.EventParam(
-            "current",
-            ethereum.Value.fromI32(15)
-        )
-        let roundIdParam = new ethereum.EventParam(
-            "roundId",
-            ethereum.Value.fromI32(1)
-        )
-        let updatedAtParam = new ethereum.EventParam(
-            "updatedAt",
-            ethereum.Value.fromI32(99)
-        )
-
-        newAnswerUpdatedEvent.parameters.push(currentParam)
-        newAnswerUpdatedEvent.parameters.push(roundIdParam)
-        newAnswerUpdatedEvent.parameters.push(updatedAtParam)
-
-        handleAnswerUpdated(newAnswerUpdatedEvent)
-
-        assert.entityCount(ASSET_ENTITY, 1)
-        assert.fieldEquals(
-            ASSET_ENTITY,
-            ETH_ADDRESS_MOCK,
-            "price",
-            generateAssetPriceId(
-                ETH_ADDRESS_MOCK,
-                newAnswerUpdatedEvent.block.timestamp.toString()
-            )
-        )
-    })
+    // Removed price feed for now
+    // test("Should create a new Asset Entity with AssetPrice relation", () => {
+    //     let newAnswerUpdatedEvent = changetype<AnswerUpdated>(newMockEvent())
+    //     newAnswerUpdatedEvent.parameters = new Array()
+    //
+    //     let currentParam = new ethereum.EventParam(
+    //         "current",
+    //         ethereum.Value.fromI32(15)
+    //     )
+    //     let roundIdParam = new ethereum.EventParam(
+    //         "roundId",
+    //         ethereum.Value.fromI32(1)
+    //     )
+    //     let updatedAtParam = new ethereum.EventParam(
+    //         "updatedAt",
+    //         ethereum.Value.fromI32(99)
+    //     )
+    //
+    //     newAnswerUpdatedEvent.parameters.push(currentParam)
+    //     newAnswerUpdatedEvent.parameters.push(roundIdParam)
+    //     newAnswerUpdatedEvent.parameters.push(updatedAtParam)
+    //
+    //     handleAnswerUpdated(newAnswerUpdatedEvent)
+    //
+    //     assert.entityCount(ASSET_ENTITY, 1)
+    //     assert.fieldEquals(
+    //         ASSET_ENTITY,
+    //         ETH_ADDRESS_MOCK,
+    //         "price",
+    //         generateAssetPriceId(
+    //             ETH_ADDRESS_MOCK,
+    //             newAnswerUpdatedEvent.block.timestamp.toString()
+    //         )
+    //     )
+    // })
 })
