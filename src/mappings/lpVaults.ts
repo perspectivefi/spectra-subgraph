@@ -1,18 +1,19 @@
 import { Address, log } from "@graphprotocol/graph-ts"
 
 import {
+    LPVaultDeployed,
+    RegistryUpdated,
+} from "../../generated/LPVaultFactory/LPVaultFactory"
+import { Future, LPVault, LPVaultFactory, Pool } from "../../generated/schema"
+import { LPVault as LPVaultTemplate } from "../../generated/templates"
+import {
     Deposit,
     FeeUpdated,
     Paused,
     PoolIndexUpdated,
     Unpaused,
     Withdraw,
-} from "../../generated/LPVault/LPVault"
-import {
-    LPVaultDeployed,
-    RegistryUpdated,
-} from "../../generated/LPVaultFactory/LPVaultFactory"
-import { Future, LPVault, LPVaultFactory, Pool } from "../../generated/schema"
+} from "../../generated/templates/LPVault/LPVault"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
@@ -91,6 +92,9 @@ export function handleLPVaultDeployed(event: LPVaultDeployed): void {
     )
     lpVaultShareAsset.futureVault = future.address.toHex()
     lpVaultShareAsset.save()
+
+    // Create dynamic data source for LPVault events
+    LPVaultTemplate.create(Address.fromBytes(lpVault.address))
 }
 
 export function handlePoolIndexUpdated(event: PoolIndexUpdated): void {

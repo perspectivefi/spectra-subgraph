@@ -1,6 +1,6 @@
 import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
-import { LPVault } from "../../generated/LPVault/LPVault"
+import { LPVault } from "../../generated/templates/LPVault/LPVault"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 
 export function getName(address: Address): string {
