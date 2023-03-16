@@ -30,3 +30,17 @@ export const getPoolFactoryAdmin = (factoryAddress: Address): Address => {
 
     return ZERO_ADDRESS
 }
+
+export const getPoolRates = (factoryAddress: Address): Address => {
+    let curvePoolFactoryContract = CurvePoolFactory.bind(factoryAddress)
+
+    let adminCall = curvePoolFactoryContract.
+
+    if (!adminCall.reverted) {
+        return adminCall.value
+    }
+
+    log.warning("admin() call reverted for {}", [factoryAddress.toHex()])
+
+    return ZERO_ADDRESS
+}
