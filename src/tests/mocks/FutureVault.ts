@@ -53,8 +53,8 @@ export function mockFutureVaultFunctions(): void {
 
         createMockedFunction(
             addressMock,
-            "getMaxProtocolFee",
-            "getMaxProtocolFee():(uint256)"
+            "getProtocolFee",
+            "getProtocolFee():(uint256)"
         ).returns([ethereum.Value.fromI32(11)])
 
         createMockedFunction(addressMock, "name", "name():(string)").returns([
