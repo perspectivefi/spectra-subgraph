@@ -9,13 +9,14 @@ import {
     RemoveLiquidityOne,
     TokenExchange,
 } from "../../generated/CurvePool/CurvePool"
-import { AssetAmount, FeeClaim, Pool } from "../../generated/schema"
+import { APRInTime, AssetAmount, FeeClaim, Pool } from "../../generated/schema"
 import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
+import { createAPRInTime } from "../entities/APRInTime"
 import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
-import { getPoolLPToken } from "../entities/CurvePool"
+import { getPoolAPR, getPoolLPToken } from "../entities/CurvePool"
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
@@ -411,6 +412,12 @@ export function handleTokenExchange(event: TokenExchange): void {
                 futureDailyStats.dailySwaps.plus(UNIT_BI)
             futureDailyStats.save()
         }
+
+        let apr = getPoolAPR(event.address)
+        let poolAPR = createAPRInTime(event.address, event.block.timestamp)
+
+        poolAPR.value = apr
+        poolAPR.save()
     }
 }
 

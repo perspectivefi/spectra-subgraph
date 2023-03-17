@@ -18,7 +18,7 @@ export function getExpirationTimestamp(futureVault: Address): BigInt {
     return ZERO_BI
 }
 
-export function getMaxFeeRate(futureVault: Address): BigInt {
+export function getFeeRate(futureVault: Address): BigInt {
     const futureContract = PrincipalToken.bind(futureVault)
 
     let protocolFeeCall = futureContract.try_getProtocolFee()

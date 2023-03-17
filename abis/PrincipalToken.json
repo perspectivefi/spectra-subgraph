@@ -413,7 +413,7 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "yield",
+          "name": "_yield",
           "type": "uint256"
         }
       ],
@@ -432,7 +432,7 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "yield",
+          "name": "_yield",
           "type": "uint256"
         }
       ],
@@ -2460,7 +2460,7 @@
             },
             {
               "internalType": "uint256",
-              "name": "yield",
+              "name": "_yield",
               "type": "uint256",
               "indexed": false
             }
@@ -2479,7 +2479,7 @@
             },
             {
               "internalType": "uint256",
-              "name": "yield",
+              "name": "_yield",
               "type": "uint256",
               "indexed": true
             }

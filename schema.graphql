@@ -310,6 +310,15 @@ type Transaction @entity {
 # AMM
 ####################
 
+type APRInTime @entity {
+    id: ID!
+    createdAtTimestamp: BigInt!
+
+    value: BigInt!
+
+    pool: Pool!
+}
+
 type PoolFactory @entity {
     id: ID!
     address: Bytes!
@@ -354,7 +363,7 @@ type Pool @entity {
     totalLPSupply: BigInt!
     liquidityPositions: [AccountAsset!]! @derivedFrom(field: "pool")
 
-    spotPrice: [ValueInTime!]
+    apr: [APRInTime!]! @derivedFrom(field: "pool")
 }
 
 type Transfer @entity {
