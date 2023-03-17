@@ -27,9 +27,7 @@ export function getMaxFeeRate(futureVault: Address): BigInt {
         return protocolFeeCall.value
     }
 
-    log.warning("getProtocolFee() call reverted for {}", [
-        futureVault.toHex(),
-    ])
+    log.warning("getProtocolFee() call reverted for {}", [futureVault.toHex()])
 
     return ZERO_BI
 }
