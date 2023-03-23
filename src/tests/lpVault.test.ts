@@ -20,6 +20,8 @@ import {
 } from "../mappings/lpVaults"
 import { generateAccountAssetId, generateAssetAmountId } from "../utils"
 import AssetType from "../utils/AssetType"
+import transactionType from "../utils/TransactionType"
+import { generateTransactionId } from "../utils/idGenerators"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
@@ -68,6 +70,19 @@ import {
     LP_VAULT_FACTORY_ENTITY,
     TRANSACTION_ENTITY,
 } from "./utils/entities"
+
+const DEPOSIT_LOG_INDEX = BigInt.fromI32(1)
+const WITHDRAW_LOG_INDEX = BigInt.fromI32(2)
+
+const depositTransactionId = generateTransactionId(
+    DEPOSIT_TRANSACTION_HASH,
+    DEPOSIT_LOG_INDEX.toString()
+)
+
+const withdrawTransactionId = generateTransactionId(
+    WITHDRAW_TRANSACTION_HASH,
+    WITHDRAW_LOG_INDEX.toString()
+)
 
 describe("handleRegistryUpdated()", () => {
     beforeAll(() => {
@@ -242,6 +257,7 @@ describe("handleDeposit()", () => {
         let depositEvent = changetype<Deposit>(newMockEvent())
         depositEvent.address = LP_VAULT_ADDRESS_MOCK
         depositEvent.transaction.hash = DEPOSIT_TRANSACTION_HASH
+        depositEvent.logIndex = DEPOSIT_LOG_INDEX
 
         let senderParam = new ethereum.EventParam(
             "sender",
@@ -286,14 +302,21 @@ describe("handleDeposit()", () => {
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
+            depositTransactionId,
+            "type",
+            transactionType.LP_VAULT_IBT_DEPOSIT
+        )
+
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            depositTransactionId,
             "lpVaultInTransaction",
             LP_VAULT_ADDRESS_MOCK.toHex()
         )
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
+            depositTransactionId,
             "userInTransaction",
             FIRST_USER_MOCK.toHex()
         )
@@ -320,7 +343,7 @@ describe("handleDeposit()", () => {
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
+            depositTransactionId,
             "amountsIn",
             `[${generateAssetAmountId(
                 DEPOSIT_TRANSACTION_HASH.toHex(),
@@ -340,7 +363,7 @@ describe("handleDeposit()", () => {
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
+            depositTransactionId,
             "amountsOut",
             `[${generateAssetAmountId(
                 DEPOSIT_TRANSACTION_HASH.toHex(),
@@ -360,16 +383,11 @@ describe("handleDeposit()", () => {
     })
 
     test("Should create Transaction entity with full of information about gas, gas price, block number, sender and receiver", () => {
-        assert.fieldEquals(
-            TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
-            "gas",
-            "1"
-        )
+        assert.fieldEquals(TRANSACTION_ENTITY, depositTransactionId, "gas", "1")
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
+            depositTransactionId,
             "gasPrice",
             "1"
         )
@@ -432,6 +450,7 @@ describe("handleWithdraw()", () => {
         let withdrawEvent = changetype<Withdraw>(newMockEvent())
         withdrawEvent.address = LP_VAULT_ADDRESS_MOCK
         withdrawEvent.transaction.hash = WITHDRAW_TRANSACTION_HASH
+        withdrawEvent.logIndex = WITHDRAW_LOG_INDEX
 
         let senderParam = new ethereum.EventParam(
             "sender",
@@ -440,7 +459,7 @@ describe("handleWithdraw()", () => {
 
         let receiverParam = new ethereum.EventParam(
             "receiver",
-            ethereum.Value.fromAddress(LP_VAULT_ADDRESS_MOCK)
+            ethereum.Value.fromAddress(FIRST_USER_MOCK)
         )
 
         let ownerParam = new ethereum.EventParam(
@@ -473,14 +492,21 @@ describe("handleWithdraw()", () => {
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            WITHDRAW_TRANSACTION_HASH.toHex(),
+            withdrawTransactionId,
+            "type",
+            transactionType.LP_VAULT_WITHDRAW
+        )
+
+        assert.fieldEquals(
+            TRANSACTION_ENTITY,
+            withdrawTransactionId,
             "lpVaultInTransaction",
             LP_VAULT_ADDRESS_MOCK.toHex()
         )
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
+            withdrawTransactionId,
             "userInTransaction",
             FIRST_USER_MOCK.toHex()
         )
@@ -491,7 +517,7 @@ describe("handleWithdraw()", () => {
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            WITHDRAW_TRANSACTION_HASH.toHex(),
+            withdrawTransactionId,
             "amountsIn",
             `[${generateAssetAmountId(
                 WITHDRAW_TRANSACTION_HASH.toHex(),
@@ -511,7 +537,7 @@ describe("handleWithdraw()", () => {
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            WITHDRAW_TRANSACTION_HASH.toHex(),
+            withdrawTransactionId,
             "amountsOut",
             `[${generateAssetAmountId(
                 WITHDRAW_TRANSACTION_HASH.toHex(),
@@ -529,17 +555,18 @@ describe("handleWithdraw()", () => {
             BigInt.fromString("130").toString()
         )
     })
+
     test("Should create Transaction entity with full of information about gas, gas price, block number, sender and receiver", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            WITHDRAW_TRANSACTION_HASH.toHex(),
+            withdrawTransactionId,
             "gas",
             "1"
         )
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            WITHDRAW_TRANSACTION_HASH.toHex(),
+            withdrawTransactionId,
             "gasPrice",
             "1"
         )

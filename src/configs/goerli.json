@@ -1,6 +1,6 @@
 {
     "network": "goerli",
-    "startBlock": 8540000,
+    "startBlock": 8650000,
 
     "registry": "0x5374c0F0cA72474A9fE297C151300aFC3384C223",
     "principalTokenFactory": "0xBD49aBE11c05E78ceB05008A2C099af442E69623",

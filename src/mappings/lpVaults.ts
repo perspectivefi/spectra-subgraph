@@ -32,6 +32,7 @@ import { createTransaction } from "../entities/Transaction"
 import { AssetType } from "../utils"
 import FutureState from "../utils/FutureState"
 import transactionType from "../utils/TransactionType"
+import { generateTransactionId } from "../utils/idGenerators"
 
 export function handleRegistryUpdated(event: RegistryUpdated): void {
     let lpVaultFactory = LPVaultFactory.load(event.address.toHex())
@@ -190,6 +191,10 @@ export function handleDeposit(event: Deposit): void {
         let lpVaultAddress = Address.fromBytes(lpVault.address)
 
         createTransaction({
+            id: generateTransactionId(
+                event.transaction.hash,
+                event.logIndex.toString()
+            ),
             transactionAddress: event.transaction.hash,
 
             futureInTransaction: ZERO_ADDRESS,
@@ -235,7 +240,7 @@ export function handleWithdraw(event: Withdraw): void {
         )
 
         updateAccountAssetBalance(
-            event.params.sender.toHex(),
+            event.params.owner.toHex(),
             event.address.toHex(),
             event.block.timestamp,
             AssetType.LP_VAULT_SHARES
@@ -254,7 +259,7 @@ export function handleWithdraw(event: Withdraw): void {
         )
 
         updateAccountAssetBalance(
-            event.params.owner.toHex(),
+            event.params.receiver.toHex(),
             underlyingAddress.toHex(),
             event.block.timestamp,
             AssetType.UNDERLYING
@@ -263,6 +268,10 @@ export function handleWithdraw(event: Withdraw): void {
         let lpVaultAddress = Address.fromBytes(lpVault.address)
 
         createTransaction({
+            id: generateTransactionId(
+                event.transaction.hash,
+                event.logIndex.toString()
+            ),
             transactionAddress: event.transaction.hash,
 
             futureInTransaction: ZERO_ADDRESS,
@@ -279,7 +288,7 @@ export function handleWithdraw(event: Withdraw): void {
 
                 gas: event.block.gasUsed,
                 gasPrice: event.transaction.gasPrice,
-                type: transactionType.LP_VAULT_IBT_DEPOSIT,
+                type: transactionType.LP_VAULT_WITHDRAW,
 
                 fee: ZERO_BI,
                 adminFee: ZERO_BI,

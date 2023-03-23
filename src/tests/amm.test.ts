@@ -33,6 +33,7 @@ import {
     generateFeeClaimId,
     generateFutureDailyStatsId,
 } from "../utils"
+import { generateTransactionId } from "../utils/idGenerators"
 import { toPrecision } from "../utils/toPrecision"
 import {
     emiCurveFactoryChanged,
@@ -83,6 +84,30 @@ import {
     FUTURE_DAILY_STATS_ENTITY,
 } from "./utils/entities"
 
+const ADD_LIQUIDITY_LOG_INDEX = BigInt.fromI32(1)
+const REMOVE_LIQUIDITY_LOG_INDEX = BigInt.fromI32(2)
+const REMOVE_ONE_LIQUIDITY_LOG_INDEX = BigInt.fromI32(3)
+const EXCHANGE_LOG_INDEX = BigInt.fromI32(4)
+
+const addLiquidityTransactionId = generateTransactionId(
+    POOL_ADD_LIQUIDITY_TRANSACTION_HASH,
+    ADD_LIQUIDITY_LOG_INDEX.toString()
+)
+const removeLiquidityTransactionId = generateTransactionId(
+    POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH,
+    REMOVE_LIQUIDITY_LOG_INDEX.toString()
+)
+
+const removeOneLiquidityTransactionId = generateTransactionId(
+    POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH,
+    REMOVE_ONE_LIQUIDITY_LOG_INDEX.toString()
+)
+
+const exchangeTransactionId = generateTransactionId(
+    POOL_EXCHANGE_TRANSACTION_HASH,
+    EXCHANGE_LOG_INDEX.toString()
+)
+
 const LP_TOTAL_SUPPLY = toPrecision(
     BigInt.fromI32(500),
     1,
@@ -126,6 +151,7 @@ describe("handleAddLiquidity()", () => {
         let addLiquidityEvent = changetype<AddLiquidity>(newMockEvent())
         addLiquidityEvent.address = FIRST_POOL_ADDRESS_MOCK
         addLiquidityEvent.transaction.hash = POOL_ADD_LIQUIDITY_TRANSACTION_HASH
+        addLiquidityEvent.logIndex = ADD_LIQUIDITY_LOG_INDEX
 
         let providerParam = new ethereum.EventParam(
             "provider",
@@ -160,7 +186,7 @@ describe("handleAddLiquidity()", () => {
     test("Should create new transaction entity with 'AMM_REMOVE_LIQUIDITY' as type", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
+            addLiquidityTransactionId,
             "type",
             "AMM_ADD_LIQUIDITY"
         )
@@ -191,7 +217,7 @@ describe("handleAddLiquidity()", () => {
     test("Should create new transaction entity with properly assigned input and outputs", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
+            addLiquidityTransactionId,
             "amountsIn",
             `[${generateAssetAmountId(
                 POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
@@ -203,7 +229,7 @@ describe("handleAddLiquidity()", () => {
         )
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
+            addLiquidityTransactionId,
             "amountsOut",
             `[${generateAssetAmountId(
                 POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
@@ -297,14 +323,14 @@ describe("handleAddLiquidity()", () => {
     test("Should set correct transaction fee parameters", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
+            addLiquidityTransactionId,
             "fee",
             "40000000000000000"
         )
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
+            addLiquidityTransactionId,
             "adminFee",
             "20000000000000000"
         )
@@ -360,6 +386,7 @@ describe("handleRemoveLiquidity()", () => {
         removeLiquidityEvent.address = FIRST_POOL_ADDRESS_MOCK
         removeLiquidityEvent.transaction.hash =
             POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH
+        removeLiquidityEvent.logIndex = REMOVE_LIQUIDITY_LOG_INDEX
 
         let providerParam = new ethereum.EventParam(
             "provider",
@@ -392,7 +419,7 @@ describe("handleRemoveLiquidity()", () => {
     test("Should create new transaction entity with 'AMM_REMOVE_LIQUIDITY' as type", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
+            removeLiquidityTransactionId,
             "type",
             "AMM_REMOVE_LIQUIDITY"
         )
@@ -431,7 +458,7 @@ describe("handleRemoveLiquidity()", () => {
     test("Should create new transaction entity with properly assigned input and outputs", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
+            removeLiquidityTransactionId,
             "amountsIn",
             `[${generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
@@ -440,7 +467,7 @@ describe("handleRemoveLiquidity()", () => {
         )
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
+            removeLiquidityTransactionId,
             "amountsOut",
             `[${generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
@@ -593,6 +620,7 @@ describe("handleTokenExchange()", () => {
         let tokenExchangeEvent = changetype<TokenExchange>(newMockEvent())
         tokenExchangeEvent.address = FIRST_POOL_ADDRESS_MOCK
         tokenExchangeEvent.transaction.hash = POOL_EXCHANGE_TRANSACTION_HASH
+        tokenExchangeEvent.logIndex = EXCHANGE_LOG_INDEX
 
         let buyerParam = new ethereum.EventParam(
             "buyer",
@@ -637,7 +665,7 @@ describe("handleTokenExchange()", () => {
     test("Should create new transaction entity with 'AMM_EXCHANGE' as type", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+            exchangeTransactionId,
             "type",
             "AMM_EXCHANGE"
         )
@@ -697,7 +725,7 @@ describe("handleTokenExchange()", () => {
     test("Should create new transaction entity with properly assigned input and outputs", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+            exchangeTransactionId,
             "amountsIn",
             `[${generateAssetAmountId(
                 POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
@@ -706,7 +734,7 @@ describe("handleTokenExchange()", () => {
         )
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+            exchangeTransactionId,
             "amountsOut",
             `[${generateAssetAmountId(
                 POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
@@ -752,14 +780,14 @@ describe("handleTokenExchange()", () => {
     test("Should assign account and pool relation to the transaction", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+            exchangeTransactionId,
             "userInTransaction",
             FIRST_USER_MOCK.toHex()
         )
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+            exchangeTransactionId,
             "poolInTransaction",
             FIRST_POOL_ADDRESS_MOCK.toHex()
         )
@@ -768,14 +796,14 @@ describe("handleTokenExchange()", () => {
     test("Should set correct transaction fee parameters", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+            exchangeTransactionId,
             "fee",
             "8006405124099279"
         )
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
+            exchangeTransactionId,
             "adminFee",
             "4003202562049639"
         )
@@ -850,6 +878,7 @@ describe("handleRemoveLiquidityOne()", () => {
         removeLiquidityOneEvent.transaction.hash =
             POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH
         removeLiquidityOneEvent.transaction.from = FIRST_USER_MOCK
+        removeLiquidityOneEvent.logIndex = REMOVE_ONE_LIQUIDITY_LOG_INDEX
 
         let providerParam = new ethereum.EventParam(
             "provider",
@@ -888,7 +917,7 @@ describe("handleRemoveLiquidityOne()", () => {
     test("Should create new transaction entity with 'AMM_REMOVE_LIQUIDITY_ONE' as type", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
+            removeOneLiquidityTransactionId,
             "type",
             "AMM_REMOVE_LIQUIDITY_ONE"
         )
@@ -911,7 +940,7 @@ describe("handleRemoveLiquidityOne()", () => {
     test("Should create new transaction entity with properly assigned input and outputs", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
+            removeOneLiquidityTransactionId,
             "amountsIn",
             `[${generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
@@ -920,7 +949,7 @@ describe("handleRemoveLiquidityOne()", () => {
         )
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
+            removeOneLiquidityTransactionId,
             "amountsOut",
             `[${generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
@@ -981,14 +1010,14 @@ describe("handleRemoveLiquidityOne()", () => {
     test("Should set correct transaction fee parameters", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
+            removeOneLiquidityTransactionId,
             "fee",
             "40032025620496397"
         )
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
+            removeOneLiquidityTransactionId,
             "adminFee",
             "20016012810248198"
         )

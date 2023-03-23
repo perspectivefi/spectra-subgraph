@@ -29,6 +29,7 @@ import {
     generateAccountAssetId,
     generateFutureDailyStatsId,
 } from "../utils"
+import { generateTransactionId } from "../utils/idGenerators"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
@@ -42,7 +43,6 @@ import { mockCurvePoolFunctions, POOL_LP_ADDRESS_MOCK } from "./mocks/CurvePool"
 import {
     FIRST_POOL_ADDRESS_MOCK,
     mockMetaPoolFactoryFunctions,
-    POOL_ADMIN_FEE_MOCK,
     POOL_FACTORY_ADDRESS_MOCK,
     POOL_FEE_MOCK,
     POOL_IBT_ADDRESS_MOCK,
@@ -90,6 +90,19 @@ import {
 } from "./utils/entities"
 
 const COLLECTED_FEE = 50
+
+const DEPOSIT_LOG_INDEX = BigInt.fromI32(1)
+const WITHDRAW_LOG_INDEX = BigInt.fromI32(2)
+
+const depositTransactionId = generateTransactionId(
+    DEPOSIT_TRANSACTION_HASH,
+    DEPOSIT_LOG_INDEX.toString()
+)
+
+const withdrawTransactionId = generateTransactionId(
+    WITHDRAW_TRANSACTION_HASH,
+    WITHDRAW_LOG_INDEX.toString()
+)
 
 describe("handleFutureVaultDeployed()", () => {
     beforeAll(() => {
@@ -354,14 +367,14 @@ describe("handleDeposit()", () => {
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
+            depositTransactionId,
             "futureInTransaction",
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
         )
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
+            depositTransactionId,
             "userInTransaction",
             FIRST_USER_MOCK.toHex()
         )
@@ -396,7 +409,7 @@ describe("handleDeposit()", () => {
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
+            depositTransactionId,
             "amountsIn",
             `[${generateAssetAmountId(
                 DEPOSIT_TRANSACTION_HASH.toHex(),
@@ -406,7 +419,7 @@ describe("handleDeposit()", () => {
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
+            depositTransactionId,
             "amountsOut",
             `[${generateAssetAmountId(
                 DEPOSIT_TRANSACTION_HASH.toHex(),
@@ -418,16 +431,11 @@ describe("handleDeposit()", () => {
         )
     })
     test("Should create Transaction entity with full of information about gas, gas price, block number, sender and receiver", () => {
-        assert.fieldEquals(
-            TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
-            "gas",
-            "1"
-        )
+        assert.fieldEquals(TRANSACTION_ENTITY, depositTransactionId, "gas", "1")
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            DEPOSIT_TRANSACTION_HASH.toHex(),
+            depositTransactionId,
             "gasPrice",
             "1"
         )
@@ -527,6 +535,7 @@ describe("handleWithdraw()", () => {
         let withdrawEvent = changetype<Withdraw>(newMockEvent())
         withdrawEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
         withdrawEvent.transaction.hash = WITHDRAW_TRANSACTION_HASH
+        withdrawEvent.logIndex = WITHDRAW_LOG_INDEX
 
         let senderParam = new ethereum.EventParam(
             "sender",
@@ -569,14 +578,14 @@ describe("handleWithdraw()", () => {
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            WITHDRAW_TRANSACTION_HASH.toHex(),
+            withdrawTransactionId,
             "futureInTransaction",
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
         )
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            WITHDRAW_TRANSACTION_HASH.toHex(),
+            withdrawTransactionId,
             "userInTransaction",
             FIRST_USER_MOCK.toHex()
         )
@@ -586,7 +595,7 @@ describe("handleWithdraw()", () => {
         assert.entityCount(ASSET_AMOUNT_ENTITY, 6)
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            WITHDRAW_TRANSACTION_HASH.toHex(),
+            withdrawTransactionId,
             "amountsIn",
             `[${generateAssetAmountId(
                 WITHDRAW_TRANSACTION_HASH.toHex(),
@@ -599,7 +608,7 @@ describe("handleWithdraw()", () => {
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
-            WITHDRAW_TRANSACTION_HASH.toHex(),
+            withdrawTransactionId,
             "amountsOut",
             `[${generateAssetAmountId(
                 WITHDRAW_TRANSACTION_HASH.toHex(),

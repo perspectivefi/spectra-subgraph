@@ -19,6 +19,7 @@ import { getPoolLPToken } from "../entities/CurvePool"
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
+import { generateTransactionId } from "../utils/idGenerators"
 import { toPrecision } from "../utils/toPrecision"
 
 const FEES_PRECISION = 10
@@ -108,6 +109,10 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             .div(BigInt.fromI32(10).pow(18 as u8))
 
         createTransaction({
+            id: generateTransactionId(
+                event.transaction.hash,
+                event.logIndex.toString()
+            ),
             transactionAddress: event.transaction.hash,
 
             futureInTransaction: ZERO_ADDRESS,
@@ -231,6 +236,10 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
         )
 
         createTransaction({
+            id: generateTransactionId(
+                event.transaction.hash,
+                event.logIndex.toString()
+            ),
             transactionAddress: event.transaction.hash,
 
             futureInTransaction: ZERO_ADDRESS,
@@ -363,6 +372,10 @@ export function handleTokenExchange(event: TokenExchange): void {
             .div(BigInt.fromI32(10).pow(assetOut.decimals as u8))
 
         createTransaction({
+            id: generateTransactionId(
+                event.transaction.hash,
+                event.logIndex.toString()
+            ),
             transactionAddress: event.transaction.hash,
 
             futureInTransaction: ZERO_ADDRESS,
@@ -503,6 +516,10 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             .div(BigInt.fromI32(10).pow(assetOut.decimals as u8))
 
         createTransaction({
+            id: generateTransactionId(
+                event.transaction.hash,
+                event.logIndex.toString()
+            ),
             transactionAddress: event.transaction.hash,
 
             futureInTransaction: ZERO_ADDRESS,
