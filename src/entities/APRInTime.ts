@@ -1,7 +1,7 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 
 import { APRInTime } from "../../generated/schema"
-import { ZERO_BI } from "../constants"
+import { ZERO_BD } from "../constants";
 
 export function createAPRInTime(
     poolAddress: Address,
@@ -13,7 +13,7 @@ export function createAPRInTime(
 
     aprInTime.createdAtTimestamp = timestamp
     aprInTime.pool = poolAddress.toHex()
-    aprInTime.value = ZERO_BI
+    aprInTime.value = ZERO_BD
 
     aprInTime.save()
 

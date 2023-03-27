@@ -131,3 +131,17 @@ export function getTotalAssets(address: Address): BigInt {
 
     return ZERO_BI
 }
+
+export function getIBTUnit(address: Address): BigInt {
+    const futureContract = PrincipalToken.bind(address)
+
+    let ibtUnitCall = futureContract.try_getIBTUnit()
+
+    if (!ibtUnitCall.reverted) {
+        return ibtUnitCall.value
+    }
+
+    log.warning("getIBTUnit() call reverted for {}", [address.toHex()])
+
+    return ZERO_BI
+}

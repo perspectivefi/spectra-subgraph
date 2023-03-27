@@ -314,7 +314,8 @@ type APRInTime @entity {
     id: ID!
     createdAtTimestamp: BigInt!
 
-    value: BigInt!
+    "in %"
+    value: BigDecimal!
 
     pool: Pool!
 }
@@ -363,6 +364,7 @@ type Pool @entity {
     totalLPSupply: BigInt!
     liquidityPositions: [AccountAsset!]! @derivedFrom(field: "pool")
 
+    spotPrice: BigInt!
     apr: [APRInTime!]! @derivedFrom(field: "pool")
 }
 

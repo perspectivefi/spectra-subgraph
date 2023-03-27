@@ -81,6 +81,8 @@ dataSources:
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
         - name: ERC4626
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
+        - name: PrincipalToken
+          file: ./abis/PrincipalToken.json
       eventHandlers:
         - event: AddLiquidity(indexed address,uint256[2],uint256,uint256)
           handler: handleAddLiquidity

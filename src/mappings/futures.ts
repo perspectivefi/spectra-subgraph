@@ -33,7 +33,7 @@ import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import {
     getPoolAdminFee,
-    getPoolAPR,
+    getPoolPriceScale,
     getPoolFee,
     getPoolFutureAdminFee,
     getPoolLPToken,
@@ -57,6 +57,7 @@ import {
 import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
+import { calculatePoolAPR } from "../utils/calculatePoolAPR"
 
 export function handlePrincipalTokenDeployed(
     event: PrincipalTokenDeployed
@@ -484,11 +485,20 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
         pool.futureVaultFactory = futureVaultFactory.id
     }
 
-    let apr = getPoolAPR(poolAddress)
-    let poolAPR = createAPRInTime(poolAddress, event.block.timestamp)
+    let spotPrice = getPoolPriceScale(event.address)
+    if (pool.futureVault) {
+        let poolAPR = createAPRInTime(event.address, event.block.timestamp)
 
-    poolAPR.value = apr
-    poolAPR.save()
+        poolAPR.value = calculatePoolAPR(
+            spotPrice,
+            pool.feeRate,
+            pool.adminFeeRate,
+            Address.fromString(pool.futureVault!),
+            event.block.timestamp
+        )
+        poolAPR.save()
+    }
 
+    pool.spotPrice = spotPrice
     pool.save()
 }

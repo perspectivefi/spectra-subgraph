@@ -95,7 +95,7 @@ export const getPoolBalances = (poolAddress: Address): Array<BigInt> => {
     return [ZERO_BI, ZERO_BI]
 }
 
-export const getPoolAPR = (poolAddress: Address): BigInt => {
+export const getPoolPriceScale = (poolAddress: Address): BigInt => {
     let curvePoolContract = CurvePool.bind(poolAddress)
 
     let priceScaleCall = curvePoolContract.try_price_scale()
