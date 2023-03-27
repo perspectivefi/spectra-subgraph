@@ -1,7 +1,7 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 
 import { APRInTime } from "../../generated/schema"
-import { ZERO_BD } from "../constants";
+import { ZERO_BD } from "../constants"
 
 export function createAPRInTime(
     poolAddress: Address,
