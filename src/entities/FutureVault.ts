@@ -18,7 +18,7 @@ export function getExpirationTimestamp(futureVault: Address): BigInt {
     return ZERO_BI
 }
 
-export function getMaxFeeRate(futureVault: Address): BigInt {
+export function getFeeRate(futureVault: Address): BigInt {
     const futureContract = PrincipalToken.bind(futureVault)
 
     let protocolFeeCall = futureContract.try_getProtocolFee()
@@ -128,6 +128,20 @@ export function getTotalAssets(address: Address): BigInt {
     }
 
     log.warning("totalAssets() call reverted for {}", [address.toHex()])
+
+    return ZERO_BI
+}
+
+export function getIBTUnit(address: Address): BigInt {
+    const futureContract = PrincipalToken.bind(address)
+
+    let ibtUnitCall = futureContract.try_getIBTUnit()
+
+    if (!ibtUnitCall.reverted) {
+        return ibtUnitCall.value
+    }
+
+    log.warning("getIBTUnit() call reverted for {}", [address.toHex()])
 
     return ZERO_BI
 }

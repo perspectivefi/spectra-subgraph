@@ -12,6 +12,7 @@ export let ACCOUNT_ASSET_ENTITY = "AccountAsset"
 
 export let POOL_FACTORY_ENTITY = "PoolFactory"
 export let POOL_ENTITY = "Pool"
+export let APR_IN_TIME = "APRInTime"
 
 export let TRANSFER_ENTITY = "Transfer"
 
