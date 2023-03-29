@@ -20,8 +20,8 @@ import { getPoolPriceScale, getPoolLPToken } from "../entities/CurvePool"
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
-import { generateTransactionId } from "../utils/idGenerators"
 import { calculatePoolAPR } from "../utils/calculatePoolAPR"
+import { generateTransactionId } from "../utils/idGenerators"
 import { toPrecision } from "../utils/toPrecision"
 
 const FEES_PRECISION = 10

@@ -58,8 +58,8 @@ import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
 import transactionType from "../utils/TransactionType"
-import { generateTransactionId } from "../utils/idGenerators"
 import { calculatePoolAPR } from "../utils/calculatePoolAPR"
+import { generateTransactionId } from "../utils/idGenerators"
 
 export function handlePrincipalTokenDeployed(
     event: PrincipalTokenDeployed
