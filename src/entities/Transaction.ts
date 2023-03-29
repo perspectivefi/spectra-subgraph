@@ -5,6 +5,7 @@ import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 import { getAccount } from "./Account"
 
 class CreateTransactionParams {
+    id: string
     transactionAddress: Bytes
 
     futureInTransaction: Address
@@ -34,7 +35,7 @@ class TransactionDetails {
 export function createTransaction(
     params: CreateTransactionParams
 ): Transaction {
-    let transaction = new Transaction(params.transactionAddress.toHex())
+    let transaction = new Transaction(params.id)
     transaction.createdAtTimestamp = params.transaction.timestamp
     transaction.address = params.transactionAddress
     transaction.block = params.transaction.block

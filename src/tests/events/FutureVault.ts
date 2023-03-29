@@ -49,6 +49,8 @@ export const emitDeposit = (timestamp: number = 0): Deposit => {
     let depositEvent = changetype<Deposit>(newMockEvent())
     depositEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
     depositEvent.transaction.hash = DEPOSIT_TRANSACTION_HASH
+    depositEvent.logIndex = BigInt.fromI32(1)
+
     if (timestamp) {
         depositEvent.block.timestamp = BigInt.fromI32(timestamp as i32)
     }

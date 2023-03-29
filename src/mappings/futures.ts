@@ -57,7 +57,9 @@ import {
 import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
+import transactionType from "../utils/TransactionType"
 import { calculatePoolAPR } from "../utils/calculatePoolAPR"
+import { generateTransactionId } from "../utils/idGenerators"
 
 export function handlePrincipalTokenDeployed(
     event: PrincipalTokenDeployed
@@ -245,6 +247,10 @@ export function handleDeposit(event: Deposit): void {
         )
 
         createTransaction({
+            id: generateTransactionId(
+                event.transaction.hash,
+                event.logIndex.toString()
+            ),
             transactionAddress: event.transaction.hash,
 
             futureInTransaction: Address.fromBytes(future.address),
@@ -261,7 +267,7 @@ export function handleDeposit(event: Deposit): void {
 
                 gas: event.block.gasUsed,
                 gasPrice: event.transaction.gasPrice,
-                type: "FUTURE_VAULT_DEPOSIT",
+                type: transactionType.FUTURE_VAULT_DEPOSIT,
 
                 fee: ZERO_BI,
                 adminFee: ZERO_BI,
@@ -337,6 +343,10 @@ export function handleWithdraw(event: Withdraw): void {
         )
 
         createTransaction({
+            id: generateTransactionId(
+                event.transaction.hash,
+                event.logIndex.toString()
+            ),
             transactionAddress: event.transaction.hash,
 
             futureInTransaction: Address.fromBytes(future.address),
@@ -353,7 +363,7 @@ export function handleWithdraw(event: Withdraw): void {
 
                 gas: event.block.gasUsed,
                 gasPrice: event.transaction.gasPrice,
-                type: "FUTURE_VAULT_WITHDRAW",
+                type: transactionType.FUTURE_VAULT_WITHDRAW,
 
                 fee: ZERO_BI,
                 adminFee: ZERO_BI,

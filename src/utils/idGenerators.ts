@@ -1,3 +1,5 @@
+import { Bytes } from "@graphprotocol/graph-ts"
+
 // FYTTokenDetails
 export const generateFYTInfoId = (tokenAddress: string): string =>
     `${tokenAddress}-FYT`
@@ -41,3 +43,8 @@ export const generateFutureDailyStatsId = (
     futureAddress: string,
     dayId: string
 ): string => `${futureAddress}-${dayId}`
+
+export const generateTransactionId = (
+    transactionHash: Bytes,
+    eventIterator: string
+): string => `${transactionHash.toHex()}-${eventIterator}`
