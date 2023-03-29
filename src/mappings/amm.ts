@@ -9,17 +9,19 @@ import {
     RemoveLiquidityOne,
     TokenExchange,
 } from "../../generated/CurvePool/CurvePool"
-import { AssetAmount, FeeClaim, Pool } from "../../generated/schema"
+import { APRInTime, AssetAmount, FeeClaim, Pool } from "../../generated/schema"
 import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
+import { createAPRInTime } from "../entities/APRInTime"
 import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
-import { getPoolLPToken } from "../entities/CurvePool"
+import { getPoolPriceScale, getPoolLPToken } from "../entities/CurvePool"
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
 import { generateTransactionId } from "../utils/idGenerators"
+import { calculatePoolAPR } from "../utils/calculatePoolAPR"
 import { toPrecision } from "../utils/toPrecision"
 
 const FEES_PRECISION = 10
@@ -401,6 +403,10 @@ export function handleTokenExchange(event: TokenExchange): void {
 
         pool.totalFees = pool.totalFees.plus(fee)
         pool.totalAdminFees = pool.totalAdminFees.plus(adminFee)
+
+        let spotPrice = getPoolPriceScale(event.address)
+        pool.spotPrice = spotPrice
+
         pool.save()
 
         poolAssetInAmount.amount = poolAssetInAmount.amount.plus(
@@ -423,6 +429,19 @@ export function handleTokenExchange(event: TokenExchange): void {
             futureDailyStats.dailySwaps =
                 futureDailyStats.dailySwaps.plus(UNIT_BI)
             futureDailyStats.save()
+        }
+
+        if (pool.futureVault) {
+            let poolAPR = createAPRInTime(event.address, event.block.timestamp)
+
+            poolAPR.value = calculatePoolAPR(
+                spotPrice,
+                pool.feeRate,
+                pool.adminFeeRate,
+                Address.fromString(pool.futureVault!),
+                event.block.timestamp
+            )
+            poolAPR.save()
         }
     }
 }
@@ -547,6 +566,10 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
         pool.totalAdminFees = pool.totalAdminFees.plus(adminFee)
 
         pool.totalLPSupply = pool.totalLPSupply.minus(event.params.token_amount)
+
+        let spotPrice = getPoolPriceScale(event.address)
+        pool.spotPrice = spotPrice
+
         pool.save()
 
         poolWithdrawnAssetAmount.amount = poolWithdrawnAssetAmount.amount.minus(
@@ -564,6 +587,19 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             futureDailyStats.dailyRemoveLiquidity =
                 futureDailyStats.dailyRemoveLiquidity.plus(UNIT_BI)
             futureDailyStats.save()
+        }
+
+        if (pool.futureVault) {
+            let poolAPR = createAPRInTime(event.address, event.block.timestamp)
+
+            poolAPR.value = calculatePoolAPR(
+                spotPrice,
+                pool.feeRate,
+                pool.adminFeeRate,
+                Address.fromString(pool.futureVault!),
+                event.block.timestamp
+            )
+            poolAPR.save()
         }
     }
 }

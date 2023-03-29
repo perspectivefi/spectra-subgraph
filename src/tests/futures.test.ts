@@ -87,6 +87,7 @@ import {
     POOL_FACTORY_ENTITY,
     TRANSACTION_ENTITY,
     FUTURE_VAULT_FACTORY_ENTITY,
+    APR_IN_TIME,
 } from "./utils/entities"
 
 const COLLECTED_FEE = 50
@@ -874,6 +875,19 @@ describe("handleCurvePoolDeployed()", () => {
             YT_ADDRESS_MOCK.toHex(),
             "chainId",
             "1"
+        )
+    })
+
+    test("Should create new APR entity assigned to the right pool", () => {
+        test("Should create new pool entity", () => {
+            assert.entityCount(POOL_ENTITY, 1)
+        })
+
+        assert.fieldEquals(
+            APR_IN_TIME,
+            `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`,
+            "pool",
+            FIRST_POOL_ADDRESS_MOCK.toHex()
         )
     })
 })

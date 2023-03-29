@@ -6,6 +6,7 @@ import {
     PrincipalTokenDeployed,
 } from "../../generated/PrincipalTokenFactory/PrincipalTokenFactory"
 import {
+    APRInTime,
     FeeClaim,
     Future,
     FutureVaultFactory,
@@ -25,12 +26,14 @@ import {
     YieldTransferred,
 } from "../../generated/templates/PrincipalToken/PrincipalToken"
 import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
+import { createAPRInTime } from "../entities/APRInTime"
 import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import {
     getPoolAdminFee,
+    getPoolPriceScale,
     getPoolFee,
     getPoolFutureAdminFee,
     getPoolLPToken,
@@ -42,7 +45,6 @@ import {
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import {
     getExpirationTimestamp,
-    getMaxFeeRate,
     getName,
     getSymbol,
     getIBT,
@@ -50,12 +52,14 @@ import {
     getTotalAssets,
     getYT,
     getUnclaimedFees,
+    getFeeRate,
 } from "../entities/FutureVault"
 import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
 import transactionType from "../utils/TransactionType"
 import { generateTransactionId } from "../utils/idGenerators"
+import { calculatePoolAPR } from "../utils/calculatePoolAPR"
 
 export function handlePrincipalTokenDeployed(
     event: PrincipalTokenDeployed
@@ -70,7 +74,7 @@ export function handlePrincipalTokenDeployed(
     newFuture.createdAtTimestamp = event.block.timestamp
     newFuture.expirationAtTimestamp = getExpirationTimestamp(futureVaultAddress)
 
-    newFuture.daoFeeRate = getMaxFeeRate(futureVaultAddress)
+    newFuture.daoFeeRate = getFeeRate(futureVaultAddress)
     newFuture.unclaimedFees = ZERO_BI
     newFuture.totalCollectedFees = ZERO_BI
 
@@ -491,5 +495,20 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
         pool.futureVaultFactory = futureVaultFactory.id
     }
 
+    let spotPrice = getPoolPriceScale(poolAddress)
+    if (pool.futureVault) {
+        let poolAPR = createAPRInTime(poolAddress, event.block.timestamp)
+
+        poolAPR.value = calculatePoolAPR(
+            spotPrice,
+            pool.feeRate,
+            pool.adminFeeRate,
+            Address.fromString(pool.futureVault!),
+            event.block.timestamp
+        )
+        poolAPR.save()
+    }
+
+    pool.spotPrice = spotPrice
     pool.save()
 }

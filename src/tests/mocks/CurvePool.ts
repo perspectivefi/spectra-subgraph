@@ -44,6 +44,8 @@ export const POOL_FEE_MOCK = toPrecision(BigInt.fromI32(8), 0, 6)
 export const POOL_ADMIN_FEE_MOCK = toPrecision(BigInt.fromI32(5), 1, 10)
 export const POOL_FUTURE_ADMIN_FEE_MOCK = toPrecision(BigInt.fromI32(3), 1, 10)
 
+export const POOL_PRICE_SCALE_MOCK = toPrecision(BigInt.fromI32(2), 1, 10)
+
 const createLPTokenCallMack = (addressMock: Address): void => {
     createMockedFunction(addressMock, "token", "token():(address)").returns([
         ethereum.Value.fromAddress(POOL_LP_ADDRESS_MOCK),
@@ -82,6 +84,14 @@ const createFutureAdminFeeChangeDeadlineCallMock = (
     ).returns([ethereum.Value.fromSignedBigInt(BigInt.fromI32(5))])
 }
 
+const createPriceScaleCallMock = (addressMock: Address): void => {
+    createMockedFunction(
+        addressMock,
+        "price_scale",
+        "price_scale():(uint256)"
+    ).returns([ethereum.Value.fromSignedBigInt(POOL_PRICE_SCALE_MOCK)])
+}
+
 export function mockCurvePoolFunctions(): void {
     ;[FIRST_POOL_ADDRESS_MOCK].forEach((addressMock) => {
         createLPTokenCallMack(addressMock)
@@ -89,5 +99,6 @@ export function mockCurvePoolFunctions(): void {
         createAdminFeeCallMock(addressMock)
         createFutureAdminFeeCallMock(addressMock)
         createFutureAdminFeeChangeDeadlineCallMock(addressMock)
+        createPriceScaleCallMock(addressMock)
     })
 }
