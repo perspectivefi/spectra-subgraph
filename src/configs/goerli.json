@@ -3,6 +3,6 @@
     "startBlock": 8737260,
 
     "registry": "0xBB0d5a90B2cFadDB60123c039fd19fD11A0212F0",
-    "principalTokenFactory": "0xeB5003c56631C8f6b9be34A224C1dB20b01C3519",
-    "lpVaultFactory": "0x917424e7bA7179b7D2C3525db5A2859DbA08c266"
+    "principalTokenFactory": "0x0f0c2e4201C346750012cb128Febb2Ff77D40C30",
+    "lpVaultFactory": "0x6d663659daaf1071274111dbf1577ef961ea2d10"
 }
