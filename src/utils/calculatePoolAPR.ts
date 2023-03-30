@@ -1,7 +1,11 @@
 import { Address, BigDecimal, BigInt } from "@graphprotocol/graph-ts"
 
 import { DAYS_PER_YEAR_BD, ZERO_BD, ZERO_BI } from "../constants"
-import { getExpirationTimestamp, getIBTUnit } from "../entities/FutureVault"
+import {
+    getExpirationTimestamp,
+    getIBTRate,
+    getIBTUnit,
+} from "../entities/FutureVault"
 import { getDayIdFromTimestamp } from "./dayId"
 
 export function calculatePoolAPR(
@@ -16,13 +20,15 @@ export function calculatePoolAPR(
     }
 
     const principalTokenExpiration = getExpirationTimestamp(principalToken)
+    const ibtRate = getIBTRate(principalToken)
 
-    if (principalTokenExpiration.gt(currentTimestamp)) {
+    if (principalTokenExpiration.gt(currentTimestamp) && ibtRate.gt(ZERO_BI)) {
         const ibtUnit = getIBTUnit(principalToken)
-        const absolutePrice = spotPrice
-            .minus(poolFee)
-            .minus(adminFee)
-            .minus(ibtUnit)
+
+        const absoluteUnderlyingPrice = spotPrice
+            .times(ibtUnit.minus(poolFee.plus(adminFee))) // Remove fees
+            .times(ibtUnit.minus(ibtRate)) // Change IBTs to underlying
+            .div(ibtUnit)
 
         const daysInPeriod = BigDecimal.fromString(
             getDayIdFromTimestamp(
@@ -30,12 +36,12 @@ export function calculatePoolAPR(
             ).toString()
         )
 
-        return absolutePrice
+        return absoluteUnderlyingPrice
             .toBigDecimal()
-            .div(ibtUnit.toBigDecimal())
+            .div(ibtUnit.pow(2).toBigDecimal())
             .div(daysInPeriod)
             .times(DAYS_PER_YEAR_BD)
-            .times(BigDecimal.fromString("100"))
+            .times(BigDecimal.fromString("100")) // Convert to percentage
     } else {
         return ZERO_BD
     }

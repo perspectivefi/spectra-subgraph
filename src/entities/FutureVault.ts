@@ -104,6 +104,20 @@ export function getIBT(address: Address): Address {
     return ZERO_ADDRESS
 }
 
+export function getIBTRate(address: Address): BigInt {
+    const futureContract = PrincipalToken.bind(address)
+
+    let ibtRateCall = futureContract.try_getIBTRate()
+
+    if (!ibtRateCall.reverted) {
+        return ibtRateCall.value
+    }
+
+    log.warning("getIBTRate() call reverted for {}", [address.toHex()])
+
+    return ZERO_BI
+}
+
 export function getYT(address: Address): Address {
     const futureContract = PrincipalToken.bind(address)
 
