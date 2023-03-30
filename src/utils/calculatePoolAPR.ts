@@ -25,10 +25,13 @@ export function calculatePoolAPR(
     if (principalTokenExpiration.gt(currentTimestamp) && ibtRate.gt(ZERO_BI)) {
         const ibtUnit = getIBTUnit(principalToken)
 
-        const absoluteUnderlyingPrice = spotPrice
-            .times(ibtUnit.minus(poolFee.plus(adminFee))) // Remove fees
-            .times(ibtUnit.minus(ibtRate)) // Change IBTs to underlying
-            .div(ibtUnit)
+        const absoluteUnderlyingPrice = ibtUnit
+            .minus(spotPrice) // Absolute price
+            .plus(ibtUnit.minus(ibtRate)) // Difference between IBT and Underlying price
+            .minus(poolFee) // Reflect fees
+            .minus(adminFee) // Reflect fees
+            .toBigDecimal()
+            .div(ibtUnit.toBigDecimal())
 
         const daysInPeriod = BigDecimal.fromString(
             getDayIdFromTimestamp(
@@ -37,8 +40,6 @@ export function calculatePoolAPR(
         )
 
         return absoluteUnderlyingPrice
-            .toBigDecimal()
-            .div(ibtUnit.pow(2).toBigDecimal())
             .div(daysInPeriod)
             .times(DAYS_PER_YEAR_BD)
             .times(BigDecimal.fromString("100")) // Convert to percentage
