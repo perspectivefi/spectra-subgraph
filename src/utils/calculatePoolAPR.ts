@@ -37,10 +37,7 @@ export function calculatePoolAPR(
         return absoluteUnderlyingPrice
             .div(
                 BigDecimal.fromString(
-                    principalTokenExpiration
-                        .minus(currentTimestamp)
-                        .toI32()
-                        .toString()
+                    principalTokenExpiration.minus(currentTimestamp).toString()
                 )
             ) // Get rate per second
             .times(SECONDS_PER_YEAR_BD) // Convert to rate per year
