@@ -1,8 +1,11 @@
 import { Address, BigDecimal, BigInt } from "@graphprotocol/graph-ts"
 
-import { DAYS_PER_YEAR_BD, ZERO_BD, ZERO_BI } from "../constants"
-import { getExpirationTimestamp, getIBTUnit } from "../entities/FutureVault"
-import { getDayIdFromTimestamp } from "./dayId"
+import { SECONDS_PER_YEAR_BD, ZERO_BD, ZERO_BI } from "../constants"
+import {
+    getExpirationTimestamp,
+    getIBTRate,
+    getIBTUnit,
+} from "../entities/FutureVault"
 
 export function calculatePoolAPR(
     spotPrice: BigInt,
@@ -16,26 +19,27 @@ export function calculatePoolAPR(
     }
 
     const principalTokenExpiration = getExpirationTimestamp(principalToken)
+    const ibtRate = getIBTRate(principalToken)
 
-    if (principalTokenExpiration.gt(currentTimestamp)) {
+    if (principalTokenExpiration.gt(currentTimestamp) && ibtRate.gt(ZERO_BI)) {
         const ibtUnit = getIBTUnit(principalToken)
-        const absolutePrice = spotPrice
-            .minus(poolFee)
-            .minus(adminFee)
-            .minus(ibtUnit)
 
-        const daysInPeriod = BigDecimal.fromString(
-            getDayIdFromTimestamp(
-                principalTokenExpiration.minus(currentTimestamp)
-            ).toString()
-        )
-
-        return absolutePrice
+        const absoluteUnderlyingPrice = ibtUnit
+            .times(ibtUnit) // To cover negative IBT/Underlying rate
+            .div(ibtRate) // Reflect IBT/Underlying rate
+            .times(spotPrice)
+            .times(ibtUnit.minus(poolFee).minus(adminFee)) // Remove fees
             .toBigDecimal()
+            .div(ibtUnit.pow(2).toBigDecimal())
+            .minus(ibtUnit.toBigDecimal()) // To have absolute difference, not a rate
             .div(ibtUnit.toBigDecimal())
-            .div(daysInPeriod)
-            .times(DAYS_PER_YEAR_BD)
-            .times(BigDecimal.fromString("100"))
+
+        return absoluteUnderlyingPrice
+            .div(
+                principalTokenExpiration.minus(currentTimestamp).toBigDecimal()
+            ) // Get rate per second
+            .times(SECONDS_PER_YEAR_BD) // Convert to rate per year
+            .times(BigDecimal.fromString("100")) // Convert to percentage
     } else {
         return ZERO_BD
     }
