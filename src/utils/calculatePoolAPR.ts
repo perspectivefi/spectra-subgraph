@@ -1,4 +1,4 @@
-import { Address, BigDecimal, BigInt } from "@graphprotocol/graph-ts"
+import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts"
 
 import { DAYS_PER_YEAR_BD, ZERO_BD, ZERO_BI } from "../constants"
 import {
@@ -26,11 +26,13 @@ export function calculatePoolAPR(
         const ibtUnit = getIBTUnit(principalToken)
 
         const absoluteUnderlyingPrice = ibtUnit
-            .minus(spotPrice) // Absolute price
-            .plus(ibtUnit.minus(ibtRate)) // Difference between IBT and Underlying price
-            .minus(poolFee) // Reflect fees
-            .minus(adminFee) // Reflect fees
+            .times(ibtUnit) // To cover negative rate
+            .div(ibtRate) // Reflect IBT/Underlying rate
+            .times(spotPrice)
+            .times(ibtUnit.minus(poolFee).minus(adminFee)) // Remove fees
             .toBigDecimal()
+            .div(ibtUnit.pow(2).toBigDecimal())
+            .minus(ibtUnit.toBigDecimal()) // To have absolute difference, not a rate
             .div(ibtUnit.toBigDecimal())
 
         const daysInPeriod = BigDecimal.fromString(
