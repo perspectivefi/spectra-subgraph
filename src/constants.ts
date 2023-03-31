@@ -12,8 +12,7 @@ export const ZERO_ADDRESS = Address.fromString(
 )
 
 export const SECONDS_PER_DAY = 86400
-export const SECONDS_PER_MINUTE = 60
 export const DAYS_PER_YEAR_BD = BigDecimal.fromString("364.25")
-export const MINUTES_PER_YEAR_BD = BigDecimal.fromString("525,600")
+export const SECONDS_PER_YEAR_BD = BigDecimal.fromString("31556926")
 
 export const DAY_ID_0 = "0"

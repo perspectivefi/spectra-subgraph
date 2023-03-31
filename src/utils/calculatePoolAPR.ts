@@ -1,11 +1,6 @@
 import { Address, BigDecimal, BigInt } from "@graphprotocol/graph-ts"
 
-import {
-    MINUTES_PER_YEAR_BD,
-    SECONDS_PER_MINUTE,
-    ZERO_BD,
-    ZERO_BI,
-} from "../constants"
+import { SECONDS_PER_YEAR_BD, ZERO_BD, ZERO_BI } from "../constants"
 import {
     getExpirationTimestamp,
     getIBTRate,
@@ -42,14 +37,13 @@ export function calculatePoolAPR(
         return absoluteUnderlyingPrice
             .div(
                 BigDecimal.fromString(
-                    (
-                        principalTokenExpiration
-                            .minus(currentTimestamp)
-                            .toI32() / SECONDS_PER_MINUTE
-                    ).toString()
+                    principalTokenExpiration
+                        .minus(currentTimestamp)
+                        .toI32()
+                        .toString()
                 )
-            ) // Get rate per minute
-            .times(MINUTES_PER_YEAR_BD) // Convert to rate per year
+            ) // Get rate per second
+            .times(SECONDS_PER_YEAR_BD) // Convert to rate per year
             .times(BigDecimal.fromString("100")) // Convert to percentage
     } else {
         return ZERO_BD
