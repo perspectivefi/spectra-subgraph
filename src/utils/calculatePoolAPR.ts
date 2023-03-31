@@ -1,7 +1,6 @@
-import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts"
+import { Address, BigDecimal, BigInt } from "@graphprotocol/graph-ts"
 
 import {
-    DAYS_PER_YEAR_BD,
     MINUTES_PER_YEAR_BD,
     SECONDS_PER_MINUTE,
     ZERO_BD,
@@ -12,7 +11,6 @@ import {
     getIBTRate,
     getIBTUnit,
 } from "../entities/FutureVault"
-import { getDayIdFromTimestamp } from "./dayId"
 
 export function calculatePoolAPR(
     spotPrice: BigInt,
@@ -40,12 +38,6 @@ export function calculatePoolAPR(
             .div(ibtUnit.pow(2).toBigDecimal())
             .minus(ibtUnit.toBigDecimal()) // To have absolute difference, not a rate
             .div(ibtUnit.toBigDecimal())
-
-        const daysInPeriod = BigDecimal.fromString(
-            getDayIdFromTimestamp(
-                principalTokenExpiration.minus(currentTimestamp)
-            ).toString()
-        )
 
         return absoluteUnderlyingPrice
             .div(
