@@ -1,6 +1,12 @@
 import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts"
 
-import { DAYS_PER_YEAR_BD, ZERO_BD, ZERO_BI } from "../constants"
+import {
+    DAYS_PER_YEAR_BD,
+    MINUTES_PER_YEAR_BD,
+    SECONDS_PER_MINUTE,
+    ZERO_BD,
+    ZERO_BI,
+} from "../constants"
 import {
     getExpirationTimestamp,
     getIBTRate,
@@ -26,7 +32,7 @@ export function calculatePoolAPR(
         const ibtUnit = getIBTUnit(principalToken)
 
         const absoluteUnderlyingPrice = ibtUnit
-            .times(ibtUnit) // To cover negative rate
+            .times(ibtUnit) // To cover negative IBT/Underlying rate
             .div(ibtRate) // Reflect IBT/Underlying rate
             .times(spotPrice)
             .times(ibtUnit.minus(poolFee).minus(adminFee)) // Remove fees
@@ -42,8 +48,16 @@ export function calculatePoolAPR(
         )
 
         return absoluteUnderlyingPrice
-            .div(daysInPeriod)
-            .times(DAYS_PER_YEAR_BD)
+            .div(
+                BigDecimal.fromString(
+                    principalTokenExpiration
+                        .minus(currentTimestamp)
+                        .toI32()
+                        .div(SECONDS_PER_MINUTE)
+                        .toString()
+                )
+            ) // Get rate per minute
+            .times(MINUTES_PER_YEAR_BD) // Convert to rate per year
             .times(BigDecimal.fromString("100")) // Convert to percentage
     } else {
         return ZERO_BD
