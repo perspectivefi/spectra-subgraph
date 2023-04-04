@@ -15,6 +15,7 @@ import {
     Withdraw,
 } from "../../generated/templates/LPVault/LPVault"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
+import { createAPRInTimeForLPVault } from "../entities/APRInTime"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
@@ -32,6 +33,7 @@ import { createTransaction } from "../entities/Transaction"
 import { AssetType } from "../utils"
 import FutureState from "../utils/FutureState"
 import transactionType from "../utils/TransactionType"
+import { calculateLpVaultAPR } from "../utils/calculateAPR"
 import { generateTransactionId } from "../utils/idGenerators"
 
 export function handleRegistryUpdated(event: RegistryUpdated): void {
@@ -96,6 +98,13 @@ export function handleLPVaultDeployed(event: LPVaultDeployed): void {
 
     // Create dynamic data source for LPVault events
     LPVaultTemplate.create(Address.fromBytes(lpVault.address))
+
+    let lpVaultAPR = createAPRInTimeForLPVault(
+        event.params.lpVault,
+        event.block.timestamp
+    )
+    lpVaultAPR.value = calculateLpVaultAPR(event.params.lpVault)
+    lpVaultAPR.save()
 }
 
 export function handlePoolIndexUpdated(event: PoolIndexUpdated): void {

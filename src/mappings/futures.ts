@@ -6,7 +6,6 @@ import {
     PrincipalTokenDeployed,
 } from "../../generated/PrincipalTokenFactory/PrincipalTokenFactory"
 import {
-    APRInTime,
     FeeClaim,
     Future,
     FutureVaultFactory,
@@ -26,7 +25,7 @@ import {
     YieldTransferred,
 } from "../../generated/templates/PrincipalToken/PrincipalToken"
 import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
-import { createAPRInTime } from "../entities/APRInTime"
+import { createAPRInTimeForPool } from "../entities/APRInTime"
 import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
@@ -58,7 +57,7 @@ import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
 import transactionType from "../utils/TransactionType"
-import { calculatePoolAPR } from "../utils/calculatePoolAPR"
+import { calculatePoolAPR } from "../utils/calculateAPR"
 import { generateTransactionId } from "../utils/idGenerators"
 
 export function handlePrincipalTokenDeployed(
@@ -497,7 +496,7 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
 
     let spotPrice = getPoolPriceScale(poolAddress)
     if (pool.futureVault) {
-        let poolAPR = createAPRInTime(poolAddress, event.block.timestamp)
+        let poolAPR = createAPRInTimeForPool(poolAddress, event.block.timestamp)
 
         poolAPR.value = calculatePoolAPR(
             spotPrice,
