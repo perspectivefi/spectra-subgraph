@@ -317,7 +317,8 @@ type APRInTime @entity {
     "in %"
     value: BigDecimal!
 
-    pool: Pool!
+    pool: Pool
+    lpVault: LPVault
 }
 
 type PoolFactory @entity {
@@ -433,4 +434,5 @@ type LPVault @entity {
     transactions: [Transaction!]! @derivedFrom(field: "lpVaultInTransaction")
 
     # interestInTime: [LPVaultInterest!]! @derivedFrom(field: "lpVault")
+    apr: [APRInTime!]! @derivedFrom(field: "lpVault")
 }
