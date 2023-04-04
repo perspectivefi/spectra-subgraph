@@ -60,7 +60,9 @@ export function calculateLpVaultAPR(lpVaultAddress: Address): BigDecimal {
             lpVault.underlying == "0x792f2d31b2aadac705d57735855b299f84b999b9"
         ) {
             return LP_VAULT_APR_MOCK[0]
-        } else {
+        } else if (
+            lpVault.underlying == "0x8494a4761a5d969d3f80f7110fbaa29e4072cdcd"
+        ) {
             return LP_VAULT_APR_MOCK[1]
         }
     }
