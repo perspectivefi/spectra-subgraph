@@ -11,7 +11,7 @@ import {
 } from "../../generated/CurvePool/CurvePool"
 import { AssetAmount, FeeClaim, Pool } from "../../generated/schema"
 import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
-import { createAPRInTimeForPool } from "../entities/APRInTime";
+import { createAPRInTimeForPool } from "../entities/APRInTime"
 import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
@@ -432,7 +432,10 @@ export function handleTokenExchange(event: TokenExchange): void {
         }
 
         if (pool.futureVault) {
-            let poolAPR = createAPRInTimeForPool(event.address, event.block.timestamp)
+            let poolAPR = createAPRInTimeForPool(
+                event.address,
+                event.block.timestamp
+            )
 
             poolAPR.value = calculatePoolAPR(
                 spotPrice,
@@ -590,7 +593,10 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
         }
 
         if (pool.futureVault) {
-            let poolAPR = createAPRInTimeForPool(event.address, event.block.timestamp)
+            let poolAPR = createAPRInTimeForPool(
+                event.address,
+                event.block.timestamp
+            )
 
             poolAPR.value = calculatePoolAPR(
                 spotPrice,
