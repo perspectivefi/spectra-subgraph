@@ -499,9 +499,7 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
         let poolAPR = createAPRInTimeForPool(poolAddress, event.block.timestamp)
 
         poolAPR.value = calculatePoolAPR(
-            spotPrice,
-            pool.feeRate,
-            pool.adminFeeRate,
+            poolAddress,
             Address.fromString(pool.futureVault!),
             event.block.timestamp
         )

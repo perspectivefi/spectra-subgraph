@@ -438,9 +438,7 @@ export function handleTokenExchange(event: TokenExchange): void {
             )
 
             poolAPR.value = calculatePoolAPR(
-                spotPrice,
-                pool.feeRate,
-                pool.adminFeeRate,
+                event.address,
                 Address.fromString(pool.futureVault!),
                 event.block.timestamp
             )
@@ -599,9 +597,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             )
 
             poolAPR.value = calculatePoolAPR(
-                spotPrice,
-                pool.feeRate,
-                pool.adminFeeRate,
+                event.address,
                 Address.fromString(pool.futureVault!),
                 event.block.timestamp
             )

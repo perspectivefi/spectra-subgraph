@@ -1,7 +1,9 @@
 import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
 import { CurvePool } from "../../generated/CurvePool/CurvePool"
-import { ZERO_ADDRESS, ZERO_BI } from "../constants"
+import { Pool } from "../../generated/schema"
+import { UNIT_BI, ZERO_ADDRESS, ZERO_BI } from "../constants"
+import { getERC20Decimals } from "./ERC20"
 
 export const getPoolLPToken = (poolAddress: Address): Address => {
     let curvePoolContract = CurvePool.bind(poolAddress)
@@ -107,4 +109,45 @@ export const getPoolPriceScale = (poolAddress: Address): BigInt => {
     log.warning("price_scale() call reverted for {}", [poolAddress.toHex()])
 
     return ZERO_BI
+}
+
+export const getPoolCoins = (poolAddress: Address): Address[] => {
+    let curvePoolContract = CurvePool.bind(poolAddress)
+
+    let token0Call = curvePoolContract.try_coins(BigInt.fromI32(0))
+    let token1Call = curvePoolContract.try_coins(BigInt.fromI32(1))
+
+    if (token0Call.reverted) {
+        log.warning("coins() call reverted for {} pool and {} coin index", [
+            poolAddress.toHex(),
+            "0",
+        ])
+        return [ZERO_ADDRESS, ZERO_ADDRESS]
+    } else if (token1Call.reverted) {
+        log.warning("coins() call reverted for {} pool and {} coin index", [
+            poolAddress.toHex(),
+            "1",
+        ])
+        return [ZERO_ADDRESS, ZERO_ADDRESS]
+    }
+
+    return [token0Call.value, token1Call.value]
+}
+
+export const getIBTtoPTRate = (poolAddress: Address, input: BigInt): BigInt => {
+    let curvePoolContract = CurvePool.bind(poolAddress)
+
+    let ptForIBTPriceCall = curvePoolContract.try_get_dy(
+        BigInt.fromI32(0),
+        BigInt.fromI32(1),
+        input
+    )
+
+    if (!ptForIBTPriceCall.reverted) {
+        return ptForIBTPriceCall.value
+    }
+
+    log.warning("get_dy() call reverted for {}", [poolAddress.toHex()])
+
+    return UNIT_BI
 }
