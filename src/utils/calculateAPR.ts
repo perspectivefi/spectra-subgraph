@@ -46,6 +46,7 @@ export function calculatePoolAPR(
                 principalTokenExpiration.minus(currentTimestamp).toBigDecimal()
             ) // Get rate per second
             .times(SECONDS_PER_YEAR_BD) // Convert to rate per year
+            .times(BigDecimal.fromString("100")) // Convert to percentage
     } else {
         return ZERO_BD
     }
