@@ -36,12 +36,12 @@ export function calculatePoolAPR(
             .times(ibtUnit)
             .div(ibtRate.toBigDecimal()) // Reflect IBT/Underlying rate
 
-        // Negative rate
-        if (underlyingToPTRate.lt(UNIT_BD)) {
-            underlyingToPTRate = underlyingToPTRate.minus(UNIT_BD)
-        }
+        log.warning("ibtToPT: {}", [ibtToPT.toString()])
+        log.warning("ibtRate: {}", [ibtRate.toString()])
+        log.warning("underlyingToPTRate: {}", [underlyingToPTRate.toString()])
 
         return underlyingToPTRate
+            .minus(UNIT_BD)
             .div(
                 principalTokenExpiration.minus(currentTimestamp).toBigDecimal()
             ) // Get rate per second
