@@ -23,10 +23,11 @@ import {
 } from "./events/FutureVault"
 import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
 import {
+    FIRST_POOL_ADDRESS_MOCK,
     mockCurvePoolFunctions,
     POOL_LP_ADDRESS_MOCK,
-    POOL_PT_ADDRESS_MOCK,
-} from "./mocks/CurvePool"
+    POOL_PT_ADDRESS_MOCK
+} from "./mocks/CurvePool";
 import { mockMetaPoolFactoryFunctions } from "./mocks/CurvePoolFactory"
 import {
     mockERC20Balances,
@@ -91,7 +92,7 @@ describe("handleTransfer()", () => {
         emitPrincipalTokenFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChanged()
-        emitCurvePoolDeployed()
+        emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
 
         let lpTransferEvent = changetype<Transfer>(newMockEvent())
         lpTransferEvent.address = POOL_LP_ADDRESS_MOCK

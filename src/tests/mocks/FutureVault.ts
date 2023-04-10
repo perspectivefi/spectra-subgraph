@@ -2,7 +2,7 @@ import { Address, BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts"
 import { createMockedFunction } from "matchstick-as/assembly/index"
 
 import { toPrecision } from "../../utils/toPrecision"
-import { ETH_ADDRESS_MOCK } from "./ERC20"
+import { ETH_ADDRESS_MOCK, STANDARD_DECIMALS_MOCK } from "./ERC20"
 import { FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK } from "./FutureVaultFactory"
 import { PRINCIPAL_TOKEN_ADDRESS_MOCK } from "./LPVault"
 
@@ -38,7 +38,7 @@ export const FIRST_USER_MOCK = Address.fromString(
 
 export const FEE_MOCK = 150
 
-const IBT_RATE_MOCK = toPrecision(BigInt.fromI32(2), 1, 18)
+const IBT_RATE_MOCK = toPrecision(BigInt.fromI32(2), 0, STANDARD_DECIMALS_MOCK)
 
 export function mockFutureVaultFunctions(): void {
     ;[
@@ -52,7 +52,7 @@ export function mockFutureVaultFunctions(): void {
             addressMock,
             "maturity",
             "maturity():(uint256)"
-        ).returns([ethereum.Value.fromI32(1)])
+        ).returns([ethereum.Value.fromI32(2)])
 
         createMockedFunction(
             addressMock,
@@ -105,5 +105,15 @@ export function mockFutureVaultFunctions(): void {
             "getUnclaimedFeesInIBT",
             "getUnclaimedFeesInIBT():(uint256)"
         ).returns([ethereum.Value.fromI32(FEE_MOCK)])
+
+        createMockedFunction(
+            addressMock,
+            "getIBTUnit",
+            "getIBTUnit():(uint256)"
+        ).returns([
+            ethereum.Value.fromUnsignedBigInt(
+                toPrecision(BigInt.fromI32(10), 0, STANDARD_DECIMALS_MOCK)
+            ),
+        ])
     })
 }

@@ -627,7 +627,7 @@ describe("handlePoolIndexUpdated()", () => {
         mockCurvePoolFunctions()
 
         emiCurveFactoryChanged()
-        emitCurvePoolDeployed()
+        emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
 
         let poolIndexUpdatedEvent = changetype<PoolIndexUpdated>(newMockEvent())
         poolIndexUpdatedEvent.address = LP_VAULT_ADDRESS_MOCK

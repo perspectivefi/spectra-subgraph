@@ -1,6 +1,6 @@
 import { Address } from "@graphprotocol/graph-ts"
-import { BigInt, ethereum } from "@graphprotocol/graph-ts/index"
-import { newMockEvent } from "matchstick-as/assembly/index"
+import { BigInt, ethereum } from "@graphprotocol/graph-ts"
+import { newMockEvent } from "matchstick-as/assembly"
 
 import {
     CurveFactoryChanged,
@@ -16,7 +16,6 @@ import {
 } from "../../mappings/futures"
 import {
     POOL_DEPLOY_TRANSACTION_HASH,
-    FIRST_POOL_ADDRESS_MOCK,
     POOL_FACTORY_ADDRESS_MOCK,
     POOL_IBT_ADDRESS_MOCK,
     POOL_PT_ADDRESS_MOCK,
@@ -101,7 +100,7 @@ export const emiCurveFactoryChanged = (): void => {
     handleCurveFactoryChanged(curveFactoryChangedEvent)
 }
 
-export const emitCurvePoolDeployed = (): void => {
+export const emitCurvePoolDeployed = (poolAddress: Address): void => {
     let curvePoolDeployedEvent = changetype<CurvePoolDeployed>(newMockEvent())
 
     curvePoolDeployedEvent.address = FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK
@@ -109,7 +108,7 @@ export const emitCurvePoolDeployed = (): void => {
 
     let poolAddressParam = new ethereum.EventParam(
         "poolAddress",
-        ethereum.Value.fromAddress(FIRST_POOL_ADDRESS_MOCK)
+        ethereum.Value.fromAddress(poolAddress)
     )
 
     let ibtParam = new ethereum.EventParam(

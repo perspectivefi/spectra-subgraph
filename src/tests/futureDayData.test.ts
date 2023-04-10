@@ -17,7 +17,10 @@ import {
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
 import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
-import { mockCurvePoolFunctions } from "./mocks/CurvePool"
+import {
+    FIRST_POOL_ADDRESS_MOCK,
+    mockCurvePoolFunctions,
+} from "./mocks/CurvePool"
 import { mockMetaPoolFactoryFunctions } from "./mocks/CurvePoolFactory"
 import { mockERC20Balances, mockERC20Functions } from "./mocks/ERC20"
 import { createConvertToAssetsCallMockFromString } from "./mocks/ERC4626"
@@ -46,7 +49,7 @@ describe("APY Computations on futureDailyStats", () => {
         emitPrincipalTokenFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChanged()
-        emitCurvePoolDeployed()
+        emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
     })
 
     test("Should create 2 FutureDailyStats entities with a 1 week interval", () => {
