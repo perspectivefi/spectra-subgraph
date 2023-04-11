@@ -26,8 +26,8 @@ import {
     FIRST_POOL_ADDRESS_MOCK,
     mockCurvePoolFunctions,
     POOL_LP_ADDRESS_MOCK,
-    POOL_PT_ADDRESS_MOCK
-} from "./mocks/CurvePool";
+    POOL_PT_ADDRESS_MOCK,
+} from "./mocks/CurvePool"
 import { mockMetaPoolFactoryFunctions } from "./mocks/CurvePoolFactory"
 import {
     mockERC20Balances,
