@@ -23,6 +23,7 @@ import {
     Unpaused,
     Withdraw,
     YieldTransferred,
+    YieldUpdated,
 } from "../../generated/templates/PrincipalToken/PrincipalToken"
 import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
 import { createAPRInTimeForPool } from "../entities/APRInTime"
@@ -392,19 +393,6 @@ export function handleWithdraw(event: Withdraw): void {
 //     }
 // }
 
-export function handleYieldTransferred(event: YieldTransferred): void {
-    let future = Future.load(event.address.toHex())
-
-    if (future) {
-        future.unclaimedFees = getUnclaimedFees(event.address)
-        future.save()
-    } else {
-        log.warning("YieldTransferred event call for not existing Future {}", [
-            event.address.toHex(),
-        ])
-    }
-}
-
 export function handleCurveFactoryChanged(event: CurveFactoryChanged): void {
     let futureVaultFactory = FutureVaultFactory.load(event.address.toHex())
 
@@ -502,4 +490,42 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
 
     pool.spotPrice = spotPrice
     pool.save()
+}
+
+export function handleYieldTransferred(event: YieldTransferred): void {
+    let future = Future.load(event.address.toHex())
+
+    if (future) {
+        let account = getAccount(
+            event.params.receiver.toHex(),
+            event.block.timestamp
+        )
+    } else {
+        log.warning("YieldTransferred event call for not existing Future {}", [
+            event.address.toHex(),
+        ])
+    }
+}
+
+export function handleYieldUpdated(event: YieldUpdated): void {
+    let future = Future.load(event.address.toHex())
+
+    if (future) {
+        let account = getAccount(
+            event.params.user.toHex(),
+            event.block.timestamp
+        )
+
+        let firstAmountIn = getAssetAmount(
+            event.transaction.hash,
+            "###", // TODO
+            event.params._yield,
+            AssetType.YIELD,
+            event.block.timestamp
+        )
+    } else {
+        log.warning("YieldUpdated event call for not existing Future {}", [
+            event.address.toHex(),
+        ])
+    }
 }

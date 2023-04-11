@@ -176,6 +176,8 @@ templates:
           handler: handleWithdraw
         - event: YieldTransferred(indexed address,uint256)
           handler: handleYieldTransferred
+        - event: YieldUpdated(indexed address, indexed uint256)
+          handler: handleYieldUpdated
   - name: LPVault
     kind: ethereum/contract
     network: {{ network }}
