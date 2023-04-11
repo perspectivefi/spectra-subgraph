@@ -878,7 +878,7 @@ describe("handleTokenExchange()", () => {
             APR_IN_TIME_ENTITY,
             `${FIRST_POOL_ADDRESS_MOCK.toHex()}-0`,
             "value",
-            "71003083500"
+            "69425237200"
         )
     })
 
@@ -1159,7 +1159,7 @@ describe("handleRemoveLiquidityOne()", () => {
             APR_IN_TIME_ENTITY,
             `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`,
             "value",
-            "142006167000"
+            "138850474400"
         )
     })
 })

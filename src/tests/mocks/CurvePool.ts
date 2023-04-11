@@ -119,10 +119,14 @@ const createGetDyCallMock = (addressMock: Address): void => {
         .withArgs([
             ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(0)),
             ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1)),
-            ethereum.Value.fromUnsignedBigInt(BigInt.fromString("1000000000")),
+            ethereum.Value.fromUnsignedBigInt(
+                BigInt.fromString("100000000000000000")
+            ),
         ])
         .returns([
-            ethereum.Value.fromSignedBigInt(BigInt.fromString("9000000000")),
+            ethereum.Value.fromSignedBigInt(
+                BigInt.fromString("900000000000000000")
+            ),
         ])
 }
 
@@ -135,10 +139,14 @@ const createNegativeGetDyCallMock = (addressMock: Address): void => {
         .withArgs([
             ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(0)),
             ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1)),
-            ethereum.Value.fromUnsignedBigInt(BigInt.fromString("1000000000")),
+            ethereum.Value.fromUnsignedBigInt(
+                BigInt.fromString("100000000000000000")
+            ),
         ])
         .returns([
-            ethereum.Value.fromSignedBigInt(BigInt.fromString("70000000")),
+            ethereum.Value.fromSignedBigInt(
+                BigInt.fromString("7000000000000000")
+            ),
         ])
 }
 

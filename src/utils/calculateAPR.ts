@@ -19,9 +19,7 @@ export function calculatePoolAPR(
     let ibtAddress = coins[0]
 
     let ibtDecimals = getERC20Decimals(ibtAddress)
-    let smallInput = BigInt.fromI32(10).pow(
-        Math.floor(ibtDecimals * (3 / 4)) as u8
-    ) // small input to ensure correct rate for small amount
+    let smallInput = BigInt.fromI32(10).pow((ibtDecimals as u8) - 1) // small input to ensure correct rate for small amount
 
     const ibtToPT = getIBTtoPTRate(poolAddress, smallInput)
     const principalTokenExpiration = getExpirationTimestamp(principalToken)
@@ -35,10 +33,6 @@ export function calculatePoolAPR(
             .div(smallInput.toBigDecimal()) // Remove input
             .times(ibtUnit)
             .div(ibtRate.toBigDecimal()) // Reflect IBT/Underlying rate
-
-        log.warning("ibtToPT: {}", [ibtToPT.toString()])
-        log.warning("ibtRate: {}", [ibtRate.toString()])
-        log.warning("underlyingToPTRate: {}", [underlyingToPTRate.toString()])
 
         return underlyingToPTRate
             .minus(UNIT_BD)
