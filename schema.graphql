@@ -262,7 +262,7 @@ type Yield @entity {
     owner: Account!
 
     amount: BigInt!
-    asset: Asset!
+    underlying: Asset!
 
     principalToken: Future!
 }
