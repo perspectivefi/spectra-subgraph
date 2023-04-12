@@ -498,11 +498,6 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     if (pool.futureVault) {
         let poolAPR = createAPRInTimeForPool(poolAddress, event.block.timestamp)
 
-        poolAPR.value = calculatePoolAPR(
-            poolAddress,
-            Address.fromString(pool.futureVault!),
-            event.block.timestamp
-        )
         poolAPR.save()
     }
 

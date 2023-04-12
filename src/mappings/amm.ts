@@ -165,6 +165,20 @@ export function handleAddLiquidity(event: AddLiquidity): void {
                 futureDailyStats.dailyAddLiquidity.plus(UNIT_BI)
             futureDailyStats.save()
         }
+
+        if (pool.futureVault) {
+            let poolAPR = createAPRInTimeForPool(
+                event.address,
+                event.block.timestamp
+            )
+
+            poolAPR.value = calculatePoolAPR(
+                event.address,
+                Address.fromString(pool.futureVault!),
+                event.block.timestamp
+            )
+            poolAPR.save()
+        }
     }
 }
 
