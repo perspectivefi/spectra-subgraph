@@ -25,10 +25,6 @@ export function calculatePoolAPR(
     const principalTokenExpiration = getExpirationTimestamp(principalToken)
     const ibtRate = getIBTRate(principalToken)
 
-    log.warning('smallInput: {}', [smallInput.toString()])
-    log.warning("ibtToPT: {}", [ibtToPT.toString()])
-    log.warning('ibtRate: {}', [ibtRate.toString()])
-
     if (principalTokenExpiration.gt(currentTimestamp) && ibtRate.gt(ZERO_BI)) {
         const ibtUnit = getIBTUnit(principalToken).toBigDecimal()
 
