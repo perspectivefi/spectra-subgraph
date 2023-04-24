@@ -1,8 +1,11 @@
-import { Asset, Transfer } from "../../generated/schema"
+import { Address } from "@graphprotocol/graph-ts"
+
+import { Asset, Future, Transfer } from "../../generated/schema"
 import { Transfer as TransferEvent } from "../../generated/templates/ERC20/ERC20"
 import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAssetAmount } from "../entities/AssetAmount"
+import { updateYield } from "../entities/Yield"
 import { logWarning } from "../utils"
 import { generateTransferId } from "../utils/idGenerators"
 
@@ -57,6 +60,22 @@ export function handleTransfer(event: TransferEvent): void {
             eventTimestamp,
             asset.type
         )
+
+        const principalToken = Future.load(event.address.toHex())
+
+        if (principalToken) {
+            // Update yield on principal token transfer
+            updateYield(
+                Address.fromBytes(principalToken.address),
+                Address.fromString(accountFrom.id),
+                event.block.timestamp
+            )
+            updateYield(
+                Address.fromBytes(principalToken.address),
+                Address.fromString(accountTo.id),
+                event.block.timestamp
+            )
+        }
     } else {
         logWarning("Transfer event call for not existing Asset {}", [
             event.address.toHex(),

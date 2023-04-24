@@ -1,5 +1,5 @@
 import { BigInt, ethereum } from "@graphprotocol/graph-ts"
-import { Address } from "@graphprotocol/graph-ts/index"
+import { Address } from "@graphprotocol/graph-ts"
 import {
     assert,
     beforeAll,
@@ -7,7 +7,7 @@ import {
     describe,
     newMockEvent,
     test,
-} from "matchstick-as/assembly/index"
+} from "matchstick-as/assembly"
 
 import { Transfer } from "../../generated/templates/ERC20/ERC20"
 import { handleTransfer } from "../mappings/transfers"
@@ -40,6 +40,8 @@ import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterfac
 import {
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
     mockFutureVaultFunctions,
+    RECEIVER_YIELD_IN_IBT_MOCK,
+    SENDER_YIELD_IN_IBT_MOCK,
 } from "./mocks/FutureVault"
 import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory"
 import { RECEIVER_USER_MOCK } from "./mocks/Transaction"
@@ -118,7 +120,7 @@ describe("handleTransfer()", () => {
         handleTransfer(lpTransferEvent)
 
         let ptTransferEvent = changetype<Transfer>(newMockEvent())
-        ptTransferEvent.address = POOL_PT_ADDRESS_MOCK
+        ptTransferEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
         ptTransferEvent.transaction.hash = PT_TRANSFER_TRANSACTION_HASH
 
         let ptValueParam = new ethereum.EventParam(
@@ -267,6 +269,28 @@ describe("handleTransfer()", () => {
             ptTransferId,
             "address",
             PT_TRANSFER_TRANSACTION_HASH.toHex()
+        )
+    })
+
+    test("Should update yield for sender and receiver if transferred asset is PrincipalToken", () => {
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                SENDER_USER_MOCK.toHex(),
+                `${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}-yield`
+            ),
+            "balance",
+            SENDER_YIELD_IN_IBT_MOCK.toString()
+        )
+
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                RECEIVER_USER_MOCK.toHex(),
+                `${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}-yield`
+            ),
+            "balance",
+            RECEIVER_YIELD_IN_IBT_MOCK.toString()
         )
     })
 })

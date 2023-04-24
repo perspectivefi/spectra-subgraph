@@ -1,36 +1,19 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 
-import { AccountAsset, Asset, Yield } from "../../generated/schema"
+import { AccountAsset, Asset } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
 import { AssetType, generateAccountAssetId } from "../utils"
 import { generateYieldAssetId } from "../utils/idGenerators"
 import { getAccount } from "./Account"
-import { getAccountAsset } from "./AccountAsset"
 import { getAsset } from "./Asset"
 import { getERC20Decimals } from "./ERC20"
 import {
     getName,
     getSymbol,
     getUnderlying,
-    getUserYieldInIBT,
+    getCurrentYieldInIBTOfUser,
 } from "./FutureVault"
 import { getNetwork } from "./Network"
-
-export function updateYield(
-    principalToken: Address,
-    accountAddress: Address,
-    timestamp: BigInt
-) {
-    let underlyingAddress = getUnderlying(principalToken)
-    let yieldAsset = getYieldAsset(principalToken, underlyingAddress, timestamp)
-
-    updateAccountAssetBalance(
-        principalToken,
-        accountAddress,
-        yieldAsset.id,
-        timestamp
-    )
-}
 
 function createYieldAsset(
     principalToken: Address,
@@ -88,7 +71,12 @@ export function getAccountYieldAsset(
         asset.id
     )
 
-    let accountAsset = new AccountAsset(accountAssetId)
+    let accountAsset = AccountAsset.load(accountAssetId)
+    if (accountAsset) {
+        return accountAsset
+    }
+
+    accountAsset = new AccountAsset(accountAssetId)
 
     accountAsset.createdAtTimestamp = timestamp
     accountAsset.balance = ZERO_BI
@@ -116,8 +104,24 @@ export function updateAccountAssetBalance(
     )
 
     // TODO: Change IBT to Underlying
-    accountAsset.balance = getUserYieldInIBT(principalToken, accountAddress)
+    accountAsset.balance = getCurrentYieldInIBTOfUser(principalToken, accountAddress)
 
     accountAsset.save()
     return accountAsset
+}
+
+export function updateYield(
+    principalToken: Address,
+    accountAddress: Address,
+    timestamp: BigInt
+): void {
+    let underlyingAddress = getUnderlying(principalToken)
+    let yieldAsset = getYieldAsset(principalToken, underlyingAddress, timestamp)
+
+    updateAccountAssetBalance(
+        principalToken,
+        accountAddress,
+        yieldAsset.id,
+        timestamp
+    )
 }

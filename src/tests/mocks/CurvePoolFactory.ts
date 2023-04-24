@@ -1,5 +1,5 @@
 import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
-import { createMockedFunction } from "matchstick-as/assembly/index"
+import { createMockedFunction } from "matchstick-as/assembly"
 
 import { toPrecision } from "../../utils/toPrecision"
 import { FIRST_USER_MOCK } from "./FutureVault"

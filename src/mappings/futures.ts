@@ -51,11 +51,11 @@ import {
     getUnderlying,
     getTotalAssets,
     getYT,
-    getUnclaimedFees,
     getFeeRate,
 } from "../entities/FutureVault"
 import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
+import { updateYield } from "../entities/Yield"
 import { AssetType, generateFeeClaimId } from "../utils"
 import transactionType from "../utils/TransactionType"
 import { generateTransactionId } from "../utils/idGenerators"
@@ -273,7 +273,13 @@ export function handleDeposit(event: Deposit): void {
             },
         })
 
-        // Deposit specific FutureDailyStats  data
+        updateYield(
+            event.address,
+            Address.fromBytes(event.params.sender),
+            event.block.timestamp
+        )
+
+        // Deposit specific FutureDailyStats data
         let futureDailyStats = updateFutureDailyStats(
             event as ethereum.Event,
             event.address
@@ -368,7 +374,14 @@ export function handleWithdraw(event: Withdraw): void {
                 adminFee: ZERO_BI,
             },
         })
-        // Withdraw specific FutureDailyStats  data
+
+        updateYield(
+            event.address,
+            Address.fromBytes(event.params.sender),
+            event.block.timestamp
+        )
+
+        // Withdraw specific FutureDailyStats data
         let futureDailyStats = updateFutureDailyStats(event, event.address)
         futureDailyStats.dailyWithdrawals =
             futureDailyStats.dailyWithdrawals.plus(UNIT_BI)
@@ -492,21 +505,6 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     pool.save()
 }
 
-export function handleYieldTransferred(event: YieldTransferred): void {
-    let future = Future.load(event.address.toHex())
-
-    if (future) {
-        let account = getAccount(
-            event.params.receiver.toHex(),
-            event.block.timestamp
-        )
-    } else {
-        log.warning("YieldTransferred event call for not existing Future {}", [
-            event.address.toHex(),
-        ])
-    }
-}
-
 export function handleYieldUpdated(event: YieldUpdated): void {
     let future = Future.load(event.address.toHex())
 
@@ -516,15 +514,41 @@ export function handleYieldUpdated(event: YieldUpdated): void {
             event.block.timestamp
         )
 
-        let firstAmountIn = getAssetAmount(
-            event.transaction.hash,
-            "###", // TODO
-            event.params._yield,
-            AssetType.YIELD,
+        updateYield(
+            event.address,
+            Address.fromBytes(account.address),
             event.block.timestamp
         )
     } else {
         log.warning("YieldUpdated event call for not existing Future {}", [
+            event.address.toHex(),
+        ])
+    }
+}
+
+export function handleYieldTransferred(event: YieldTransferred): void {
+    let future = Future.load(event.address.toHex())
+
+    if (future) {
+        // Transfer from
+        updateYield(
+            event.address,
+            event.transaction.from,
+            event.block.timestamp
+        )
+
+        let account = getAccount(
+            event.params.receiver.toHex(),
+            event.block.timestamp
+        )
+        // Transfer to
+        updateYield(
+            event.address,
+            Address.fromBytes(account.address),
+            event.block.timestamp
+        )
+    } else {
+        log.warning("YieldTransferred event call for not existing Future {}", [
             event.address.toHex(),
         ])
     }

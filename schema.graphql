@@ -20,6 +20,7 @@ enum AssetType {
     FYT
     LP
     LP_VAULT_SHARES
+    YIELD
     UNKNOWN
 }
 
@@ -252,19 +253,6 @@ type FutureDailyStats @entity {
   realizedAPR7D: BigDecimal! # The realized APR (in % i.e: realizedAPR7D = 1 <==> APR = 100%) of the IBT token over the last 7 days
   realizedAPR30D: BigDecimal! # The realized APR of the IBT token over the last 30 days
   realizedAPR90D: BigDecimal! # The realized APR of the IBT token over the last 90 days
-}
-
-type Yield @entity {
-    id: ID!
-    chainId: Int!
-    createdAtTimestamp: BigInt!
-
-    owner: Account!
-
-    amount: BigInt!
-    underlying: Asset!
-
-    principalToken: Future!
 }
 
 ####################
