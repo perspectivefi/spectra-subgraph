@@ -103,7 +103,7 @@ export function handleLPVaultDeployed(event: LPVaultDeployed): void {
         event.params.lpVault,
         event.block.timestamp
     )
-    lpVaultAPR.value = calculateLpVaultAPR(event.params.lpVault)
+    lpVaultAPR.apr = calculateLpVaultAPR(event.params.lpVault)
     lpVaultAPR.save()
 }
 

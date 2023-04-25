@@ -877,7 +877,7 @@ describe("handleTokenExchange()", () => {
         assert.fieldEquals(
             APR_IN_TIME_ENTITY,
             `${FIRST_POOL_ADDRESS_MOCK.toHex()}-0`,
-            "value",
+            "apr",
             "69425237200"
         )
     })
@@ -934,7 +934,7 @@ describe("handleTokenExchange()", () => {
         assert.fieldEquals(
             APR_IN_TIME_ENTITY,
             `${SECOND_POOL_ADDRESS_MOCK.toHex()}-0`,
-            "value",
+            "apr",
             "-1025600095"
         )
     })
@@ -1155,10 +1155,28 @@ describe("handleRemoveLiquidityOne()", () => {
     })
 
     test("Recalculate pool APR", () => {
+        const aprInTimeId = `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`
+
+        assert.fieldEquals(APR_IN_TIME_ENTITY, aprInTimeId, "spotPrice", "9")
+
         assert.fieldEquals(
             APR_IN_TIME_ENTITY,
-            `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`,
-            "value",
+            aprInTimeId,
+            "ibtRate",
+            "2000000000000000000"
+        )
+
+        assert.fieldEquals(
+            APR_IN_TIME_ENTITY,
+            aprInTimeId,
+            "underlyingToPT",
+            "45"
+        )
+
+        assert.fieldEquals(
+            APR_IN_TIME_ENTITY,
+            aprInTimeId,
+            "apr",
             "138850474400"
         )
     })
