@@ -6,7 +6,7 @@ import {
     clearStore,
     assert,
     beforeAll,
-} from "matchstick-as/assembly/index"
+} from "matchstick-as/assembly"
 
 import {
     AddLiquidity,
@@ -17,7 +17,7 @@ import {
     RemoveLiquidityOne,
     TokenExchange,
 } from "../../generated/CurvePool/CurvePool"
-import { DAY_ID_0 } from "../constants"
+import { DAY_ID_0, ZERO_BI } from "../constants"
 import {
     handleAddLiquidity,
     handleClaimAdminFee,
@@ -48,6 +48,7 @@ import {
     POOL_EXCHANGE_TRANSACTION_HASH,
     POOL_LP_ADDRESS_MOCK,
     POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH,
+    POOL_SECOND_EXCHANGE_TRANSACTION_HASH,
 } from "./mocks/CurvePool"
 import {
     POOL_DEPLOY_TRANSACTION_HASH,
@@ -55,6 +56,7 @@ import {
     mockMetaPoolFactoryFunctions,
     POOL_IBT_ADDRESS_MOCK,
     POOL_PT_ADDRESS_MOCK,
+    SECOND_POOL_ADDRESS_MOCK,
 } from "./mocks/CurvePoolFactory"
 import {
     STANDARD_DECIMALS_MOCK,
@@ -82,12 +84,14 @@ import {
     ACCOUNT_ASSET_ENTITY,
     ACCOUNT_ENTITY,
     FUTURE_DAILY_STATS_ENTITY,
+    APR_IN_TIME_ENTITY,
 } from "./utils/entities"
 
 const ADD_LIQUIDITY_LOG_INDEX = BigInt.fromI32(1)
 const REMOVE_LIQUIDITY_LOG_INDEX = BigInt.fromI32(2)
 const REMOVE_ONE_LIQUIDITY_LOG_INDEX = BigInt.fromI32(3)
 const EXCHANGE_LOG_INDEX = BigInt.fromI32(4)
+const SECOND_EXCHANGE_LOG_INDEX = BigInt.fromI32(5)
 
 const addLiquidityTransactionId = generateTransactionId(
     POOL_ADD_LIQUIDITY_TRANSACTION_HASH,
@@ -146,7 +150,7 @@ describe("handleAddLiquidity()", () => {
         emitPrincipalTokenFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChanged()
-        emitCurvePoolDeployed()
+        emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
 
         let addLiquidityEvent = changetype<AddLiquidity>(newMockEvent())
         addLiquidityEvent.address = FIRST_POOL_ADDRESS_MOCK
@@ -621,6 +625,7 @@ describe("handleTokenExchange()", () => {
         tokenExchangeEvent.address = FIRST_POOL_ADDRESS_MOCK
         tokenExchangeEvent.transaction.hash = POOL_EXCHANGE_TRANSACTION_HASH
         tokenExchangeEvent.logIndex = EXCHANGE_LOG_INDEX
+        tokenExchangeEvent.block.timestamp = ZERO_BI
 
         let buyerParam = new ethereum.EventParam(
             "buyer",
@@ -867,6 +872,72 @@ describe("handleTokenExchange()", () => {
             "1"
         )
     })
+
+    test("Recalculate pool APR", () => {
+        assert.fieldEquals(
+            APR_IN_TIME_ENTITY,
+            `${FIRST_POOL_ADDRESS_MOCK.toHex()}-0`,
+            "apr",
+            "69425237200"
+        )
+    })
+
+    test("Recalculate pool APR with negative value", () => {
+        emitCurvePoolDeployed(SECOND_POOL_ADDRESS_MOCK)
+
+        let tokenExchangeEvent = changetype<TokenExchange>(newMockEvent())
+        tokenExchangeEvent.address = SECOND_POOL_ADDRESS_MOCK
+        tokenExchangeEvent.transaction.hash =
+            POOL_SECOND_EXCHANGE_TRANSACTION_HASH
+        tokenExchangeEvent.logIndex = SECOND_EXCHANGE_LOG_INDEX
+        tokenExchangeEvent.block.timestamp = ZERO_BI
+
+        let buyerParam = new ethereum.EventParam(
+            "buyer",
+            ethereum.Value.fromAddress(FIRST_USER_MOCK)
+        )
+
+        let soldIdParam = new ethereum.EventParam(
+            "sold_id",
+            ethereum.Value.fromI32(1)
+        )
+
+        let tokensSoldParam = new ethereum.EventParam(
+            "tokens_sold",
+            ethereum.Value.fromSignedBigInt(
+                toPrecision(BigInt.fromI32(50), 1, STANDARD_DECIMALS_MOCK)
+            )
+        )
+
+        let boughtIdParam = new ethereum.EventParam(
+            "bought_id",
+            ethereum.Value.fromI32(0)
+        )
+
+        let tokensBoughtParam = new ethereum.EventParam(
+            "tokens_bought",
+            ethereum.Value.fromSignedBigInt(
+                toPrecision(BigInt.fromI32(100), 1, STANDARD_DECIMALS_MOCK)
+            )
+        )
+
+        tokenExchangeEvent.parameters = [
+            buyerParam,
+            soldIdParam,
+            tokensSoldParam,
+            boughtIdParam,
+            tokensBoughtParam,
+        ]
+
+        handleTokenExchange(tokenExchangeEvent)
+
+        assert.fieldEquals(
+            APR_IN_TIME_ENTITY,
+            `${SECOND_POOL_ADDRESS_MOCK.toHex()}-0`,
+            "apr",
+            "-1025600095"
+        )
+    })
 })
 
 describe("handleRemoveLiquidityOne()", () => {
@@ -879,6 +950,7 @@ describe("handleRemoveLiquidityOne()", () => {
             POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH
         removeLiquidityOneEvent.transaction.from = FIRST_USER_MOCK
         removeLiquidityOneEvent.logIndex = REMOVE_ONE_LIQUIDITY_LOG_INDEX
+        removeLiquidityOneEvent.block.timestamp = ZERO_BI
 
         let providerParam = new ethereum.EventParam(
             "provider",
@@ -931,7 +1003,7 @@ describe("handleRemoveLiquidityOne()", () => {
                 POOL_PT_ADDRESS_MOCK.toHex()
             ),
             "amount",
-            toPrecision(BigInt.fromI32(40), 0, STANDARD_DECIMALS_MOCK)
+            toPrecision(BigInt.fromI32(35), 0, STANDARD_DECIMALS_MOCK)
                 .neg()
                 .toString()
         )
@@ -1079,6 +1151,33 @@ describe("handleRemoveLiquidityOne()", () => {
             ),
             "ibtRate",
             "1"
+        )
+    })
+
+    test("Recalculate pool APR", () => {
+        const aprInTimeId = `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`
+
+        assert.fieldEquals(APR_IN_TIME_ENTITY, aprInTimeId, "spotPrice", "9")
+
+        assert.fieldEquals(
+            APR_IN_TIME_ENTITY,
+            aprInTimeId,
+            "ibtRate",
+            "2000000000000000000"
+        )
+
+        assert.fieldEquals(
+            APR_IN_TIME_ENTITY,
+            aprInTimeId,
+            "underlyingToPT",
+            "45"
+        )
+
+        assert.fieldEquals(
+            APR_IN_TIME_ENTITY,
+            aprInTimeId,
+            "apr",
+            "138850474400"
         )
     })
 })

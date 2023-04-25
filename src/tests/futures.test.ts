@@ -87,7 +87,7 @@ import {
     POOL_FACTORY_ENTITY,
     TRANSACTION_ENTITY,
     FUTURE_VAULT_FACTORY_ENTITY,
-    APR_IN_TIME,
+    APR_IN_TIME_ENTITY,
 } from "./utils/entities"
 
 const COLLECTED_FEE = 50
@@ -128,7 +128,7 @@ describe("handleFutureVaultDeployed()", () => {
             FUTURE_ENTITY,
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
             "expirationAtTimestamp",
-            "1"
+            "2"
         )
     })
 
@@ -750,7 +750,7 @@ describe("handleCurveFactoryChanged()", () => {
 
 describe("handleCurvePoolDeployed()", () => {
     beforeAll(() => {
-        emitCurvePoolDeployed()
+        emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
     })
 
     test("Should create new pool entity", () => {
@@ -884,7 +884,7 @@ describe("handleCurvePoolDeployed()", () => {
         })
 
         assert.fieldEquals(
-            APR_IN_TIME,
+            APR_IN_TIME_ENTITY,
             `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`,
             "pool",
             FIRST_POOL_ADDRESS_MOCK.toHex()

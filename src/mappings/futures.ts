@@ -57,7 +57,6 @@ import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
 import transactionType from "../utils/TransactionType"
-import { calculatePoolAPR } from "../utils/calculateAPR"
 import { generateTransactionId } from "../utils/idGenerators"
 
 export function handlePrincipalTokenDeployed(
@@ -498,13 +497,6 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     if (pool.futureVault) {
         let poolAPR = createAPRInTimeForPool(poolAddress, event.block.timestamp)
 
-        poolAPR.value = calculatePoolAPR(
-            spotPrice,
-            pool.feeRate,
-            pool.adminFeeRate,
-            Address.fromString(pool.futureVault!),
-            event.block.timestamp
-        )
         poolAPR.save()
     }
 
