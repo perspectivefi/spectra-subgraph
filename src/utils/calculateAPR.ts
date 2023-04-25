@@ -2,6 +2,7 @@ import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts"
 
 import { LPVault } from "../../generated/schema"
 import { SECONDS_PER_YEAR_BD, UNIT_BD, ZERO_BD, ZERO_BI } from "../constants"
+import { createAPRInTimeForPool } from "../entities/APRInTime"
 import { getPoolCoins, getIBTtoPTRate } from "../entities/CurvePool"
 import { getERC20Decimals } from "../entities/ERC20"
 import {
@@ -10,11 +11,13 @@ import {
     getIBTUnit,
 } from "../entities/FutureVault"
 
-export function calculatePoolAPR(
+export function updatePoolAPR(
     poolAddress: Address,
     principalToken: Address,
     currentTimestamp: BigInt
-): BigDecimal {
+): void {
+    let poolAPR = createAPRInTimeForPool(poolAddress, currentTimestamp)
+
     let coins = getPoolCoins(poolAddress)
     let ibtAddress = coins[0]
 
@@ -25,25 +28,35 @@ export function calculatePoolAPR(
     const principalTokenExpiration = getExpirationTimestamp(principalToken)
     const ibtRate = getIBTRate(principalToken)
 
+    const spotPrice = ibtToPT.toBigDecimal().div(smallInput.toBigDecimal()) // Remove input
+
+    poolAPR.spotPrice = spotPrice
+    poolAPR.ibtRate = ibtRate
+
     if (principalTokenExpiration.gt(currentTimestamp) && ibtRate.gt(ZERO_BI)) {
         const ibtUnit = getIBTUnit(principalToken).toBigDecimal()
 
-        let underlyingToPTRate = ibtToPT
-            .toBigDecimal()
-            .div(smallInput.toBigDecimal()) // Remove input
+        let underlyingToPTRate = spotPrice
             .times(ibtUnit)
             .div(ibtRate.toBigDecimal()) // Reflect IBT/Underlying rate
 
-        return underlyingToPTRate
+        poolAPR.underlyingToPT = underlyingToPTRate
+
+        let apr = underlyingToPTRate
             .minus(UNIT_BD)
             .div(
                 principalTokenExpiration.minus(currentTimestamp).toBigDecimal()
             ) // Get rate per second
             .times(SECONDS_PER_YEAR_BD) // Convert to rate per year
             .times(BigDecimal.fromString("100")) // Convert to percentage
+
+        poolAPR.apr = apr
     } else {
-        return ZERO_BD
+        poolAPR.apr = ZERO_BD
+        poolAPR.underlyingToPT = ZERO_BD
     }
+
+    poolAPR.save()
 }
 
 const LP_VAULT_APR_MOCK: BigDecimal[] = [
