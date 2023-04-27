@@ -104,7 +104,10 @@ export function updateAccountAssetBalance(
     )
 
     // TODO: Change IBT to Underlying
-    accountAsset.balance = getCurrentYieldInIBTOfUser(principalToken, accountAddress)
+    accountAsset.balance = getCurrentYieldInIBTOfUser(
+        principalToken,
+        accountAddress
+    )
 
     accountAsset.save()
     return accountAsset
