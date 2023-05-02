@@ -273,12 +273,6 @@ export function handleDeposit(event: Deposit): void {
             },
         })
 
-        updateYield(
-            event.address,
-            Address.fromBytes(event.params.sender),
-            event.block.timestamp
-        )
-
         // Deposit specific FutureDailyStats data
         let futureDailyStats = updateFutureDailyStats(
             event as ethereum.Event,
@@ -374,12 +368,6 @@ export function handleWithdraw(event: Withdraw): void {
                 adminFee: ZERO_BI,
             },
         })
-
-        updateYield(
-            event.address,
-            Address.fromBytes(event.params.sender),
-            event.block.timestamp
-        )
 
         // Withdraw specific FutureDailyStats data
         let futureDailyStats = updateFutureDailyStats(event, event.address)
