@@ -44,7 +44,10 @@ export const emitFutureVaultDeployed = (futureVaultAddress: Address): void => {
     handlePrincipalTokenDeployed(futureVaultDeployedEvent)
 }
 
-export const emitDeposit = (timestamp: number = 0): Deposit => {
+export const emitDeposit = (
+    timestamp: number = 0,
+    sender: Address = FIRST_USER_MOCK
+): Deposit => {
     let depositEvent = changetype<Deposit>(newMockEvent())
     depositEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
     depositEvent.transaction.hash = DEPOSIT_TRANSACTION_HASH
@@ -55,12 +58,12 @@ export const emitDeposit = (timestamp: number = 0): Deposit => {
     }
     let senderParam = new ethereum.EventParam(
         "sender",
-        ethereum.Value.fromAddress(FIRST_USER_MOCK)
+        ethereum.Value.fromAddress(sender)
     )
 
     let ownerParam = new ethereum.EventParam(
         "owner",
-        ethereum.Value.fromAddress(FIRST_USER_MOCK)
+        ethereum.Value.fromAddress(sender)
     )
 
     let assetsParam = new ethereum.EventParam(

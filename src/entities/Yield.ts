@@ -1,6 +1,6 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 
-import { AccountAsset, Asset } from "../../generated/schema"
+import { AccountAsset, Asset, Future } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
 import { AssetType, generateAccountAssetId } from "../utils"
 import { generateYieldAssetId } from "../utils/idGenerators"
@@ -127,4 +127,27 @@ export function updateYield(
         yieldAsset.id,
         timestamp
     )
+}
+
+export function updateYieldForAll(
+    principalTokenAddress: Address,
+    timestamp: BigInt
+): void {
+    const principalToken = Future.load(principalTokenAddress.toHex())
+
+    if (principalToken) {
+        // Update yield for all the wallets holding YT or have positive yield
+        for (let i = 0; i < principalToken.yieldGenerators.length; i++) {
+            const ytAssetAddress = principalToken.yieldGenerators[i]
+            const ytAsset = AccountAsset.load(ytAssetAddress)
+
+            if (ytAsset && ytAsset.generatedYield) {
+                updateYield(
+                    Address.fromString(ytAsset.principalToken!),
+                    Address.fromString(ytAsset.account),
+                    timestamp
+                )
+            }
+        }
+    }
 }

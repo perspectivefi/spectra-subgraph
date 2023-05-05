@@ -28,7 +28,10 @@ import {
 import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
 import { createAPRInTimeForPool } from "../entities/APRInTime"
 import { getAccount } from "../entities/Account"
-import { updateAccountAssetBalance } from "../entities/AccountAsset"
+import {
+    updateAccountAssetBalance,
+    updateAccountAssetYTBalance,
+} from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import {
@@ -55,7 +58,7 @@ import {
 } from "../entities/FutureVault"
 import { getNetwork } from "../entities/Network"
 import { createTransaction } from "../entities/Transaction"
-import { updateYield } from "../entities/Yield"
+import { updateYield, updateYieldForAll } from "../entities/Yield"
 import { AssetType, generateFeeClaimId } from "../utils"
 import transactionType from "../utils/TransactionType"
 import { generateTransactionId } from "../utils/idGenerators"
@@ -100,6 +103,8 @@ export function handlePrincipalTokenDeployed(
 
     newFuture.underlyingAsset = underlyingAddress.toHex()
     newFuture.ibtAsset = ibtAddress.toHex()
+
+    newFuture.yieldGenerators = []
 
     newFuture.save()
 
@@ -238,11 +243,12 @@ export function handleDeposit(event: Deposit): void {
             event.block.timestamp
         )
 
-        updateAccountAssetBalance(
+        updateAccountAssetYTBalance(
             event.params.owner.toHex(),
             ytAddress.toHex(),
             event.block.timestamp,
-            AssetType.YT
+            AssetType.YT,
+            Address.fromBytes(future.address)
         )
 
         createTransaction({
@@ -319,11 +325,12 @@ export function handleWithdraw(event: Withdraw): void {
             event.block.timestamp
         )
 
-        updateAccountAssetBalance(
+        updateAccountAssetYTBalance(
             event.params.owner.toHex(),
             ytAddress.toHex(),
             event.block.timestamp,
-            AssetType.YT
+            AssetType.YT,
+            Address.fromBytes(future.address)
         )
 
         let amountOut = getAssetAmount(
@@ -497,16 +504,7 @@ export function handleYieldUpdated(event: YieldUpdated): void {
     let future = Future.load(event.address.toHex())
 
     if (future) {
-        let account = getAccount(
-            event.params.user.toHex(),
-            event.block.timestamp
-        )
-
-        updateYield(
-            event.address,
-            Address.fromBytes(account.address),
-            event.block.timestamp
-        )
+        updateYieldForAll(event.address, event.block.timestamp)
     } else {
         log.warning("YieldUpdated event call for not existing Future {}", [
             event.address.toHex(),
@@ -518,23 +516,7 @@ export function handleYieldTransferred(event: YieldTransferred): void {
     let future = Future.load(event.address.toHex())
 
     if (future) {
-        // Transfer from
-        updateYield(
-            event.address,
-            event.transaction.from,
-            event.block.timestamp
-        )
-
-        let account = getAccount(
-            event.params.receiver.toHex(),
-            event.block.timestamp
-        )
-        // Transfer to
-        updateYield(
-            event.address,
-            Address.fromBytes(account.address),
-            event.block.timestamp
-        )
+        updateYieldForAll(event.address, event.block.timestamp)
     } else {
         log.warning("YieldTransferred event call for not existing Future {}", [
             event.address.toHex(),

@@ -6,7 +6,7 @@ import {
     describe,
     newMockEvent,
     test,
-} from "matchstick-as/assembly/index"
+} from "matchstick-as/assembly"
 
 import {
     FeeClaimed,
@@ -274,6 +274,10 @@ describe("handleUnpaused()", () => {
 
 describe("handleYieldUpdated()", () => {
     beforeAll(() => {
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+
+        emitDeposit(0, FEE_COLLECTOR_ADDRESS_MOCK)
+
         let yieldUpdatedEvent = changetype<YieldUpdated>(newMockEvent())
         yieldUpdatedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
         yieldUpdatedEvent.transaction.from = FIRST_USER_MOCK
@@ -293,25 +297,23 @@ describe("handleYieldUpdated()", () => {
         handleYieldUpdated(yieldUpdatedEvent)
     })
 
-    test("Should create AccountAsset entity", () => {
-        assert.entityCount(ACCOUNT_ASSET_ENTITY, 1)
-    })
-
-    test("Should reflect sent yield in users portfolio", () => {
+    test("Should update yield for users with YT asset in portfolio", () => {
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
             generateAccountAssetId(
-                YIELD_USER_ADDRESS_MOCK.toHex(),
+                FEE_COLLECTOR_ADDRESS_MOCK.toHex(),
                 `${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}-yield`
             ),
             "balance",
-            YIELD_USER_YIELD_IN_IBT_MOCK.toString()
+            RECEIVER_YIELD_IN_IBT_MOCK.toString()
         )
     })
 })
 
 describe("handleYieldTransferred()", () => {
     beforeAll(() => {
+        emitDeposit(0, FIRST_USER_MOCK)
+
         let yieldTransferredEvent = changetype<YieldTransferred>(newMockEvent())
         yieldTransferredEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
         yieldTransferredEvent.transaction.from = FIRST_USER_MOCK
@@ -331,8 +333,8 @@ describe("handleYieldTransferred()", () => {
         handleYieldTransferred(yieldTransferredEvent)
     })
 
-    test("Should create two AccountAsset entities", () => {
-        assert.entityCount(ACCOUNT_ASSET_ENTITY, 3)
+    test("Should create AccountAsset entities", () => {
+        assert.entityCount(ACCOUNT_ASSET_ENTITY, 8)
     })
 
     test("Should reflect sent yield in users portfolio", () => {
@@ -506,7 +508,7 @@ describe("handleDeposit()", () => {
         )
     })
     test("Should create three AccountAsset entities and fetch Underlying token balance", () => {
-        assert.entityCount(ACCOUNT_ASSET_ENTITY, 6)
+        assert.entityCount(ACCOUNT_ASSET_ENTITY, 8)
 
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
@@ -542,9 +544,6 @@ describe("handleDeposit()", () => {
             "portfolio",
             `[${generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
-                `${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}-yield`
-            )}, ${generateAccountAssetId(
-                FIRST_USER_MOCK.toHex(),
                 ETH_ADDRESS_MOCK
             )}, ${generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
@@ -552,6 +551,9 @@ describe("handleDeposit()", () => {
             )}, ${generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
                 YT_ADDRESS_MOCK.toHex()
+            )}, ${generateAccountAssetId(
+                FIRST_USER_MOCK.toHex(),
+                `${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}-yield`
             )}]`
         )
     })
@@ -573,7 +575,7 @@ describe("handleDeposit()", () => {
                 DAY_ID_0
             ),
             "dailyDeposits",
-            "1"
+            "3"
         )
 
         assert.fieldEquals(
@@ -734,7 +736,7 @@ describe("handleWithdraw()", () => {
                 DAY_ID_0
             ),
             "dailyDeposits",
-            "1"
+            "3"
         )
 
         assert.fieldEquals(
