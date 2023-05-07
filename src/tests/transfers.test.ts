@@ -104,7 +104,6 @@ describe("handleTransfer()", () => {
         // Necessary to have YT entity to follow yield
         emitDeposit(0, SENDER_USER_MOCK)
         emitDeposit(0, RECEIVER_USER_MOCK)
-
         emitDeposit(0, SECOND_USER_MOCK)
 
         let lpTransferEvent = changetype<Transfer>(newMockEvent())

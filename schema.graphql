@@ -228,7 +228,7 @@ type Future @entity {
     futureDailyStats: [FutureDailyStats!]! @derivedFrom(field: "future")
 
     "YT asset with balance > 0 or current yield > 0"
-    yieldGenerators: [AccountAsset!]! @derivedFrom(field: "principalToken")
+    yieldGenerators: [AccountAsset!]!
 
 #    ibtToUnderlyingRatio: Value
 #    platform: Platform!

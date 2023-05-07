@@ -1,4 +1,4 @@
-import { Address, BigInt, log } from "@graphprotocol/graph-ts"
+import { Address, BigInt, log, store } from "@graphprotocol/graph-ts"
 
 import { AccountAsset, Future } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
@@ -8,6 +8,8 @@ import { getAsset } from "./Asset"
 import { getERC20Balance } from "./ERC20"
 import { getERC4626Balance } from "./ERC4626"
 import { getAccountYieldAsset } from "./Yield"
+
+// store.get("Future", "")
 
 export function createAccountAsset(
     accountAddress: Address,
@@ -79,7 +81,7 @@ export function updateAccountAssetBalance(
     const assetAddress = Address.fromBytes(asset.address)
     const accountAddress = Address.fromBytes(account.address)
 
-    if (assetType === AssetType.IBT) {
+    if (assetType == AssetType.IBT) {
         accountAsset.balance = getERC4626Balance(assetAddress, accountAddress)
     } else {
         accountAsset.balance = getERC20Balance(assetAddress, accountAddress)
@@ -94,7 +96,7 @@ export function getAccountAssetYT(
     assetAddress: Address,
     timestamp: BigInt,
     type: string,
-    principalToken: Address
+    principalTokenAddress: Address
 ): AccountAsset {
     let id = generateAccountAssetId(
         accountAddress.toHex(),
@@ -111,8 +113,19 @@ export function getAccountAssetYT(
             timestamp
         )
 
+        accountAsset.generatedYield = true
+
         if (!accountAsset.principalToken) {
-            accountAsset.principalToken = principalToken.toHex()
+            accountAsset.principalToken = principalTokenAddress.toHex()
+
+            const principalToken = Future.load(principalTokenAddress.toHex())
+            if (principalToken) {
+                // TODO: There is an issue if using PT -> AccountAsset relation, have to find better optimised way if there will be many yield generators
+                let yieldGenerators = principalToken.yieldGenerators
+                yieldGenerators.push(accountAsset.id)
+                principalToken.yieldGenerators = yieldGenerators
+                principalToken.save()
+            }
         }
     }
 
@@ -124,7 +137,7 @@ export function updateAccountAssetYTBalance(
     assetId: string,
     timestamp: BigInt,
     assetType: string,
-    principalToken: Address
+    principalTokenAddress: Address
 ): AccountAsset {
     let account = getAccount(accountId, timestamp)
     let asset = getAsset(assetId, timestamp, assetType)
@@ -134,10 +147,10 @@ export function updateAccountAssetYTBalance(
         Address.fromBytes(asset.address),
         timestamp,
         asset.type,
-        principalToken
+        principalTokenAddress
     )
 
-    if (assetType === AssetType.YT) {
+    if (assetType == AssetType.YT) {
         const assetAddress = Address.fromBytes(asset.address)
         const accountAddress = Address.fromBytes(account.address)
 
@@ -169,7 +182,10 @@ export function updateAccountAssetYTBalance(
 
         accountAsset.save()
     } else {
-        log.warning("{} AccountAsset is not a YT position", [accountAsset.id])
+        log.warning("{} AccountAsset is not a YT position but {}", [
+            accountAsset.id,
+            asset.type,
+        ])
     }
     return accountAsset
 }
