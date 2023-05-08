@@ -9,6 +9,7 @@ import {
     IBT_ADDRESS_MOCK,
     YT_ADDRESS_MOCK,
     FIRST_USER_MOCK,
+    FEE_COLLECTOR_ADDRESS_MOCK,
 } from "./FutureVault"
 import { LP_VAULT_ADDRESS_MOCK, LP_VAULT_ASSET_ADDRESS_MOCK } from "./LPVault"
 import { OLD_LP_VAULT_REGISTRY_ADDRESS_MOCK } from "./LPVaultFactory"
@@ -69,6 +70,10 @@ const createBalanceOfCallMock = (
 
     createMockedFunction(tokenMock, "balanceOf", "balanceOf(address):(uint256)")
         .withArgs([ethereum.Value.fromAddress(RECEIVER_USER_MOCK)])
+        .returns([ethereum.Value.fromSignedBigInt(returnVault)])
+
+    createMockedFunction(tokenMock, "balanceOf", "balanceOf(address):(uint256)")
+        .withArgs([ethereum.Value.fromAddress(FEE_COLLECTOR_ADDRESS_MOCK)])
         .returns([ethereum.Value.fromSignedBigInt(returnVault)])
 }
 

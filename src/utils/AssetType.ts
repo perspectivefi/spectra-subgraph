@@ -6,6 +6,7 @@ class AssetType {
     FYT: string = "FYT"
     LP: string = "LP"
     LP_VAULT_SHARES: string = "LP_VAULT_SHARES"
+    YIELD: string = "YIELD"
     UNKNOWN: string = "UNKNOWN"
 }
 

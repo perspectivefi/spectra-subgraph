@@ -20,6 +20,7 @@ enum AssetType {
     FYT
     LP
     LP_VAULT_SHARES
+    YIELD
     UNKNOWN
 }
 
@@ -128,7 +129,7 @@ type Asset @entity {
     "on of the price feeds"
     chainlinkPriceFeed: ChainlinkAggregatorProxy
 
-    "for PT/YT/LP tokens"
+    "for PT/YT/LP/YIELD assets"
     futureVault: Future
 
     "in the case the asset is an IBT we create relation between this IBT and its underlying asset"
@@ -161,15 +162,24 @@ type AccountAsset @entity {
     id: ID!
     createdAtTimestamp: BigInt!
     balance: BigInt!
-    #    value: BigDecimal!
+
     "relation to the asset details"
     asset: Asset!
+
     "relation to the account details"
     account: Account!
+
     "if lp position"
     pool: Pool
+
     "if lp vault position"
     lpVault: LPVault
+
+    "YT position"
+    principalToken: Future
+    "if YT position generating yield or current yield > 0"
+    generatedYield: Boolean
+
     #    fytTokenDetails: FYTTokenDetails
 }
 
@@ -217,8 +227,10 @@ type Future @entity {
     transactions: [Transaction!]! @derivedFrom(field: "futureInTransaction")
     futureDailyStats: [FutureDailyStats!]! @derivedFrom(field: "future")
 
-#    ibtToUnderlyingRatio: Value
+    "YT asset with balance > 0 or current yield > 0"
+    yieldGenerators: [AccountAsset!]!
 
+#    ibtToUnderlyingRatio: Value
 #    platform: Platform!
 #    infoUrl: String
 }

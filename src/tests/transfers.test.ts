@@ -1,5 +1,5 @@
 import { BigInt, ethereum } from "@graphprotocol/graph-ts"
-import { Address } from "@graphprotocol/graph-ts/index"
+import { Address } from "@graphprotocol/graph-ts"
 import {
     assert,
     beforeAll,
@@ -7,7 +7,7 @@ import {
     describe,
     newMockEvent,
     test,
-} from "matchstick-as/assembly/index"
+} from "matchstick-as/assembly"
 
 import { Transfer } from "../../generated/templates/ERC20/ERC20"
 import { handleTransfer } from "../mappings/transfers"
@@ -19,6 +19,7 @@ import { toPrecision } from "../utils/toPrecision"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
+    emitDeposit,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
 import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
@@ -36,10 +37,15 @@ import {
     POOL_PT_BALANCE_MOCK,
     STANDARD_DECIMALS_MOCK,
 } from "./mocks/ERC20"
+import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
+    IBT_ADDRESS_MOCK,
     mockFutureVaultFunctions,
+    RECEIVER_YIELD_IN_IBT_MOCK,
+    SECOND_USER_MOCK,
+    SENDER_YIELD_IN_IBT_MOCK,
 } from "./mocks/FutureVault"
 import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory"
 import { RECEIVER_USER_MOCK } from "./mocks/Transaction"
@@ -94,6 +100,12 @@ describe("handleTransfer()", () => {
         emiCurveFactoryChanged()
         emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
 
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        // Necessary to have YT entity to follow yield
+        emitDeposit(0, SENDER_USER_MOCK)
+        emitDeposit(0, RECEIVER_USER_MOCK)
+        emitDeposit(0, SECOND_USER_MOCK)
+
         let lpTransferEvent = changetype<Transfer>(newMockEvent())
         lpTransferEvent.address = POOL_LP_ADDRESS_MOCK
         lpTransferEvent.transaction.hash = LP_TRANSFER_TRANSACTION_HASH
@@ -118,7 +130,7 @@ describe("handleTransfer()", () => {
         handleTransfer(lpTransferEvent)
 
         let ptTransferEvent = changetype<Transfer>(newMockEvent())
-        ptTransferEvent.address = POOL_PT_ADDRESS_MOCK
+        ptTransferEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
         ptTransferEvent.transaction.hash = PT_TRANSFER_TRANSACTION_HASH
 
         let ptValueParam = new ethereum.EventParam(
@@ -267,6 +279,60 @@ describe("handleTransfer()", () => {
             ptTransferId,
             "address",
             PT_TRANSFER_TRANSACTION_HASH.toHex()
+        )
+    })
+
+    test("Should update yield for sender and receiver if transferred asset is PrincipalToken", () => {
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                SENDER_USER_MOCK.toHex(),
+                `${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}-yield`
+            ),
+            "balance",
+            SENDER_YIELD_IN_IBT_MOCK.toString()
+        )
+
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                RECEIVER_USER_MOCK.toHex(),
+                `${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}-yield`
+            ),
+            "balance",
+            RECEIVER_YIELD_IN_IBT_MOCK.toString()
+        )
+    })
+
+    test("Should update yield for all the PrincipalToken users with yield", () => {
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                SENDER_USER_MOCK.toHex(),
+                `${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}-yield`
+            ),
+            "balance",
+            SENDER_YIELD_IN_IBT_MOCK.toString()
+        )
+
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                RECEIVER_USER_MOCK.toHex(),
+                `${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}-yield`
+            ),
+            "balance",
+            RECEIVER_YIELD_IN_IBT_MOCK.toString()
+        )
+
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                SECOND_USER_MOCK.toHex(),
+                `${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}-yield`
+            ),
+            "balance",
+            RECEIVER_YIELD_IN_IBT_MOCK.toString()
         )
     })
 })

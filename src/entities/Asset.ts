@@ -1,10 +1,6 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 
-// import { FeedRegistryInterface } from "../../generated/ChainlinkAggregatorDataSource/FeedRegistryInterface";
 import { Asset } from "../../generated/schema"
-// import { FEED_REGISTRY, USD_DENOMINATION } from "../constants";
-import { AssetType } from "../utils"
-// import { createChainlinkAggregatorProxy } from "./ChainlinkAggregatorProxy";
 import { getERC20Decimals, getERC20Name, getERC20Symbol } from "./ERC20"
 import { getNetwork } from "./Network"
 
@@ -16,22 +12,9 @@ export function getAsset(
     let asset = Asset.load(address)
     if (asset) {
         return asset
-    } else {
-        if (type === AssetType.UNDERLYING) {
-            asset = createUnderlyingAsset(address, timestamp, type)
-        }
-        if (
-            [
-                AssetType.IBT,
-                AssetType.PT,
-                AssetType.YT,
-                AssetType.LP,
-                AssetType.LP_VAULT_SHARES,
-            ].includes(type)
-        ) {
-            asset = createAsset(address, timestamp, type)
-        }
     }
+
+    asset = createAsset(address, timestamp, type)
 
     return asset as Asset
 }

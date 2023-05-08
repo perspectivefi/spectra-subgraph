@@ -159,3 +159,30 @@ export function getIBTUnit(address: Address): BigInt {
 
     return ZERO_BI
 }
+
+export function getCurrentYieldInIBTOfUser(
+    principalToken: Address,
+    account: Address
+): BigInt {
+    const principalTokenContract = PrincipalToken.bind(principalToken)
+
+    let userYieldInIBTCall =
+        principalTokenContract.try_getCurrentYieldInIBTOfUser(account)
+
+    log.warning("getCurrentYieldInIBTOfUser {}, {}, {}", [
+        userYieldInIBTCall.value.toString(),
+        principalToken.toHex(),
+        account.toHex(),
+    ])
+
+    if (!userYieldInIBTCall.reverted) {
+        return userYieldInIBTCall.value
+    }
+
+    log.warning(
+        "getCurrentYieldInIBTOfUser() call reverted for {} PrincipalToken and {} Account",
+        [principalToken.toHex(), account.toHex()]
+    )
+
+    return ZERO_BI
+}

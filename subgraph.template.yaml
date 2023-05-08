@@ -142,6 +142,8 @@ templates:
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
         - name: ERC4626
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
+        - name: PrincipalToken
+          file: ./abis/PrincipalToken.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -176,6 +178,8 @@ templates:
           handler: handleWithdraw
         - event: YieldTransferred(indexed address,uint256)
           handler: handleYieldTransferred
+        - event: YieldUpdated(indexed address,indexed uint256)
+          handler: handleYieldUpdated
   - name: LPVault
     kind: ethereum/contract
     network: {{ network }}

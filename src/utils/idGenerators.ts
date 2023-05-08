@@ -48,3 +48,6 @@ export const generateTransactionId = (
     transactionHash: Bytes,
     eventIterator: string
 ): string => `${transactionHash.toHex()}-${eventIterator}`
+
+export const generateYieldAssetId = (principalToken: string): string =>
+    `${principalToken}-yield`
