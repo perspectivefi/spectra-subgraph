@@ -288,6 +288,15 @@ describe("handleDeposit()", () => {
         handleDeposit(depositEvent)
     })
 
+    test("Should update `totalSupply`", () => {
+        assert.fieldEquals(
+            LP_VAULT_ENTITY,
+            LP_VAULT_ADDRESS_MOCK.toHex(),
+            "totalSupply",
+            BigInt.fromI32(111).toString()
+        )
+    })
+
     test("Should update `totalAmount`", () => {
         assert.fieldEquals(
             LP_VAULT_ENTITY,

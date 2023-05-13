@@ -31,6 +31,20 @@ export function getSymbol(address: Address): string {
     return ""
 }
 
+export function getTotalSupply(address: Address): BigInt {
+    const lpVaultContract = LPVault.bind(address)
+
+    let totalSupplyCall = lpVaultContract.try_totalSupply()
+
+    if (!totalSupplyCall.reverted) {
+        return totalSupplyCall.value
+    }
+
+    log.warning("totalSupply() call reverted for {}", [address.toHex()])
+
+    return ZERO_BI
+}
+
 export function getUnderlying(address: Address): Address {
     const lpVaultContract = LPVault.bind(address)
 

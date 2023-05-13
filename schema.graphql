@@ -444,6 +444,7 @@ type LPVault @entity {
 
     name: String!
     symbol: String!
+    totalSupply: BigInt!
 
     positions: [AccountAsset!]! @derivedFrom(field: "lpVault")
     transactions: [Transaction!]! @derivedFrom(field: "lpVaultInTransaction")

@@ -46,6 +46,12 @@ export function mockLPVaultFunctions(): void {
 
     createMockedFunction(
         LP_VAULT_ADDRESS_MOCK,
+        "totalSupply",
+        "totalSupply():(uint256)"
+    ).returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(111))])
+
+    createMockedFunction(
+        LP_VAULT_ADDRESS_MOCK,
         "totalAssets",
         "totalAssets():(uint256)"
     ).returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(111))])

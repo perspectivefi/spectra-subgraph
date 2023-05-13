@@ -24,6 +24,7 @@ import { getPool } from "../entities/FutureVaultFactory"
 import {
     getName,
     getSymbol,
+    getTotalSupply,
     getTotalAssets,
     getUnderlying,
 } from "../entities/LPVault"
@@ -83,6 +84,7 @@ export function handleLPVaultDeployed(event: LPVaultDeployed): void {
     lpVault.name = name
     let symbol = getSymbol(Address.fromBytes(lpVault.address))
     lpVault.symbol = symbol
+    lpVault.totalSupply = ZERO_BI
     lpVault.totalAssets = ZERO_BI
 
     // interestInTime: [LPVaultInterest!]! @derivedFrom(field: "lpVault")
@@ -227,6 +229,7 @@ export function handleDeposit(event: Deposit): void {
             },
         })
 
+        lpVault.totalSupply = getTotalSupply(lpVaultAddress)
         lpVault.totalAssets = getTotalAssets(lpVaultAddress)
         lpVault.save()
     } else {
@@ -304,6 +307,7 @@ export function handleWithdraw(event: Withdraw): void {
             },
         })
 
+        lpVault.totalSupply = getTotalSupply(lpVaultAddress)
         lpVault.totalAssets = getTotalAssets(lpVaultAddress)
         lpVault.save()
     } else {
