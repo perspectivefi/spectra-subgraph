@@ -58,7 +58,6 @@ import {
 } from "./mocks/LPVault"
 import {
     LP_VAULT_FACTORY_ADDRESS_MOCK,
-    NEW_LP_VAULT_REGISTRY_ADDRESS_MOCK,
     OLD_LP_VAULT_REGISTRY_ADDRESS_MOCK,
 } from "./mocks/LPVaultFactory"
 import {
@@ -68,6 +67,7 @@ import {
     ASSET_ENTITY,
     LP_VAULT_ENTITY,
     LP_VAULT_FACTORY_ENTITY,
+    POOL_ENTITY,
     TRANSACTION_ENTITY,
 } from "./utils/entities"
 
@@ -116,13 +116,18 @@ describe("handleLPVaultDeployed()", () => {
     beforeAll(() => {
         mockFeedRegistryInterfaceFunctions()
         mockERC20Functions()
+
         mockFutureVaultFunctions()
         mockFutureVaultFactoryFunctions()
+
         mockLPVaultFunctions()
+
+        mockCurvePoolFunctions()
 
         emitPrincipalTokenFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emitFutureVaultDeployed(PRINCIPAL_TOKEN_ADDRESS_MOCK)
+
         emitLPVaultDeployed()
     })
 
@@ -198,6 +203,19 @@ describe("handleLPVaultDeployed()", () => {
             LP_VAULT_ADDRESS_MOCK.toHex(),
             "chainId",
             "1"
+        )
+    })
+
+    test("Should create new pool entity", () => {
+        assert.entityCount(POOL_ENTITY, 1)
+    })
+
+    test("Should assign pool relation to the deployed LPVault", () => {
+        assert.fieldEquals(
+            LP_VAULT_ENTITY,
+            LP_VAULT_ADDRESS_MOCK.toHex(),
+            "pool",
+            FIRST_POOL_ADDRESS_MOCK.toHex()
         )
     })
 })
@@ -339,7 +357,7 @@ describe("handleDeposit()", () => {
         )
     })
     test("Should create three new AssetAmount entities with properly assigned transaction relations and correct transaction values", () => {
-        assert.entityCount(ASSET_AMOUNT_ENTITY, 2)
+        assert.entityCount(ASSET_AMOUNT_ENTITY, 4)
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
@@ -513,7 +531,7 @@ describe("handleWithdraw()", () => {
     })
 
     test("Should create three new AssetAmount entities with properly assigned transaction relations and correct transaction values", () => {
-        assert.entityCount(ASSET_AMOUNT_ENTITY, 4)
+        assert.entityCount(ASSET_AMOUNT_ENTITY, 6)
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,

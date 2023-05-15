@@ -28,6 +28,17 @@ export function mockFutureVaultFactoryFunctions(): void {
         )
             .withArgs([
                 ethereum.Value.fromAddress(PRINCIPAL_TOKEN_ADDRESS_MOCK),
+                ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(0)),
+            ])
+            .returns([tupleValue])
+
+        createMockedFunction(
+            addressMock,
+            "getPool",
+            "getPool(address,uint256):((address,string))"
+        )
+            .withArgs([
+                ethereum.Value.fromAddress(PRINCIPAL_TOKEN_ADDRESS_MOCK),
                 ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(2)),
             ])
             .returns([tupleValue])

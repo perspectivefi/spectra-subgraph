@@ -116,6 +116,8 @@ dataSources:
           file: ./abis/LPVaultFactory.json
         - name: LPVault
           file: ./abis/LPVault.json
+        - name: PrincipalTokenFactory
+          file: ./abis/PrincipalTokenFactory.json
         - name: PrincipalToken
           file: ./abis/PrincipalToken.json
         - name: ERC20

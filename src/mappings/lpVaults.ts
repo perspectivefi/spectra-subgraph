@@ -1,4 +1,4 @@
-import { Address, log } from "@graphprotocol/graph-ts"
+import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
 import {
     LPVaultDeployed,
@@ -29,6 +29,7 @@ import {
 } from "../entities/LPVault"
 import { createLPVaultFactory } from "../entities/LPVaultFactory"
 import { getNetwork } from "../entities/Network"
+import { createPool } from "../entities/Pool"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType } from "../utils"
 import FutureState from "../utils/FutureState"
@@ -85,7 +86,27 @@ export function handleLPVaultDeployed(event: LPVaultDeployed): void {
     lpVault.symbol = symbol
     lpVault.totalAssets = ZERO_BI
 
-    // interestInTime: [LPVaultInterest!]! @derivedFrom(field: "lpVault")
+    let poolAddress = getPool(
+        Address.fromString(future.futureVaultFactory!),
+        Address.fromString(lpVault.future),
+        // TODO: lpVault.poolIndex = getPoolIndex()
+        BigInt.fromString("0")
+    )
+
+    let pool = Pool.load(poolAddress.toHex())
+    if (pool) {
+        lpVault.pool = pool.id
+    } else {
+        lpVault.pool = createPool({
+            poolAddress: poolAddress,
+            ibtAddress: ibtAddress,
+            ptFactoryAddress: Address.fromString(future.futureVaultFactory!),
+            ptAddress: Address.fromBytes(future.address),
+            timestamp: event.block.timestamp,
+            transactionHash: event.transaction.hash,
+        }).id
+    }
+
     lpVault.save()
 
     let lpVaultShareAsset = getAsset(

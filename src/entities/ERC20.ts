@@ -65,3 +65,18 @@ export function getERC20Balance(
     ])
     return ZERO_BI
 }
+
+export function getERC20TotalSupply(tokenAddress: Address): BigInt {
+    let erc20Contract = ERC20.bind(tokenAddress)
+
+    let totalSupplyCall = erc20Contract.try_totalSupply()
+
+    if (!totalSupplyCall.reverted) {
+        return totalSupplyCall.value
+    }
+
+    log.warning("totalSupplyCall() call (BigNumber) reverted for {}", [
+        tokenAddress.toHex(),
+    ])
+    return ZERO_BI
+}

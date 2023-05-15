@@ -17,7 +17,7 @@ export function createFutureVaultFactory(
 
 export function getPool(
     principalTokenFactoryAddress: Address,
-    futureVaultAddress: Address,
+    principalTokenAddress: Address,
     poolIndex: BigInt
 ): Address {
     const principalTokenFactoryContract = PrincipalTokenFactory.bind(
@@ -25,7 +25,7 @@ export function getPool(
     )
 
     let poolCall = principalTokenFactoryContract.try_getPool(
-        futureVaultAddress,
+        principalTokenAddress,
         poolIndex
     )
 
