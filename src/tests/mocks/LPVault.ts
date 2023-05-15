@@ -25,6 +25,10 @@ export const WITHDRAW_TRANSACTION_HASH = Bytes.fromHexString(
     "0x2222000000000000000000000000000000000017"
 )
 
+export const LP_VAULT_TOTAL_SUPPLY_MOCK = BigInt.fromI32(1001)
+
+export const LP_VAULT_TOTAL_ASSETS_MOCK = BigInt.fromI32(1002)
+
 export function mockLPVaultFunctions(): void {
     createMockedFunction(
         LP_VAULT_ADDRESS_MOCK,
@@ -48,11 +52,11 @@ export function mockLPVaultFunctions(): void {
         LP_VAULT_ADDRESS_MOCK,
         "totalSupply",
         "totalSupply():(uint256)"
-    ).returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(111))])
+    ).returns([ethereum.Value.fromUnsignedBigInt(LP_VAULT_TOTAL_SUPPLY_MOCK)])
 
     createMockedFunction(
         LP_VAULT_ADDRESS_MOCK,
         "totalAssets",
         "totalAssets():(uint256)"
-    ).returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(111))])
+    ).returns([ethereum.Value.fromUnsignedBigInt(LP_VAULT_TOTAL_ASSETS_MOCK)])
 }
