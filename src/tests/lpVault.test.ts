@@ -55,6 +55,8 @@ import {
     PRINCIPAL_TOKEN_ADDRESS_MOCK,
     DEPOSIT_TRANSACTION_HASH,
     WITHDRAW_TRANSACTION_HASH,
+    LP_VAULT_TOTAL_SUPPLY_MOCK,
+    LP_VAULT_TOTAL_ASSETS_MOCK,
 } from "./mocks/LPVault"
 import {
     LP_VAULT_FACTORY_ADDRESS_MOCK,
@@ -288,12 +290,21 @@ describe("handleDeposit()", () => {
         handleDeposit(depositEvent)
     })
 
+    test("Should update `totalSupply`", () => {
+        assert.fieldEquals(
+            LP_VAULT_ENTITY,
+            LP_VAULT_ADDRESS_MOCK.toHex(),
+            "totalSupply",
+            LP_VAULT_TOTAL_SUPPLY_MOCK.toString()
+        )
+    })
+
     test("Should update `totalAmount`", () => {
         assert.fieldEquals(
             LP_VAULT_ENTITY,
             LP_VAULT_ADDRESS_MOCK.toHex(),
             "totalAssets",
-            BigInt.fromI32(111).toString()
+            LP_VAULT_TOTAL_ASSETS_MOCK.toString()
         )
     })
 
