@@ -356,7 +356,7 @@ describe("handleDeposit()", () => {
             LP_VAULT_ADDRESS_MOCK.toHex()
         )
     })
-    test("Should create three new AssetAmount entities with properly assigned transaction relations and correct transaction values", () => {
+    test("Should create four new AssetAmount entities with properly assigned transaction relations and correct transaction values", () => {
         assert.entityCount(ASSET_AMOUNT_ENTITY, 4)
 
         assert.fieldEquals(
@@ -530,7 +530,7 @@ describe("handleWithdraw()", () => {
         )
     })
 
-    test("Should create three new AssetAmount entities with properly assigned transaction relations and correct transaction values", () => {
+    test("Should create two new AssetAmount entities with properly assigned transaction relations and correct transaction values", () => {
         assert.entityCount(ASSET_AMOUNT_ENTITY, 6)
 
         assert.fieldEquals(
