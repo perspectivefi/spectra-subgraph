@@ -77,9 +77,8 @@ export function createPool(params: PoolDetails): Pool {
     const lpTotalSupply = getERC20TotalSupply(
         Address.fromBytes(lpToken.address)
     )
-    pool.totalLPSupply = lpTotalSupply
 
-    pool.totalLPSupply = UNIT_BI
+    pool.lpTotalSupply = lpTotalSupply
 
     let futureVaultFactory = FutureVaultFactory.load(
         params.ptFactoryAddress.toHex()

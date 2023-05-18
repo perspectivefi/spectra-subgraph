@@ -76,9 +76,9 @@ export function handleAddLiquidity(event: AddLiquidity): void {
         let lpTokenAddress = getPoolLPToken(event.address)
 
         const lpTotalSupply = getERC20TotalSupply(lpTokenAddress)
-        pool.totalLPSupply = lpTotalSupply
+        pool.lpTotalSupply = lpTotalSupply
 
-        let lpTokenDiff = lpTotalSupply.minus(pool.totalLPSupply)
+        let lpTokenDiff = lpTotalSupply.minus(pool.lpTotalSupply)
 
         let lpAmountOut = getAssetAmount(
             event.transaction.hash,
@@ -186,7 +186,7 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
     let pool = Pool.load(event.address.toHex())
 
     if (pool) {
-        let lpTokenDiff = pool.totalLPSupply.minus(event.params.token_supply)
+        let lpTokenDiff = pool.lpTotalSupply.minus(event.params.token_supply)
         let lpTokenAddress = getPoolLPToken(event.address)
 
         let lpAmountIn = getAssetAmount(
@@ -277,7 +277,7 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
         })
 
         const lpTotalSupply = getERC20TotalSupply(lpTokenAddress)
-        pool.totalLPSupply = lpTotalSupply
+        pool.lpTotalSupply = lpTotalSupply
 
         pool.save()
 
@@ -574,7 +574,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
         pool.totalAdminFees = pool.totalAdminFees.plus(adminFee)
 
         const lpTotalSupply = getERC20TotalSupply(lpTokenAddress)
-        pool.totalLPSupply = lpTotalSupply
+        pool.lpTotalSupply = lpTotalSupply
 
         let spotPrice = getPoolPriceScale(event.address)
         pool.spotPrice = spotPrice
