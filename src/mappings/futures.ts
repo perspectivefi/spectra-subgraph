@@ -9,7 +9,6 @@ import {
     FeeClaim,
     Future,
     FutureVaultFactory,
-    Pool,
     PoolFactory,
 } from "../../generated/schema"
 import {
@@ -26,7 +25,6 @@ import {
     YieldUpdated,
 } from "../../generated/templates/PrincipalToken/PrincipalToken"
 import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
-import { createAPRInTimeForPool } from "../entities/APRInTime"
 import { getAccount } from "../entities/Account"
 import {
     updateAccountAssetBalance,
@@ -34,13 +32,6 @@ import {
 } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
-import {
-    getPoolAdminFee,
-    getPoolPriceScale,
-    getPoolFee,
-    getPoolFutureAdminFee,
-    getPoolLPToken,
-} from "../entities/CurvePool"
 import {
     getPoolFactoryAdmin,
     getPoolFactoryFeeReceiver,
@@ -57,6 +48,7 @@ import {
     getFeeRate,
 } from "../entities/FutureVault"
 import { getNetwork } from "../entities/Network"
+import { createPool } from "../entities/Pool"
 import { createTransaction } from "../entities/Transaction"
 import { updateYield, updateYieldForAll } from "../entities/Yield"
 import { AssetType, generateFeeClaimId } from "../utils"
@@ -430,74 +422,14 @@ export function handleCurveFactoryChanged(event: CurveFactoryChanged): void {
 }
 
 export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
-    let poolAddress = event.params.poolAddress
-    let pool = new Pool(poolAddress.toHex())
-
-    let ibtAssetAmount = getAssetAmount(
-        event.transaction.hash,
-        event.params.ibt,
-        ZERO_BI,
-        AssetType.IBT,
-        event.block.timestamp
-    )
-
-    let ptAssetAmount = getAssetAmount(
-        event.transaction.hash,
-        event.params.pt,
-        ZERO_BI,
-        AssetType.PT,
-        event.block.timestamp
-    )
-
-    pool.address = poolAddress
-    pool.createdAtTimestamp = event.block.timestamp
-
-    pool.feeRate = getPoolFee(poolAddress)
-    pool.totalFees = ZERO_BI
-    pool.adminFeeRate = getPoolAdminFee(poolAddress)
-    pool.totalAdminFees = ZERO_BI
-    pool.futureAdminFeeRate = getPoolFutureAdminFee(poolAddress)
-    pool.futureAdminFeeDeadline = ZERO_BI
-    pool.totalClaimedAdminFees = ZERO_BI
-
-    pool.assets = [ibtAssetAmount.id, ptAssetAmount.id]
-
-    pool.transactionCount = 0
-
-    // Asset - Future relation
-    let lpToken = getAsset(
-        getPoolLPToken(poolAddress).toHex(),
-        event.block.timestamp,
-        AssetType.LP
-    )
-
-    let future = Future.load(event.params.pt.toHex())
-    if (future) {
-        pool.futureVault = future.address.toHex()
-        lpToken.futureVault = future.address.toHex()
-    }
-    lpToken.save()
-
-    pool.liquidityToken = lpToken.id
-    pool.totalLPSupply = ZERO_BI
-
-    let futureVaultFactory = FutureVaultFactory.load(event.address.toHex())
-    if (futureVaultFactory) {
-        if (futureVaultFactory.poolFactory) {
-            pool.factory = futureVaultFactory.poolFactory
-        }
-        pool.futureVaultFactory = futureVaultFactory.id
-    }
-
-    let spotPrice = getPoolPriceScale(poolAddress)
-    if (pool.futureVault) {
-        let poolAPR = createAPRInTimeForPool(poolAddress, event.block.timestamp)
-
-        poolAPR.save()
-    }
-
-    pool.spotPrice = spotPrice
-    pool.save()
+    createPool({
+        poolAddress: event.params.poolAddress,
+        ibtAddress: event.params.ibt,
+        ptFactoryAddress: event.address,
+        ptAddress: event.params.pt,
+        timestamp: event.block.timestamp,
+        transactionHash: event.transaction.hash,
+    })
 }
 
 export function handleYieldUpdated(event: YieldUpdated): void {

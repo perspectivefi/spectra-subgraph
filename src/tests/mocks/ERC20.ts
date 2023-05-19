@@ -1,6 +1,7 @@
 import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
 import { createMockedFunction } from "matchstick-as"
 
+import { toPrecision } from "../../utils/toPrecision"
 import { POOL_LP_ADDRESS_MOCK } from "./CurvePool"
 import { POOL_IBT_ADDRESS_MOCK, POOL_PT_ADDRESS_MOCK } from "./CurvePoolFactory"
 import {
@@ -19,6 +20,7 @@ export const ETH_ADDRESS_MOCK = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 const ETH_NAME = ethereum.Value.fromString("Ethereum")
 const ETH_SYMBOL = ethereum.Value.fromString("ETH")
 const ETH_DECIMALS = ethereum.Value.fromI32(18)
+export const LP_TOTAL_SUPPLY = toPrecision(BigInt.fromI32(500), 1, 18)
 
 export const STANDARD_DECIMALS_MOCK = 18 as u8
 
@@ -40,6 +42,14 @@ const createDecimalsCallMock = (addressMock: Address): void => {
     )
 }
 
+const createTotalSupplyCallMock = (addressMock: Address): void => {
+    createMockedFunction(
+        addressMock,
+        "totalSupply",
+        "totalSupply():(uint256)"
+    ).returns([ethereum.Value.fromUnsignedBigInt(LP_TOTAL_SUPPLY)])
+}
+
 export function mockERC20Functions(): void {
     ;[
         Address.fromString(ETH_ADDRESS_MOCK),
@@ -57,6 +67,7 @@ export function mockERC20Functions(): void {
         createNameCallMock(addressMock)
         createSymbolCallMock(addressMock)
         createDecimalsCallMock(addressMock)
+        createTotalSupplyCallMock(addressMock)
     })
 }
 

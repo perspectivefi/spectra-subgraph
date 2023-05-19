@@ -377,7 +377,7 @@ type Pool @entity {
     transactionCount: Int!
     transactions: [Transaction!] @derivedFrom(field: "poolInTransaction")
 
-    totalLPSupply: BigInt!
+    lpTotalSupply: BigInt!
     liquidityPositions: [AccountAsset!]! @derivedFrom(field: "pool")
 
     spotPrice: BigInt!

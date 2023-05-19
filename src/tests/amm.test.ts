@@ -65,6 +65,7 @@ import {
     POOL_IBT_BALANCE_MOCK,
     POOL_PT_BALANCE_MOCK,
     POOL_LP_BALANCE_MOCK,
+    LP_TOTAL_SUPPLY,
 } from "./mocks/ERC20"
 import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
@@ -110,12 +111,6 @@ const removeOneLiquidityTransactionId = generateTransactionId(
 const exchangeTransactionId = generateTransactionId(
     POOL_EXCHANGE_TRANSACTION_HASH,
     EXCHANGE_LOG_INDEX.toString()
-)
-
-const LP_TOTAL_SUPPLY = toPrecision(
-    BigInt.fromI32(500),
-    1,
-    STANDARD_DECIMALS_MOCK
 )
 
 const ADD_LIQUIDITY_TOKEN_AMOUNTS = [
@@ -268,7 +263,8 @@ describe("handleAddLiquidity()", () => {
                 POOL_LP_ADDRESS_MOCK.toHex()
             ),
             "amount",
-            LP_TOTAL_SUPPLY.toString()
+            // as mock is the same for the supply before and after liquidity transaction so difference is 0
+            "0"
         )
     })
 

@@ -60,7 +60,22 @@ export function getERC20Balance(
         return balanceOfCall.value
     }
 
-    log.warning("balanceOfCall() call (BigNumber) reverted for {}", [
+    log.warning("balanceOf() call (BigNumber) reverted for {}", [
+        tokenAddress.toHex(),
+    ])
+    return ZERO_BI
+}
+
+export function getERC20TotalSupply(tokenAddress: Address): BigInt {
+    let erc20Contract = ERC20.bind(tokenAddress)
+
+    let totalSupplyCall = erc20Contract.try_totalSupply()
+
+    if (!totalSupplyCall.reverted) {
+        return totalSupplyCall.value
+    }
+
+    log.warning("totalSupply() call (BigNumber) reverted for {}", [
         tokenAddress.toHex(),
     ])
     return ZERO_BI
