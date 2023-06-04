@@ -326,11 +326,12 @@ type APRInTime @entity {
     id: ID!
     createdAtTimestamp: BigInt!
 
-    spotPrice: BigDecimal!
+    spotPrice: BigInt!
     ibtRate: BigInt!
-    underlyingToPT: BigDecimal!
+    ibtSharesRate: BigInt!
+    underlyingToPT: BigInt!
     "in %"
-    apr: BigDecimal!
+    apr: BigInt!
 
     pool: Pool
     lpVault: LPVault

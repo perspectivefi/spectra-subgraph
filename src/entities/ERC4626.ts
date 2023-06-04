@@ -32,3 +32,18 @@ export function getERC4626Balance(
     ])
     return ZERO_BI
 }
+
+export function getSharesRate(tokenAddress: Address, value: BigInt): BigInt {
+    let erc4626Contract = ERC4626.bind(tokenAddress)
+
+    let convertToSharesCall = erc4626Contract.try_convertToShares(value)
+
+    if (!convertToSharesCall.reverted) {
+        return convertToSharesCall.value
+    }
+
+    log.warning("convertToSharesCall() call (BigNumber) reverted for {}", [
+        tokenAddress.toHex(),
+    ])
+    return ZERO_BI
+}
