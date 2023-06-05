@@ -12,7 +12,7 @@
         "build": "graph build",
         "deploy": "graph deploy apwine/apwine-v2-subgraph --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
         "deploy:local": "graph deploy apwine/apwine-v2-subgraph --debug --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
-        "deploy:goerli": "graph deploy techlocalboy/subgraph-goerli-test subgraph.goerli.yaml --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
+        "deploy:goerli": "graph deploy techlocalboy/subgraph-v2-goerli subgraph.goerli.yaml --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
         "generate-config:local": "node ./src/scripts/subgraphConfigGenerator.js local",
         "generate-config": "node ./src/scripts/subgraphConfigGenerator.js",
         "generate-config:goerli": "node ./src/scripts/subgraphConfigGenerator.js goerli",
