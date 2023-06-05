@@ -39,3 +39,16 @@ export const createConvertToAssetsCallMockFromString = (
         .withArgs([ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1))])
         .returns([ethereum.Value.fromSignedBigInt(rateBI)])
 }
+
+export const createConvertToSharesCallMock = (
+    addressMock: Address,
+    rate: BigInt
+): void => {
+    createMockedFunction(
+        addressMock,
+        "convertToShares",
+        "convertToShares(uint256):(uint256)"
+    )
+        .withArgs([ethereum.Value.fromUnsignedBigInt(rate)])
+        .returns([ethereum.Value.fromUnsignedBigInt(rate)])
+}

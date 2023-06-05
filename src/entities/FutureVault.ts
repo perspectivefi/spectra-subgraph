@@ -169,12 +169,6 @@ export function getCurrentYieldInIBTOfUser(
     let userYieldInIBTCall =
         principalTokenContract.try_getCurrentYieldInIBTOfUser(account)
 
-    log.warning("getCurrentYieldInIBTOfUser {}, {}, {}", [
-        userYieldInIBTCall.value.toString(),
-        principalToken.toHex(),
-        account.toHex(),
-    ])
-
     if (!userYieldInIBTCall.reverted) {
         return userYieldInIBTCall.value
     }

@@ -13,6 +13,7 @@ import {
     getIBTUnit,
 } from "../entities/FutureVault"
 import { bigDecimalToBigInt } from "./bigDecimalToBigInt"
+import { logWarning } from "./log"
 
 export function updatePoolAPR(
     poolAddress: Address,
@@ -38,28 +39,23 @@ export function updatePoolAPR(
     const spotPriceBigInt = bigDecimalToBigInt(
         spotPrice.times(ibtUnit.toBigDecimal())
     )
+    const ibtSharesRate = getSharesRate(ibtAddress, getIBTUnit(principalToken))
+
     poolAPR.spotPrice = spotPriceBigInt
     poolAPR.ibtRate = ibtRate
-    poolAPR.ibtSharesRate = getSharesRate(
-        ibtAddress,
-        getIBTUnit(principalToken)
-    )
+    poolAPR.ibtSharesRate = ibtSharesRate
 
     if (principalTokenExpiration.gt(currentTimestamp) && ibtRate.gt(ZERO_BI)) {
-        const underlyingToPTRate = spotPrice
-            .times(ibtUnit.toBigDecimal())
-            .div(ibtRate.toBigDecimal()) // Reflect IBT/Underlying rate
+        const underlyingToPTRate = ibtSharesRate // Reflect IBT/Underlying rate
+            .times(spotPriceBigInt) // IBT/PT rate
+            .div(ibtUnit)
 
-        const underlyingToPTRateBigInt = bigDecimalToBigInt(
-            underlyingToPTRate.times(ibtUnit.toBigDecimal())
-        )
-        poolAPR.underlyingToPT = underlyingToPTRateBigInt
+        poolAPR.underlyingToPT = underlyingToPTRate
 
-        let apr = underlyingToPTRateBigInt
-            .minus(UNIT_BI)
+        let apr = underlyingToPTRate
+            .minus(ibtUnit)
             .div(principalTokenExpiration.minus(currentTimestamp)) // Get rate per second
-            .times(SECONDS_PER_YEAR) // Convert to rate per year
-            .times(BigInt.fromString("100")) // Convert to percentage
+            .times(SECONDS_PER_YEAR) // Convert to rate per year.times(BigInt.fromI32(100)) // to percentage
 
         poolAPR.apr = apr
     } else {
