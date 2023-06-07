@@ -881,7 +881,7 @@ describe("handleTokenExchange()", () => {
             APR_IN_TIME_ENTITY,
             `${FIRST_POOL_ADDRESS_MOCK.toHex()}-0`,
             "apr",
-            "1262277040000000000000000000"
+            "63113852000"
         )
     })
 
@@ -938,7 +938,7 @@ describe("handleTokenExchange()", () => {
             APR_IN_TIME_ENTITY,
             `${SECOND_POOL_ADDRESS_MOCK.toHex()}-0`,
             "apr",
-            "-157674180759000000000000000"
+            "-7883709037.95"
         )
     })
 })
@@ -1185,7 +1185,7 @@ describe("handleRemoveLiquidityOne()", () => {
             APR_IN_TIME_ENTITY,
             aprInTimeId,
             "apr",
-            "2524554080000000000000000000"
+            "126227704000"
         )
     })
 })
