@@ -1,7 +1,7 @@
-import { Address, BigInt, log } from "@graphprotocol/graph-ts"
+import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts"
 
 import { LPVault } from "../../generated/schema"
-import { SECONDS_PER_YEAR, UNIT_BI, ZERO_BI } from "../constants"
+import { SECONDS_PER_YEAR, ZERO_BD, ZERO_BI } from "../constants"
 import { createAPRInTimeForPool } from "../entities/APRInTime"
 import { getIBTtoPTRate } from "../entities/CurvePool"
 import { getERC20Decimals } from "../entities/ERC20"
@@ -13,7 +13,6 @@ import {
     getIBTUnit,
 } from "../entities/FutureVault"
 import { bigDecimalToBigInt } from "./bigDecimalToBigInt"
-import { logWarning } from "./log"
 
 export function updatePoolAPR(
     poolAddress: Address,
@@ -55,23 +54,26 @@ export function updatePoolAPR(
         let apr = underlyingToPTRate
             .minus(ibtUnit)
             .div(principalTokenExpiration.minus(currentTimestamp)) // Get rate per second
-            .times(SECONDS_PER_YEAR) // Convert to rate per year.times(BigInt.fromI32(100)) // to percentage
+            .times(SECONDS_PER_YEAR) // Convert to rate per year
+            .times(BigInt.fromI32(100)) // to percentage
+            .toBigDecimal()
+            .div(ibtRate.toBigDecimal())
 
         poolAPR.apr = apr
     } else {
-        poolAPR.apr = ZERO_BI
+        poolAPR.apr = ZERO_BD
         poolAPR.underlyingToPT = ZERO_BI
     }
 
     poolAPR.save()
 }
 
-const LP_VAULT_APR_MOCK: BigInt[] = [
-    BigInt.fromString("3"),
-    BigInt.fromString("6"),
+const LP_VAULT_APR_MOCK: BigDecimal[] = [
+    BigDecimal.fromString("3"),
+    BigDecimal.fromString("6"),
 ]
 
-export function calculateLpVaultAPR(lpVaultAddress: Address): BigInt {
+export function calculateLpVaultAPR(lpVaultAddress: Address): BigDecimal {
     let lpVault = LPVault.load(lpVaultAddress.toHex())
 
     if (lpVault) {
@@ -87,5 +89,5 @@ export function calculateLpVaultAPR(lpVaultAddress: Address): BigInt {
         }
     }
 
-    return ZERO_BI
+    return ZERO_BD
 }

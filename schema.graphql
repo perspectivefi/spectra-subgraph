@@ -331,7 +331,7 @@ type APRInTime @entity {
     ibtSharesRate: BigInt!
     underlyingToPT: BigInt!
     "in %"
-    apr: BigInt!
+    apr: BigDecimal!
 
     pool: Pool
     lpVault: LPVault
