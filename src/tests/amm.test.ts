@@ -67,7 +67,10 @@ import {
     POOL_LP_BALANCE_MOCK,
     LP_TOTAL_SUPPLY,
 } from "./mocks/ERC20"
-import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
+import {
+    createConvertToAssetsCallMock,
+    createConvertToSharesCallMock,
+} from "./mocks/ERC4626"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
     FEE_COLLECTOR_ADDRESS_MOCK,
@@ -141,6 +144,10 @@ describe("handleAddLiquidity()", () => {
         mockMetaPoolFactoryFunctions()
         mockCurvePoolFunctions()
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        createConvertToSharesCallMock(
+            IBT_ADDRESS_MOCK,
+            toPrecision(BigInt.fromI32(10), 0, 18)
+        )
 
         emitPrincipalTokenFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
@@ -874,7 +881,7 @@ describe("handleTokenExchange()", () => {
             APR_IN_TIME_ENTITY,
             `${FIRST_POOL_ADDRESS_MOCK.toHex()}-0`,
             "apr",
-            "69425237200"
+            "63113852000"
         )
     })
 
@@ -931,7 +938,7 @@ describe("handleTokenExchange()", () => {
             APR_IN_TIME_ENTITY,
             `${SECOND_POOL_ADDRESS_MOCK.toHex()}-0`,
             "apr",
-            "-1025600095"
+            "-7883709037.95"
         )
     })
 })
@@ -1153,7 +1160,12 @@ describe("handleRemoveLiquidityOne()", () => {
     test("Recalculate pool APR", () => {
         const aprInTimeId = `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`
 
-        assert.fieldEquals(APR_IN_TIME_ENTITY, aprInTimeId, "spotPrice", "9")
+        assert.fieldEquals(
+            APR_IN_TIME_ENTITY,
+            aprInTimeId,
+            "spotPrice",
+            "90000000000000000000"
+        )
 
         assert.fieldEquals(
             APR_IN_TIME_ENTITY,
@@ -1166,14 +1178,14 @@ describe("handleRemoveLiquidityOne()", () => {
             APR_IN_TIME_ENTITY,
             aprInTimeId,
             "underlyingToPT",
-            "45"
+            "90000000000000000000"
         )
 
         assert.fieldEquals(
             APR_IN_TIME_ENTITY,
             aprInTimeId,
             "apr",
-            "138850474400"
+            "126227704000"
         )
     })
 })

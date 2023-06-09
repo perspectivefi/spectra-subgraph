@@ -1,15 +1,18 @@
 import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts"
 
 import { LPVault } from "../../generated/schema"
-import { SECONDS_PER_YEAR_BD, UNIT_BD, ZERO_BD, ZERO_BI } from "../constants"
+import { SECONDS_PER_YEAR, ZERO_BD, ZERO_BI } from "../constants"
 import { createAPRInTimeForPool } from "../entities/APRInTime"
-import { getPoolCoins, getIBTtoPTRate } from "../entities/CurvePool"
+import { getIBTtoPTRate } from "../entities/CurvePool"
 import { getERC20Decimals } from "../entities/ERC20"
+import { getSharesRate } from "../entities/ERC4626"
 import {
     getExpirationTimestamp,
+    getIBT,
     getIBTRate,
     getIBTUnit,
 } from "../entities/FutureVault"
+import { bigDecimalToBigInt } from "./bigDecimalToBigInt"
 
 export function updatePoolAPR(
     poolAddress: Address,
@@ -18,8 +21,7 @@ export function updatePoolAPR(
 ): void {
     let poolAPR = createAPRInTimeForPool(poolAddress, currentTimestamp)
 
-    let coins = getPoolCoins(poolAddress)
-    let ibtAddress = coins[0]
+    let ibtAddress = getIBT(principalToken)
 
     let ibtDecimals = getERC20Decimals(ibtAddress)
     let smallInput = BigInt.fromI32(10).pow((ibtDecimals as u8) - 1) // small input to ensure correct rate for small amount
@@ -30,30 +32,37 @@ export function updatePoolAPR(
 
     const spotPrice = ibtToPT.toBigDecimal().div(smallInput.toBigDecimal()) // Remove input
 
-    poolAPR.spotPrice = spotPrice
+    const ibtUnit = getIBTUnit(principalToken)
+
+    // Form rate to BigNumber value for calculations with better precision
+    const spotPriceBigInt = bigDecimalToBigInt(
+        spotPrice.times(ibtUnit.toBigDecimal())
+    )
+    const ibtSharesRate = getSharesRate(ibtAddress, getIBTUnit(principalToken))
+
+    poolAPR.spotPrice = spotPriceBigInt
     poolAPR.ibtRate = ibtRate
+    poolAPR.ibtSharesRate = ibtSharesRate
 
     if (principalTokenExpiration.gt(currentTimestamp) && ibtRate.gt(ZERO_BI)) {
-        const ibtUnit = getIBTUnit(principalToken).toBigDecimal()
-
-        let underlyingToPTRate = spotPrice
-            .times(ibtUnit)
-            .div(ibtRate.toBigDecimal()) // Reflect IBT/Underlying rate
+        const underlyingToPTRate = ibtSharesRate // Reflect IBT/Underlying rate
+            .times(spotPriceBigInt) // IBT/PT rate
+            .div(ibtUnit)
 
         poolAPR.underlyingToPT = underlyingToPTRate
 
         let apr = underlyingToPTRate
-            .minus(UNIT_BD)
-            .div(
-                principalTokenExpiration.minus(currentTimestamp).toBigDecimal()
-            ) // Get rate per second
-            .times(SECONDS_PER_YEAR_BD) // Convert to rate per year
-            .times(BigDecimal.fromString("100")) // Convert to percentage
+            .minus(ibtUnit)
+            .div(principalTokenExpiration.minus(currentTimestamp)) // Get rate per second
+            .times(SECONDS_PER_YEAR) // Convert to rate per year
+            .times(BigInt.fromI32(100)) // to percentage
+            .toBigDecimal()
+            .div(ibtRate.toBigDecimal())
 
         poolAPR.apr = apr
     } else {
         poolAPR.apr = ZERO_BD
-        poolAPR.underlyingToPT = ZERO_BD
+        poolAPR.underlyingToPT = ZERO_BI
     }
 
     poolAPR.save()
