@@ -21,7 +21,7 @@ import {
     FIRST_POOL_ADDRESS_MOCK,
     mockCurvePoolFunctions,
 } from "./mocks/CurvePool"
-import { mockMetaPoolFactoryFunctions } from "./mocks/CurvePoolFactory"
+import { mockCurvePoolFactoryFunctions } from "./mocks/CurvePoolFactory"
 import { mockERC20Balances, mockERC20Functions } from "./mocks/ERC20"
 import { createConvertToAssetsCallMockFromString } from "./mocks/ERC4626"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
@@ -43,7 +43,7 @@ describe("APY Computations on futureDailyStats", () => {
         mockERC20Balances()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
-        mockMetaPoolFactoryFunctions()
+        mockCurvePoolFactoryFunctions()
         mockCurvePoolFunctions()
 
         emitPrincipalTokenFactoryUpdated()

@@ -1,10 +1,9 @@
 import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
-import { createMockedFunction } from "matchstick-as/assembly/index"
+import { createMockedFunction } from "matchstick-as/assembly"
 
 import { toPrecision } from "../../utils/toPrecision"
 import { SECOND_POOL_ADDRESS_MOCK } from "./CurvePoolFactory"
 import { ETH_ADDRESS_MOCK } from "./ERC20"
-import { PRINCIPAL_TOKEN_ADDRESS_MOCK } from "./LPVault"
 
 export const POOL_FACTORY_ADDRESS_MOCK = Address.fromString(
     "0x0000000000000000000000555550000000000000"

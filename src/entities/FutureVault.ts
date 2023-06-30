@@ -173,10 +173,11 @@ export function getCurrentYieldInIBTOfUser(
         return userYieldInIBTCall.value
     }
 
-    log.warning(
-        "getCurrentYieldInIBTOfUser() call reverted for {} PrincipalToken and {} Account",
-        [principalToken.toHex(), account.toHex()]
-    )
+    // Too many warnings
+    // log.warning(
+    //     "getCurrentYieldInIBTOfUser() call reverted for {} PrincipalToken and {} Account",
+    //     [principalToken.toHex(), account.toHex()]
+    // )
 
     return ZERO_BI
 }

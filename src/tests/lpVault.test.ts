@@ -34,7 +34,7 @@ import {
     FIRST_POOL_ADDRESS_MOCK,
     mockCurvePoolFunctions,
 } from "./mocks/CurvePool"
-import { mockMetaPoolFactoryFunctions } from "./mocks/CurvePoolFactory"
+import { mockCurvePoolFactoryFunctions } from "./mocks/CurvePoolFactory"
 import {
     LP_VAULT_SHARES_BALANCE_MOCK,
     LP_VAULT_UNDERLYING_BALANCE_MOCK,
@@ -119,12 +119,13 @@ describe("handleLPVaultDeployed()", () => {
         mockFeedRegistryInterfaceFunctions()
         mockERC20Functions()
 
+        mockCurvePoolFactoryFunctions()
+        mockCurvePoolFunctions()
+
         mockFutureVaultFunctions()
         mockFutureVaultFactoryFunctions()
 
         mockLPVaultFunctions()
-
-        mockCurvePoolFunctions()
 
         emitPrincipalTokenFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
@@ -652,7 +653,7 @@ describe("handleFeeUpdated()", () => {
 
 describe("handlePoolIndexUpdated()", () => {
     beforeAll(() => {
-        mockMetaPoolFactoryFunctions()
+        mockCurvePoolFactoryFunctions()
         mockCurvePoolFunctions()
 
         emiCurveFactoryChanged()

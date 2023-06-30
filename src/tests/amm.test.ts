@@ -53,7 +53,7 @@ import {
 import {
     POOL_DEPLOY_TRANSACTION_HASH,
     FIRST_POOL_ADDRESS_MOCK,
-    mockMetaPoolFactoryFunctions,
+    mockCurvePoolFactoryFunctions,
     POOL_IBT_ADDRESS_MOCK,
     POOL_PT_ADDRESS_MOCK,
     SECOND_POOL_ADDRESS_MOCK,
@@ -138,10 +138,11 @@ describe("handleAddLiquidity()", () => {
         mockERC20Functions()
         mockERC20Balances()
 
+        mockCurvePoolFactoryFunctions()
+
         mockFutureVaultFactoryFunctions()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
-        mockMetaPoolFactoryFunctions()
         mockCurvePoolFunctions()
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
         createConvertToSharesCallMock(

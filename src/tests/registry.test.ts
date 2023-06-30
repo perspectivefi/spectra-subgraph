@@ -3,16 +3,23 @@ import {
     describe,
     test,
     newMockEvent,
-    afterEach,
     clearStore,
     assert,
     beforeEach,
-} from "matchstick-as/assembly/index"
+} from "matchstick-as/assembly"
 
 import { PrincipalTokenFactoryUpdated } from "../../generated/Registry/Registry"
 import { handlePrincipalTokenFactoryUpdated } from "../mappings/registry"
 import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
-import { FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK } from "./mocks/FutureVaultFactory"
+import { mockCurvePoolFunctions } from "./mocks/CurvePool"
+import {
+    mockCurvePoolFactoryFunctions,
+    POOL_FACTORY_ADDRESS_MOCK,
+} from "./mocks/CurvePoolFactory"
+import {
+    FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK,
+    mockFutureVaultFactoryFunctions,
+} from "./mocks/FutureVaultFactory"
 import {
     NEW_ADDRESS_MOCK,
     OLD_ADDRESS_MOCK,
@@ -23,6 +30,11 @@ import { FUTURE_VAULT_FACTORY_ENTITY, NETWORK_ENTITY } from "./utils/entities"
 describe("handlePrincipalTokenFactoryUpdated()", () => {
     beforeEach(() => {
         clearStore()
+
+        mockCurvePoolFactoryFunctions()
+        mockCurvePoolFunctions()
+
+        mockFutureVaultFactoryFunctions()
 
         emitPrincipalTokenFactoryUpdated()
         emitPrincipalTokenFactoryUpdated()
@@ -90,9 +102,18 @@ describe("handlePrincipalTokenFactoryUpdated()", () => {
         )
     })
 
-    test("Should create Network entity ", () => {
+    test("Should create Network entity", () => {
         assert.fieldEquals(NETWORK_ENTITY, "1", "name", "mainnet")
 
         assert.fieldEquals(NETWORK_ENTITY, "1", "chainId", "1")
+    })
+
+    test("Should assign Pool Factory to the Principal Token factory ", () => {
+        assert.fieldEquals(
+            FUTURE_VAULT_FACTORY_ENTITY,
+            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
+            "poolFactory",
+            POOL_FACTORY_ADDRESS_MOCK.toHex()
+        )
     })
 })

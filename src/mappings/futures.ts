@@ -5,12 +5,7 @@ import {
     CurvePoolDeployed,
     PrincipalTokenDeployed,
 } from "../../generated/PrincipalTokenFactory/PrincipalTokenFactory"
-import {
-    FeeClaim,
-    Future,
-    FutureVaultFactory,
-    PoolFactory,
-} from "../../generated/schema"
+import { FeeClaim, Future, FutureVaultFactory } from "../../generated/schema"
 import {
     ERC20,
     PrincipalToken as PrincipalTokenTemplate,
@@ -32,10 +27,6 @@ import {
 } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
-import {
-    getPoolFactoryAdmin,
-    getPoolFactoryFeeReceiver,
-} from "../entities/CurvePoolFactory"
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import {
     getExpirationTimestamp,
@@ -49,8 +40,9 @@ import {
 } from "../entities/FutureVault"
 import { getNetwork } from "../entities/Network"
 import { createPool } from "../entities/Pool"
+import { getPoolFactory } from "../entities/PoolFactory"
 import { createTransaction } from "../entities/Transaction"
-import { updateYield, updateYieldForAll } from "../entities/Yield"
+import { updateYieldForAll } from "../entities/Yield"
 import { AssetType, generateFeeClaimId } from "../utils"
 import transactionType from "../utils/TransactionType"
 import { generateTransactionId } from "../utils/idGenerators"
@@ -397,21 +389,14 @@ export function handleCurveFactoryChanged(event: CurveFactoryChanged): void {
     let futureVaultFactory = FutureVaultFactory.load(event.address.toHex())
 
     if (futureVaultFactory) {
-        let curveFactoryAddress = event.params.newFactory
-        let curveFactory = new PoolFactory(curveFactoryAddress.toHex())
-        curveFactory.createdAtTimestamp = event.block.timestamp
-        curveFactory.address = curveFactoryAddress
-        curveFactory.futureVaultFactory = futureVaultFactory.id
-        curveFactory.ammProvider = "CURVE"
-        curveFactory.admin = getPoolFactoryAdmin(curveFactoryAddress)
-        let factoryFeeReceiver = getAccount(
-            getPoolFactoryFeeReceiver(curveFactoryAddress).toHex(),
+        let poolFactoryAddress = event.params.newFactory
+        let poolFactory = getPoolFactory(
+            poolFactoryAddress,
+            Address.fromBytes(futureVaultFactory.address),
             event.block.timestamp
         )
-        curveFactory.feeReceiver = factoryFeeReceiver.id
-        curveFactory.save()
 
-        futureVaultFactory.poolFactory = curveFactory.id
+        futureVaultFactory.poolFactory = poolFactory.id
         futureVaultFactory.save()
     } else {
         log.warning(
