@@ -29,7 +29,7 @@ import {
     POOL_LP_ADDRESS_MOCK,
     POOL_PT_ADDRESS_MOCK,
 } from "./mocks/CurvePool"
-import { mockMetaPoolFactoryFunctions } from "./mocks/CurvePoolFactory"
+import { mockCurvePoolFactoryFunctions } from "./mocks/CurvePoolFactory"
 import {
     mockERC20Balances,
     mockERC20Functions,
@@ -89,10 +89,11 @@ describe("handleTransfer()", () => {
         mockERC20Functions()
         mockERC20Balances()
 
+        mockCurvePoolFactoryFunctions()
+
         mockFutureVaultFactoryFunctions()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
-        mockMetaPoolFactoryFunctions()
         mockCurvePoolFunctions()
 
         emitPrincipalTokenFactoryUpdated()

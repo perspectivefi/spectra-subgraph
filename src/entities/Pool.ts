@@ -1,9 +1,15 @@
 import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 
-import { Future, FutureVaultFactory, Pool } from "../../generated/schema"
-import { UNIT_BI, ZERO_BI } from "../constants"
+import {
+    Future,
+    FutureVaultFactory,
+    Pool,
+    PoolFactory,
+} from "../../generated/schema"
+import { ZERO_BI } from "../constants"
 import { AssetType } from "../utils"
 import { createAPRInTimeForPool } from "./APRInTime"
+import { getAccount } from "./Account"
 import { getAsset } from "./Asset"
 import { getAssetAmount } from "./AssetAmount"
 import {
@@ -14,6 +20,8 @@ import {
     getPoolPriceScale,
 } from "./CurvePool"
 import { getERC20TotalSupply } from "./ERC20"
+import { getPoolFactoryForPrincipalTokenFactory } from "./FutureVaultFactory"
+import { getPoolFactory } from "./PoolFactory"
 
 class PoolDetails {
     poolAddress: Address
@@ -88,6 +96,20 @@ export function createPool(params: PoolDetails): Pool {
             pool.factory = futureVaultFactory.poolFactory
         }
         pool.futureVaultFactory = futureVaultFactory.id
+
+        // Pool factory
+        if (futureVaultFactory.poolFactory) {
+            const poolFactoryAddress = getPoolFactoryForPrincipalTokenFactory(
+                params.ptFactoryAddress
+            )
+            let poolFactory = getPoolFactory(
+                poolFactoryAddress,
+                params.ptFactoryAddress,
+                params.timestamp
+            )
+
+            pool.factory = poolFactory.id
+        }
     }
 
     let spotPrice = getPoolPriceScale(params.poolAddress)
@@ -101,6 +123,7 @@ export function createPool(params: PoolDetails): Pool {
     }
 
     pool.spotPrice = spotPrice
+
     pool.save()
 
     return pool

@@ -46,7 +46,7 @@ const createAdminCallMock = (addressMock: Address): void => {
     ])
 }
 
-export function mockMetaPoolFactoryFunctions(): void {
+export function mockCurvePoolFactoryFunctions(): void {
     ;[POOL_FACTORY_ADDRESS_MOCK].forEach((addressMock) => {
         createFeeReceiverCallMack(addressMock)
         createAdminCallMock(addressMock)

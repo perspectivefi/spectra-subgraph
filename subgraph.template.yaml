@@ -22,6 +22,10 @@ dataSources:
       abis:
         - name: Registry
           file: ./abis/Registry.json
+        - name: PrincipalTokenFactory
+          file: ./abis/PrincipalTokenFactory.json
+        - name: CurvePoolFactory
+          file: ./abis/CurvePoolFactory.json
       eventHandlers:
         - event: PrincipalTokenFactoryUpdated(indexed address,indexed address)
           handler: handlePrincipalTokenFactoryUpdated

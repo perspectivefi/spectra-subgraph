@@ -173,10 +173,8 @@ export function getCurrentYieldInIBTOfUser(
         return userYieldInIBTCall.value
     }
 
-    log.warning(
-        "getCurrentYieldInIBTOfUser() call reverted for {} PrincipalToken and {} Account",
-        [principalToken.toHex(), account.toHex()]
-    )
+    // No warning as this request is failing too often.
+    // It is happening for all the requests if account do not exist in the contract as IBT yield owner
 
     return ZERO_BI
 }
