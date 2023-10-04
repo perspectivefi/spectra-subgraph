@@ -1,7 +1,7 @@
 @startuml
 left to right direction
 
-title APWine subgraph v2
+title Spectra Subgraph
 
 
 '#####################################

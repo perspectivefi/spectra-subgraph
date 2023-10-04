@@ -144,7 +144,7 @@ describe("handleTransfer()", () => {
         handleTransfer(ptTransferEvent)
 
         let invalidAssetTransferEvent = changetype<Transfer>(newMockEvent())
-        // Asset not existing in any APWine pool
+        // Asset not existing in any Spectra pool
         invalidAssetTransferEvent.address = Address.fromString(
             "0x0000000000000000000000000000000000000000"
         )

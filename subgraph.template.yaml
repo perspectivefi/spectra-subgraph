@@ -1,6 +1,6 @@
 specVersion: 0.0.2
-description: APWine Subgraph
-repository: https://github.com/APWine/apwine-v2-subgraph
+description: Spectra Subgraph
+repository: https://github.com/perspectivefi/spectra-subgraph
 schema:
   file: ./schema.graphql
 features:
