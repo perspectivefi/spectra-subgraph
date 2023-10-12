@@ -11,7 +11,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v3
             - name: Install modules
-              run: yarn
+              run: yarn --frozen-lockfile
             - name: Generate config
               run: yarn generate-config:goerli
             - name: Codegen
