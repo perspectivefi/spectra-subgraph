@@ -35,5 +35,8 @@
         "babel-polyfill": "^6.26.0",
         "babel-register": "^6.26.0",
         "mustache": "^4.2.0"
+    },
+    "resolutions": {
+        "concat-stream": "1.6.2"
     }
 }

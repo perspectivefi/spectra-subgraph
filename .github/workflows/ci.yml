@@ -10,7 +10,7 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
       - name: Install modules
-        run: yarn --frozen-lockfile
+        run: yarn
       - name: Run prettier check
         run: yarn run prettier "./**/*.{js,json,ts}" --check
   test-unit:
