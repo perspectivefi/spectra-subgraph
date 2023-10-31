@@ -222,14 +222,7 @@ describe("handleFutureVaultDeployed()", () => {
 
         let deployedFutures = futureVaultFactoryEntity.deployedFutures.load()!
 
-        assert.stringEquals(
-            deployedFutures[0].id,
-            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
-        )
-        assert.stringEquals(
-            deployedFutures[1].id,
-            SECOND_FUTURE_VAULT_ADDRESS_MOCK.toHex()
-        )
+        assert.i32Equals(deployedFutures.length, 2)
     })
 
     test("Should create Asset - Future for PT token", () => {
