@@ -6,8 +6,8 @@
 
 This subgraph can be found on The Graph Hosted Service for the following networks:
 
--   [Mainnet](https://thegraph.com/hosted-service/subgraph/matstyler/spectra-subgraph)
--   [Goerli](https://thegraph.com/hosted-service/subgraph/matstyler/spectra-subgraph-goerli)
+-   [Mainnet](https://thegraph.com/hosted-service/subgraph/perspectivefi/spectra-mainnet)
+-   [Goerli](https://thegraph.com/hosted-service/subgraph/perspectivefi/spectra-goerli)
 
 You can also run this subgraph locally, if you wish. Instructions for that can be found in [The Graph Documentation](https://thegraph.com/docs/en/cookbook/quick-start/).
 
@@ -122,7 +122,7 @@ forge test --fork-url http://localhost:8545
 ### 11. For playground go to
 
 ```properties
-http://127.0.0.1:8000/subgraphs/name/matstyler/spectra-subgraph/graphql
+http://127.0.0.1:8000/subgraphs/name/perspectivefi/spectra-mainnet/graphql
 ```
 
 ### Deployment
