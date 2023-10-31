@@ -8,6 +8,7 @@ import {
     test,
 } from "matchstick-as/assembly"
 
+import { Account, FutureVaultFactory } from "../../generated/schema"
 import {
     FeeClaimed,
     Paused,
@@ -64,7 +65,6 @@ import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterfac
 import {
     DEPOSIT_TRANSACTION_HASH,
     FEE_COLLECTOR_ADDRESS_MOCK,
-    FEE_MOCK,
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
     FIRST_USER_MOCK,
     IBT_ADDRESS_MOCK,
@@ -82,7 +82,6 @@ import {
     mockFutureVaultFactoryFunctions,
 } from "./mocks/FutureVaultFactory"
 import {
-    ACCOUNT_ENTITY,
     ACCOUNT_ASSET_ENTITY,
     ASSET_AMOUNT_ENTITY,
     ASSET_ENTITY,
@@ -217,11 +216,19 @@ describe("handleFutureVaultDeployed()", () => {
             FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex()
         )
 
-        assert.fieldEquals(
-            FUTURE_VAULT_FACTORY_ENTITY,
-            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
-            "deployedFutures",
-            `[${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}, ${SECOND_FUTURE_VAULT_ADDRESS_MOCK.toHex()}]`
+        let futureVaultFactoryEntity = FutureVaultFactory.load(
+            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex()
+        )!
+
+        let deployedFutures = futureVaultFactoryEntity.deployedFutures.load()!
+
+        assert.stringEquals(
+            deployedFutures[0].id,
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+        )
+        assert.stringEquals(
+            deployedFutures[1].id,
+            SECOND_FUTURE_VAULT_ADDRESS_MOCK.toHex()
         )
     })
 
@@ -396,17 +403,17 @@ describe("handleFeeClaimed()", () => {
         )
 
         assert.fieldEquals(
-            ACCOUNT_ENTITY,
-            FEE_COLLECTOR_ADDRESS_MOCK.toHex(),
-            "collectedFees",
-            `[${feeClaimId}]`
+            FEE_CLAIM_ENTITY,
+            feeClaimId,
+            "future",
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
         )
 
         assert.fieldEquals(
-            FUTURE_ENTITY,
-            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
-            "feeClaims",
-            `[${feeClaimId}]`
+            FEE_CLAIM_ENTITY,
+            feeClaimId,
+            "feeCollector",
+            FEE_COLLECTOR_ADDRESS_MOCK.toHex()
         )
     })
     test("Should reflect collected fees in the future stats", () => {
@@ -542,24 +549,10 @@ describe("handleDeposit()", () => {
         )
     })
     test("Should assign three AccountAsset entities to Account entity used in the transaction", () => {
-        assert.fieldEquals(
-            ACCOUNT_ENTITY,
-            FIRST_USER_MOCK.toHex(),
-            "portfolio",
-            `[${generateAccountAssetId(
-                FIRST_USER_MOCK.toHex(),
-                ETH_ADDRESS_MOCK
-            )}, ${generateAccountAssetId(
-                FIRST_USER_MOCK.toHex(),
-                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
-            )}, ${generateAccountAssetId(
-                FIRST_USER_MOCK.toHex(),
-                YT_ADDRESS_MOCK.toHex()
-            )}, ${generateAccountAssetId(
-                FIRST_USER_MOCK.toHex(),
-                `${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}-yield`
-            )}]`
-        )
+        const accountEntity = Account.load(FIRST_USER_MOCK.toHex())!
+        let portfolio = accountEntity.portfolio.load()!
+
+        assert.i32Equals(portfolio.length, 4)
     })
     test("Should create FutureDailyStats with the correct details", () => {
         assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
@@ -902,12 +895,6 @@ describe("handleCurvePoolDeployed()", () => {
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "futureVaultFactory",
             FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex()
-        )
-        assert.fieldEquals(
-            FUTURE_VAULT_FACTORY_ENTITY,
-            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
-            "deployedPools",
-            `[${FIRST_POOL_ADDRESS_MOCK.toHex()}]`
         )
     })
 

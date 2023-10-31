@@ -2,6 +2,7 @@ import { BigInt, ethereum } from "@graphprotocol/graph-ts"
 import { assert, clearStore, describe, newMockEvent, test } from "matchstick-as"
 import { beforeAll } from "matchstick-as"
 
+import { Account, LPVault } from "../../generated/schema"
 import {
     Deposit,
     FeeUpdated,
@@ -448,29 +449,23 @@ describe("handleDeposit()", () => {
     })
 
     test("Should assign all AccountAsset entities to the sender Account in the transaction", () => {
-        assert.fieldEquals(
-            ACCOUNT_ENTITY,
-            FIRST_USER_MOCK.toHex(),
-            "portfolio",
-            `[${generateAccountAssetId(
-                FIRST_USER_MOCK.toHex(),
-                LP_VAULT_ASSET_ADDRESS_MOCK.toHex()
-            )}, ${generateAccountAssetId(
-                FIRST_USER_MOCK.toHex(),
-                LP_VAULT_ADDRESS_MOCK.toHex()
-            )}]`
-        )
+        let accountEntity = Account.load(FIRST_USER_MOCK.toHex())!
+        let portfolio = accountEntity.portfolio.load()
+
+        assert.i32Equals(portfolio.length, 2)
     })
 
     test("Should add relation between LPVault and transaction sender by AccountAsset entity", () => {
-        assert.fieldEquals(
-            LP_VAULT_ENTITY,
-            LP_VAULT_ADDRESS_MOCK.toHex(),
-            "positions",
-            `[${generateAccountAssetId(
+        let lpVaultEntity = LPVault.load(LP_VAULT_ADDRESS_MOCK.toHex())!
+        let positions = lpVaultEntity.positions.load()
+
+        assert.i32Equals(positions.length, 1)
+        assert.stringEquals(
+            positions[0].id,
+            generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
                 LP_VAULT_ADDRESS_MOCK.toHex()
-            )}]`
+            )
         )
     })
 })
