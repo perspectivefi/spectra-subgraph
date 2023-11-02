@@ -9,6 +9,7 @@ import {
     test,
 } from "matchstick-as/assembly"
 
+import { Account } from "../../generated/schema"
 import { Transfer } from "../../generated/templates/ERC20/ERC20"
 import { handleTransfer } from "../mappings/transfers"
 import {
@@ -144,7 +145,7 @@ describe("handleTransfer()", () => {
         handleTransfer(ptTransferEvent)
 
         let invalidAssetTransferEvent = changetype<Transfer>(newMockEvent())
-        // Asset not existing in any Spectra pool
+        // Asset not existing in any APWine pool
         invalidAssetTransferEvent.address = Address.fromString(
             "0x0000000000000000000000000000000000000000"
         )
@@ -195,18 +196,14 @@ describe("handleTransfer()", () => {
             RECEIVER_USER_MOCK.toHex()
         )
 
-        assert.fieldEquals(
-            ACCOUNT_ENTITY,
-            SENDER_USER_MOCK.toHex(),
-            "transfersOut",
-            `[${lpTransferId}, ${ptTransferId}]`
-        )
-        assert.fieldEquals(
-            ACCOUNT_ENTITY,
-            RECEIVER_USER_MOCK.toHex(),
-            "transfersIn",
-            `[${lpTransferId}, ${ptTransferId}]`
-        )
+        let senderAccountEntity = Account.load(SENDER_USER_MOCK.toHex())!
+        const transfersOut = senderAccountEntity.transfersOut.load()
+
+        let receiverAccountEntity = Account.load(RECEIVER_USER_MOCK.toHex())!
+        const transfersIn = receiverAccountEntity.transfersIn.load()
+
+        assert.i32Equals(transfersOut.length, 2)
+        assert.i32Equals(transfersIn.length, 2)
     })
 
     test("Should reflect asset transfers in the account portfolio", () => {

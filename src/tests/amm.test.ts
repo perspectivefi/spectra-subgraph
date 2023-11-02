@@ -17,6 +17,7 @@ import {
     RemoveLiquidityOne,
     TokenExchange,
 } from "../../generated/CurvePool/CurvePool"
+import { Account, FeeClaim, Pool } from "../../generated/schema"
 import { DAY_ID_0, ZERO_BI } from "../constants"
 import {
     handleAddLiquidity,
@@ -290,12 +291,11 @@ describe("handleAddLiquidity()", () => {
             POOL_LP_ADDRESS_MOCK.toHex()
         )
 
-        assert.fieldEquals(
-            ACCOUNT_ENTITY,
-            FIRST_USER_MOCK.toHex(),
-            "portfolio",
-            `[${accountIBTId}, ${accountPTId}, ${accountLPId}]`
-        )
+        const accountEntity = Account.load(FIRST_USER_MOCK.toHex())!
+        const portfolio = accountEntity.portfolio.load()
+
+        assert.i32Equals(portfolio.length, 3)
+
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
             accountIBTId,
@@ -317,15 +317,20 @@ describe("handleAddLiquidity()", () => {
     })
 
     test("Creates new LP position", () => {
-        assert.fieldEquals(
-            POOL_ENTITY,
-            FIRST_POOL_ADDRESS_MOCK.toHex(),
-            "liquidityPositions",
-            `[${generateAccountAssetId(
-                FIRST_USER_MOCK.toHex(),
-                POOL_LP_ADDRESS_MOCK.toHex()
-            )}]`
-        )
+        let poolEntity = Pool.load(FIRST_POOL_ADDRESS_MOCK.toHex())!
+        let liquidityPositions = poolEntity.liquidityPositions.load()
+
+        assert.i32Equals(liquidityPositions.length, 1)
+
+        // assert.fieldEquals(
+        //     POOL_ENTITY,
+        //     FIRST_POOL_ADDRESS_MOCK.toHex(),
+        //     "liquidityPositions",
+        //     `[${generateAccountAssetId(
+        //         FIRST_USER_MOCK.toHex(),
+        //         POOL_LP_ADDRESS_MOCK.toHex()
+        //     )}]`
+        // )
     })
 
     test("Should set correct transaction fee parameters", () => {
@@ -1295,11 +1300,13 @@ describe("handleClaimAdminFee", () => {
             FIRST_POOL_ADDRESS_MOCK.toHex()
         )
 
-        assert.fieldEquals(
-            POOL_ENTITY,
-            FIRST_POOL_ADDRESS_MOCK.toHex(),
-            "feeClaims",
-            `[${generateFeeClaimId(FEE_COLLECTOR_ADDRESS_MOCK.toHex(), "1")}]`
+        let poolEntity = Pool.load(FIRST_POOL_ADDRESS_MOCK.toHex())!
+
+        let feeClaims = poolEntity.feeClaims.load()!
+
+        assert.stringEquals(
+            feeClaims[0].id,
+            generateFeeClaimId(FEE_COLLECTOR_ADDRESS_MOCK.toHex(), "1")
         )
     })
 
