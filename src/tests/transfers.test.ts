@@ -17,13 +17,13 @@ import {
     generateTransferId,
 } from "../utils/idGenerators"
 import { toPrecision } from "../utils/toPrecision"
+import { emitFactoryUpdated } from "./events/Factory"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
     emitDeposit,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
-import { emitFactoryUpdated } from "./events/Factory"
 import {
     FIRST_POOL_ADDRESS_MOCK,
     mockCurvePoolFunctions,

@@ -36,12 +36,12 @@ import {
 } from "../utils"
 import { generateTransactionId } from "../utils/idGenerators"
 import { toPrecision } from "../utils/toPrecision"
+import { emitFactoryUpdated } from "./events/Factory"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
-import { emitFactoryUpdated } from "./events/Factory"
 import {
     mockCurvePoolFunctions,
     POOL_ADD_LIQUIDITY_TRANSACTION_HASH,

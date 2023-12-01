@@ -31,6 +31,7 @@ import {
     generateFutureDailyStatsId,
 } from "../utils"
 import { generateTransactionId } from "../utils/idGenerators"
+import { emitFactoryUpdated } from "./events/Factory"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
@@ -39,7 +40,6 @@ import {
     SHARES_RETURN,
     UNDERLYING_DEPOSIT,
 } from "./events/FutureVault"
-import { emitFactoryUpdated } from "./events/Factory"
 import {
     mockCurvePoolFunctions,
     POOL_LP_ADDRESS_MOCK,

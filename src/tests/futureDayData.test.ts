@@ -4,13 +4,13 @@ import { assert, beforeAll, clearStore, describe, test } from "matchstick-as"
 import { FutureDailyStats } from "../../generated/schema"
 import { SECONDS_PER_DAY } from "../constants"
 import { generateFutureDailyStatsId } from "../utils"
+import { emitFactoryUpdated } from "./events/Factory"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
     emitDeposit,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
-import { emitFactoryUpdated } from "./events/Factory"
 import {
     FIRST_POOL_ADDRESS_MOCK,
     mockCurvePoolFunctions,
