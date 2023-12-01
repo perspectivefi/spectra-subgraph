@@ -4,12 +4,10 @@ import { newMockEvent } from "matchstick-as"
 import { FactoryUpdated } from "../../../generated/Registry/Registry"
 import { handleFactoryUpdated } from "../../mappings/registry"
 import { FACTORY_ADDRESS_MOCK } from "../mocks/Factory"
-import { FIRST_CONTRACT_NAME, OLD_ADDRESS_MOCK } from "../mocks/Registry"
+import { OLD_ADDRESS_MOCK } from "../mocks/Registry"
 
 export const emitFactoryUpdated = (): void => {
-    let registryUpdateEvent = changetype<FactoryUpdated>(
-        newMockEvent()
-    )
+    let registryUpdateEvent = changetype<FactoryUpdated>(newMockEvent())
 
     let newAddressParam = new ethereum.EventParam(
         "_new",
