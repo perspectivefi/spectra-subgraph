@@ -642,7 +642,7 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "yield",
+          "name": "_yield",
           "type": "uint256"
         }
       ],
@@ -3129,7 +3129,7 @@
             },
             {
               "internalType": "uint256",
-              "name": "yield",
+              "name": "_yield",
               "type": "uint256",
               "indexed": true
             }
@@ -6587,7 +6587,7 @@
                   "id": 81291,
                   "indexed": true,
                   "mutability": "mutable",
-                  "name": "yield",
+                  "name": "_yield",
                   "nameLocation": "3021:5:129",
                   "nodeType": "VariableDeclaration",
                   "scope": 81293,
