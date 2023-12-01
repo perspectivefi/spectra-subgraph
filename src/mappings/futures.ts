@@ -3,11 +3,20 @@ import { Address, ethereum, log } from "@graphprotocol/graph-ts"
 import {
     CurveFactoryChanged,
     CurvePoolDeployed,
-    PrincipalTokenDeployed,
-} from "../../generated/PrincipalTokenFactory/PrincipalTokenFactory"
-import { FeeClaim, Future, FutureVaultFactory } from "../../generated/schema"
+    LPVDeployed,
+    PTDeployed,
+    RegistryUpdated,
+} from "../../generated/Factory/Factory"
+import {
+    FeeClaim,
+    Future,
+    Factory,
+    LPVault,
+    Pool,
+} from "../../generated/schema"
 import {
     ERC20,
+    LPVault as LPVaultTemplate,
     PrincipalToken as PrincipalTokenTemplate,
 } from "../../generated/templates"
 import {
@@ -16,10 +25,12 @@ import {
     Paused,
     Unpaused,
     Withdraw,
-    YieldTransferred,
+    YieldClaimed,
     YieldUpdated,
+    Transfer as PTTransfer,
 } from "../../generated/templates/PrincipalToken/PrincipalToken"
 import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
+import { createAPRInTimeForLPVault } from "../entities/APRInTime"
 import { getAccount } from "../entities/Account"
 import {
     updateAccountAssetBalance,
@@ -27,6 +38,7 @@ import {
 } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
+import { createFactory, getCurveFactory } from "../entities/Factory"
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import {
     getExpirationTimestamp,
@@ -36,39 +48,53 @@ import {
     getUnderlying,
     getTotalAssets,
     getYT,
-    getFeeRate,
 } from "../entities/FutureVault"
 import { getNetwork } from "../entities/Network"
 import { createPool } from "../entities/Pool"
-import { getPoolFactory } from "../entities/PoolFactory"
 import { createTransaction } from "../entities/Transaction"
 import { updateYieldForAll } from "../entities/Yield"
 import { AssetType, generateFeeClaimId } from "../utils"
+import FutureState from "../utils/FutureState"
 import transactionType from "../utils/TransactionType"
+import { calculateLpVaultAPR } from "../utils/calculateAPR"
 import { generateTransactionId } from "../utils/idGenerators"
 
-export function handlePrincipalTokenDeployed(
-    event: PrincipalTokenDeployed
-): void {
-    let futureVaultAddress = event.params._principalToken
-    const newFuture = new Future(futureVaultAddress.toHex())
+export function handleRegistryUpdated(event: RegistryUpdated): void {
+    let factory = Factory.load(event.params.newRegistry.toHex())
+
+    if (!factory) {
+        factory = createFactory(
+            event.params.newRegistry,
+            event.address,
+            event.block.timestamp
+        )
+    }
+
+    factory.oldRegistry = event.params.oldRegistry
+    factory.registry = event.params.newRegistry
+
+    factory.save()
+}
+
+export function handlePTDeployed(event: PTDeployed): void {
+    let ptAddress = event.params._pt
+    const newFuture = new Future(ptAddress.toHex())
     newFuture.chainId = getNetwork().chainId
-    newFuture.address = futureVaultAddress
-    newFuture.futureVaultFactory = event.address.toHex()
+    newFuture.address = ptAddress
+    newFuture.factory = event.address.toHex()
 
     newFuture.state = "ACTIVE"
     newFuture.createdAtTimestamp = event.block.timestamp
-    newFuture.expirationAtTimestamp = getExpirationTimestamp(futureVaultAddress)
+    newFuture.expirationAtTimestamp = getExpirationTimestamp(ptAddress)
 
-    newFuture.daoFeeRate = getFeeRate(futureVaultAddress)
     newFuture.unclaimedFees = ZERO_BI
     newFuture.totalCollectedFees = ZERO_BI
 
-    newFuture.name = getName(futureVaultAddress)
-    newFuture.symbol = getSymbol(futureVaultAddress)
-    newFuture.totalAssets = getTotalAssets(futureVaultAddress)
+    newFuture.name = getName(ptAddress)
+    newFuture.symbol = getSymbol(ptAddress)
+    newFuture.totalAssets = getTotalAssets(ptAddress)
 
-    let underlyingAddress = getUnderlying(futureVaultAddress)
+    let underlyingAddress = getUnderlying(ptAddress)
     let underlyingAsset = getAsset(
         underlyingAddress.toHex(),
         event.block.timestamp,
@@ -76,7 +102,7 @@ export function handlePrincipalTokenDeployed(
     )
     underlyingAsset.save()
 
-    let ibtAddress = getIBT(futureVaultAddress)
+    let ibtAddress = getIBT(ptAddress)
     let ibtAsset = getAsset(
         ibtAddress.toHex(),
         event.block.timestamp,
@@ -94,30 +120,30 @@ export function handlePrincipalTokenDeployed(
 
     // PT Asset - Future relation
     let ptToken = getAsset(
-        event.params._principalToken.toHex(),
+        event.params._pt.toHex(),
         event.block.timestamp,
         AssetType.PT
     )
-    ptToken.futureVault = event.params._principalToken.toHex()
+    ptToken.futureVault = event.params._pt.toHex()
     ptToken.save()
 
     // YT Asset - Future relation
     let ytToken = getAsset(
-        getYT(event.params._principalToken).toHex(),
+        getYT(event.params._pt).toHex(),
         event.block.timestamp,
         AssetType.YT
     )
-    ytToken.futureVault = event.params._principalToken.toHex()
+    ytToken.futureVault = event.params._pt.toHex()
     ytToken.save()
 
     // Create dynamic data source for PT token events
-    ERC20.create(event.params._principalToken)
+    ERC20.create(event.params._pt)
 
     // Create dynamic data source for YT token events
     ERC20.create(Address.fromBytes(ytToken.address))
 
     // Create dynamic data source for PrincipalToken events
-    PrincipalTokenTemplate.create(event.params._principalToken)
+    PrincipalTokenTemplate.create(event.params._pt)
 }
 
 export function handlePaused(event: Paused): void {
@@ -386,21 +412,16 @@ export function handleWithdraw(event: Withdraw): void {
 // }
 
 export function handleCurveFactoryChanged(event: CurveFactoryChanged): void {
-    let futureVaultFactory = FutureVaultFactory.load(event.address.toHex())
+    let factory = Factory.load(event.address.toHex())
 
-    if (futureVaultFactory) {
-        let poolFactoryAddress = event.params.newFactory
-        let poolFactory = getPoolFactory(
-            poolFactoryAddress,
-            Address.fromBytes(futureVaultFactory.address),
-            event.block.timestamp
-        )
+    if (factory) {
+        let poolFactory = getCurveFactory(event.address)
 
-        futureVaultFactory.poolFactory = poolFactory.id
-        futureVaultFactory.save()
+        factory.curveFactory = poolFactory
+        factory.save()
     } else {
         log.warning(
-            "CurveFactoryChanged event call for not existing FutureVaultFactory {}",
+            "CurveFactoryChanged event call for not existing factory {}",
             [event.address.toHex()]
         )
     }
@@ -410,7 +431,7 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
     createPool({
         poolAddress: event.params.poolAddress,
         ibtAddress: event.params.ibt,
-        ptFactoryAddress: event.address,
+        factoryAddress: event.address,
         ptAddress: event.params.pt,
         timestamp: event.block.timestamp,
         transactionHash: event.transaction.hash,
@@ -429,14 +450,97 @@ export function handleYieldUpdated(event: YieldUpdated): void {
     }
 }
 
-export function handleYieldTransferred(event: YieldTransferred): void {
+export function handleYieldClaimed(event: YieldClaimed): void {
     let future = Future.load(event.address.toHex())
 
     if (future) {
         updateYieldForAll(event.address, event.block.timestamp)
     } else {
-        log.warning("YieldTransferred event call for not existing Future {}", [
+        log.warning("YieldClaimed event call for not existing Future {}", [
             event.address.toHex(),
         ])
     }
+}
+
+export function handlePTTransfer(event: PTTransfer): void {
+    let future = Future.load(event.address.toHex())
+
+    if (future) {
+        updateYieldForAll(event.address, event.block.timestamp)
+    } else {
+        log.warning("PTTransfer event call for not existing Future {}", [
+            event.address.toHex(),
+        ])
+    }
+}
+
+export function handleLPVDeployed(event: LPVDeployed): void {
+    let lpVault = new LPVault(event.params.lpv.toHex())
+    let future = Future.load(event.params.pt.toHex())!
+
+    lpVault.chainId = getNetwork().chainId
+    lpVault.address = event.params.lpv
+    lpVault.createdAtTimestamp = event.block.timestamp
+    lpVault.expirationAtTimestamp = future.expirationAtTimestamp
+
+    let factory = Factory.load(event.address.toHex())!
+    lpVault.factory = factory.id
+    lpVault.future = future.id
+
+    lpVault.state = FutureState.ACTIVE
+
+    let underlyingAddress = getUnderlying(Address.fromBytes(future.address))
+    let underlying = getAsset(
+        underlyingAddress.toHex(),
+        event.block.timestamp,
+        AssetType.UNDERLYING
+    )
+    lpVault.underlying = underlying.address.toHex()
+
+    let ibtAddress = getIBT(Address.fromBytes(future.address))
+    let ibt = getAsset(ibtAddress.toHex(), event.block.timestamp, AssetType.IBT)
+    lpVault.ibt = ibt.address.toHex()
+
+    let name = getName(Address.fromBytes(lpVault.address))
+    lpVault.name = name
+    let symbol = getSymbol(Address.fromBytes(lpVault.address))
+    lpVault.symbol = symbol
+    lpVault.totalSupply = ZERO_BI
+    lpVault.totalAssets = ZERO_BI
+
+    let poolAddress = event.params.curvePool
+
+    let pool = Pool.load(poolAddress.toHex())
+    if (pool) {
+        lpVault.pool = pool.id
+    } else {
+        lpVault.pool = createPool({
+            poolAddress: poolAddress,
+            ibtAddress: ibtAddress,
+            factoryAddress: Address.fromString(future.factory!),
+            ptAddress: Address.fromBytes(future.address),
+            timestamp: event.block.timestamp,
+            transactionHash: event.transaction.hash,
+        }).id
+    }
+
+    lpVault.save()
+
+    let lpVaultShareAsset = getAsset(
+        lpVault.address.toHex(),
+        event.block.timestamp,
+        AssetType.LP_VAULT_SHARES
+    )
+    lpVaultShareAsset.futureVault = future.address.toHex()
+    lpVaultShareAsset.save()
+
+    // Create dynamic data source for LPVault events
+    LPVaultTemplate.create(Address.fromBytes(lpVault.address))
+
+    let lpVaultAPR = createAPRInTimeForLPVault(
+        event.params.lpv,
+        event.block.timestamp
+    )
+    lpVaultAPR.apr = calculateLpVaultAPR(event.params.lpv)
+    lpVaultAPR.save()
 }

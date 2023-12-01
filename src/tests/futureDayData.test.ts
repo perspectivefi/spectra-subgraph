@@ -1,11 +1,5 @@
 import { BigDecimal } from "@graphprotocol/graph-ts"
-import {
-    assert,
-    beforeAll,
-    clearStore,
-    describe,
-    test,
-} from "matchstick-as/assembly/index"
+import { assert, beforeAll, clearStore, describe, test } from "matchstick-as"
 
 import { FutureDailyStats } from "../../generated/schema"
 import { SECONDS_PER_DAY } from "../constants"
@@ -16,21 +10,20 @@ import {
     emitDeposit,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
-import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
+import { emitFactoryUpdated } from "./events/factory"
 import {
     FIRST_POOL_ADDRESS_MOCK,
     mockCurvePoolFunctions,
 } from "./mocks/CurvePool"
-import { mockCurvePoolFactoryFunctions } from "./mocks/CurvePoolFactory"
 import { mockERC20Balances, mockERC20Functions } from "./mocks/ERC20"
 import { createConvertToAssetsCallMockFromString } from "./mocks/ERC4626"
+import { mockFactoryFunctions } from "./mocks/Factory"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
     IBT_ADDRESS_MOCK,
     mockFutureVaultFunctions,
 } from "./mocks/FutureVault"
-import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory"
 import { assertAlmostEquals } from "./utils/asserts"
 import { FUTURE_DAILY_STATS_ENTITY } from "./utils/entities"
 
@@ -38,15 +31,15 @@ describe("APY Computations on futureDailyStats", () => {
     beforeAll(() => {
         // Mock the deployment of the whole stack
         clearStore()
-        mockFutureVaultFactoryFunctions()
+        mockFactoryFunctions()
         mockERC20Functions()
         mockERC20Balances()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
-        mockCurvePoolFactoryFunctions()
+        mockFactoryFunctions()
         mockCurvePoolFunctions()
 
-        emitPrincipalTokenFactoryUpdated()
+        emitFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChanged()
         emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)

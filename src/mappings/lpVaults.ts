@@ -1,151 +1,43 @@
-import { Address, BigInt, log } from "@graphprotocol/graph-ts"
+import { Address, log } from "@graphprotocol/graph-ts"
 
-import {
-    LPVaultDeployed,
-    RegistryUpdated,
-} from "../../generated/LPVaultFactory/LPVaultFactory"
-import { Future, LPVault, LPVaultFactory, Pool } from "../../generated/schema"
-import { LPVault as LPVaultTemplate } from "../../generated/templates"
+import { LPVault, Pool } from "../../generated/schema"
 import {
     Deposit,
-    FeeUpdated,
     Paused,
-    PoolIndexUpdated,
+    CurvePoolUpdated,
     Unpaused,
     Withdraw,
 } from "../../generated/templates/LPVault/LPVault"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
-import { createAPRInTimeForLPVault } from "../entities/APRInTime"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
-import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
-import { getIBT } from "../entities/FutureVault"
-import { getPool } from "../entities/FutureVaultFactory"
 import {
-    getName,
-    getSymbol,
     getTotalSupply,
     getTotalAssets,
     getUnderlying,
 } from "../entities/LPVault"
-import { createLPVaultFactory } from "../entities/LPVaultFactory"
-import { getNetwork } from "../entities/Network"
 import { createPool } from "../entities/Pool"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType } from "../utils"
 import FutureState from "../utils/FutureState"
 import transactionType from "../utils/TransactionType"
-import { calculateLpVaultAPR } from "../utils/calculateAPR"
 import { generateTransactionId } from "../utils/idGenerators"
 
-export function handleRegistryUpdated(event: RegistryUpdated): void {
-    let lpVaultFactory = LPVaultFactory.load(event.address.toHex())
+export function handleCurvePoolUpdated(event: CurvePoolUpdated): void {
+    let lpVault = LPVault.load(event.address.toHex())!
 
-    if (!lpVaultFactory) {
-        lpVaultFactory = createLPVaultFactory(
-            event.address,
-            event.block.timestamp
-        )
-    }
-
-    lpVaultFactory.oldRegistry = event.params.oldRegistry
-    lpVaultFactory.registry = event.params.newRegistry
-
-    lpVaultFactory.save()
-}
-
-export function handleLPVaultDeployed(event: LPVaultDeployed): void {
-    let lpVault = new LPVault(event.params.lpVault.toHex())
-    let future = Future.load(event.params.principalToken.toHex())!
-
-    lpVault.chainId = getNetwork().chainId
-    lpVault.address = event.params.lpVault
-    lpVault.createdAtTimestamp = event.block.timestamp
-    lpVault.expirationAtTimestamp = future.expirationAtTimestamp
-
-    let lpVaultFactory = LPVaultFactory.load(event.address.toHex())!
-    lpVault.lpVaultFactory = lpVaultFactory.id
-    lpVault.future = future.id
-
-    lpVault.state = FutureState.ACTIVE
-
-    let underlyingAddress = getUnderlying(event.params.lpVault)
-    let underlying = getAsset(
-        underlyingAddress.toHex(),
-        event.block.timestamp,
-        AssetType.UNDERLYING
-    )
-    lpVault.underlying = underlying.address.toHex()
-
-    let ibtAddress = getIBT(Address.fromBytes(future.address))
-    let ibt = getAsset(ibtAddress.toHex(), event.block.timestamp, AssetType.IBT)
-    lpVault.ibt = ibt.address.toHex()
-
-    let name = getName(Address.fromBytes(lpVault.address))
-    lpVault.name = name
-    let symbol = getSymbol(Address.fromBytes(lpVault.address))
-    lpVault.symbol = symbol
-    lpVault.totalSupply = ZERO_BI
-    lpVault.totalAssets = ZERO_BI
-
-    let poolAddress = getPool(
-        Address.fromString(future.futureVaultFactory!),
-        Address.fromString(lpVault.future),
-        // TODO: lpVault.poolIndex = getPoolIndex()
-        BigInt.fromString("0")
-    )
-
-    let pool = Pool.load(poolAddress.toHex())
+    let pool = Pool.load(event.params._newCurvePool.toHex())
     if (pool) {
         lpVault.pool = pool.id
     } else {
         lpVault.pool = createPool({
-            poolAddress: poolAddress,
-            ibtAddress: ibtAddress,
-            ptFactoryAddress: Address.fromString(future.futureVaultFactory!),
-            ptAddress: Address.fromBytes(future.address),
+            poolAddress: event.params._newCurvePool,
+            ibtAddress: Address.fromString(lpVault.ibt),
+            factoryAddress: Address.fromString(lpVault.factory!),
+            ptAddress: Address.fromString(lpVault.future),
             timestamp: event.block.timestamp,
             transactionHash: event.transaction.hash,
         }).id
-    }
-
-    lpVault.save()
-
-    let lpVaultShareAsset = getAsset(
-        lpVault.address.toHex(),
-        event.block.timestamp,
-        AssetType.LP_VAULT_SHARES
-    )
-    lpVaultShareAsset.futureVault = future.address.toHex()
-    lpVaultShareAsset.save()
-
-    // Create dynamic data source for LPVault events
-    LPVaultTemplate.create(Address.fromBytes(lpVault.address))
-
-    let lpVaultAPR = createAPRInTimeForLPVault(
-        event.params.lpVault,
-        event.block.timestamp
-    )
-    lpVaultAPR.apr = calculateLpVaultAPR(event.params.lpVault)
-    lpVaultAPR.save()
-}
-
-export function handlePoolIndexUpdated(event: PoolIndexUpdated): void {
-    let lpVault = LPVault.load(event.address.toHex())!
-
-    lpVault.poolIndex = event.params._newIndex
-
-    let future = Future.load(lpVault.future)!
-
-    let poolAddress = getPool(
-        Address.fromString(future.futureVaultFactory!),
-        Address.fromString(lpVault.future),
-        event.params._newIndex
-    )
-
-    let pool = Pool.load(poolAddress.toHex())
-    if (pool) {
-        lpVault.pool = pool.id
     }
 
     lpVault.save()
@@ -338,15 +230,16 @@ export function handleWithdraw(event: Withdraw): void {
     }
 }
 
-export function handleFeeUpdated(event: FeeUpdated): void {
-    let lpVault = LPVault.load(event.address.toHex())
-
-    if (lpVault) {
-        lpVault.fee = event.params.fees
-        lpVault.save()
-    } else {
-        log.warning("FeeUpdated event call for not existing LPVault {}", [
-            event.address.toHex(),
-        ])
-    }
-}
+// TODO: this event doesn't exist in the contract anymore
+// export function handleFeeUpdated(event: FeeUpdated): void {
+//     let lpVault = LPVault.load(event.address.toHex())
+//
+//     if (lpVault) {
+//         lpVault.fee = event.params.fees
+//         lpVault.save()
+//     } else {
+//         log.warning("FeeUpdated event call for not existing LPVault {}", [
+//             event.address.toHex(),
+//         ])
+//     }
+// }

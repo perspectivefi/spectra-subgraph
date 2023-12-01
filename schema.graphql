@@ -99,15 +99,19 @@ type ValueInTime @entity {
 # Factory
 ####################
 
-type FutureVaultFactory @entity {
+type Factory @entity {
     id: ID!
-    createdAtTimestamp: BigInt!
-    old: FutureVaultFactory
     address: Bytes!
+    createdAtTimestamp: BigInt!
 
-    poolFactory: PoolFactory
-    deployedFutures: [Future!]! @derivedFrom(field: "futureVaultFactory")
-    deployedPools: [Pool!]! @derivedFrom(field: "futureVaultFactory")
+    oldFactory: Bytes
+    oldRegistry: Bytes
+    registry: Bytes
+    curveFactory: Bytes
+
+    deployedFutures: [Future!]! @derivedFrom(field: "factory")
+    deployedPools: [Pool!]! @derivedFrom(field: "factory")
+    deployedLPVaults: [LPVault!]! @derivedFrom(field: "factory")
 }
 
 ####################
@@ -205,10 +209,8 @@ type Future @entity {
     symbol: String!
     name: String!
 
-    futureVaultFactory: FutureVaultFactory
+    factory: Factory
 
-    "how big is the fee setup for that future"
-    daoFeeRate: BigInt!
     unclaimedFees: BigInt!
     "sum of the collected fees"
     totalCollectedFees: BigInt!
@@ -337,21 +339,6 @@ type APRInTime @entity {
     lpVault: LPVault
 }
 
-type PoolFactory @entity {
-    id: ID!
-    address: Bytes!
-    createdAtTimestamp: BigInt!
-
-    "it will be Curve by default but we will be able to index others as well"
-    ammProvider: AMM!
-    feeReceiver: Account!
-    admin: Bytes!
-
-    futureVaultFactory: FutureVaultFactory
-
-    pools: [Pool!]! @derivedFrom(field: "factory")
-}
-
 type Pool @entity {
     id: ID!
     address: Bytes!
@@ -367,10 +354,8 @@ type Pool @entity {
     futureAdminFeeRate: BigInt!
     futureAdminFeeDeadline: BigInt!
 
-    futureVaultFactory: FutureVaultFactory
+    factory: Factory
     futureVault: Future
-    "to be able to follow all the pools created by a factory"
-    factory: PoolFactory
 
     liquidityToken: Asset!
     assets: [AssetAmount!]
@@ -404,17 +389,6 @@ type Transfer @entity {
 # LPVaults
 ####################
 
-type LPVaultFactory @entity {
-    id: ID!
-    createdAtTimestamp: BigInt!
-    address: Bytes!
-
-    registry: Bytes
-    oldRegistry: Bytes
-
-    deployedLPVaults: [LPVault!]! @derivedFrom(field: "lpVaultFactory")
-}
-
 type LPVaultInterest @entity {
     id: ID!
     chainId: Int!
@@ -431,14 +405,13 @@ type LPVault @entity {
     createdAtTimestamp: BigInt!
     expirationAtTimestamp: BigInt!
 
-    lpVaultFactory: LPVaultFactory!
+    factory: Factory!
     future: Future!
     pool: Pool
 
     state: FutureState!
     fee: BigInt
 
-    poolIndex: BigInt
     underlying: Asset!
     ibt: Asset!
     totalAssets: BigInt!

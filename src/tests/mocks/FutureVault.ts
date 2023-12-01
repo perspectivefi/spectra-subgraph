@@ -3,7 +3,7 @@ import { createMockedFunction } from "matchstick-as/assembly"
 
 import { toPrecision } from "../../utils/toPrecision"
 import { ETH_ADDRESS_MOCK, STANDARD_DECIMALS_MOCK } from "./ERC20"
-import { FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK } from "./FutureVaultFactory"
+import { FACTORY_ADDRESS_MOCK } from "./Factory"
 import { PRINCIPAL_TOKEN_ADDRESS_MOCK } from "./LPVault"
 import { RECEIVER_USER_MOCK } from "./Transaction"
 
@@ -56,7 +56,7 @@ export function mockFutureVaultFunctions(): void {
     ;[
         FIRST_FUTURE_VAULT_ADDRESS_MOCK,
         SECOND_FUTURE_VAULT_ADDRESS_MOCK,
-        FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK,
+        FACTORY_ADDRESS_MOCK,
         Address.fromString(ETH_ADDRESS_MOCK),
         PRINCIPAL_TOKEN_ADDRESS_MOCK,
     ].forEach((addressMock) => {

@@ -8,62 +8,55 @@ import {
     beforeEach,
 } from "matchstick-as/assembly"
 
-import { PrincipalTokenFactoryUpdated } from "../../generated/Registry/Registry"
-import { handlePrincipalTokenFactoryUpdated } from "../mappings/registry"
-import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
+import { FactoryUpdated } from "../../generated/Registry/Registry"
+import { handleFactoryUpdated } from "../mappings/Registry"
+import { emitFactoryUpdated } from "./events/Factory"
 import { mockCurvePoolFunctions } from "./mocks/CurvePool"
 import {
-    mockCurvePoolFactoryFunctions,
-    POOL_FACTORY_ADDRESS_MOCK,
-} from "./mocks/CurvePoolFactory"
-import {
-    FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK,
-    mockFutureVaultFactoryFunctions,
-} from "./mocks/FutureVaultFactory"
+    mockFactoryFunctions,
+    FACTORY_ADDRESS_MOCK,
+    CURVE_FACTORY_ADDRESS_MOCK,
+} from "./mocks/Factory"
 import {
     NEW_ADDRESS_MOCK,
     OLD_ADDRESS_MOCK,
     THIRD_EVENT_ADDRESS_MOCK,
 } from "./mocks/Registry"
-import { FUTURE_VAULT_FACTORY_ENTITY, NETWORK_ENTITY } from "./utils/entities"
+import { FACTORY_ENTITY, NETWORK_ENTITY } from "./utils/entities"
 
-describe("handlePrincipalTokenFactoryUpdated()", () => {
+describe("handleFactoryUpdated()", () => {
     beforeEach(() => {
         clearStore()
 
-        mockCurvePoolFactoryFunctions()
+        mockFactoryFunctions()
         mockCurvePoolFunctions()
 
-        mockFutureVaultFactoryFunctions()
-
-        emitPrincipalTokenFactoryUpdated()
-        emitPrincipalTokenFactoryUpdated()
+        emitFactoryUpdated()
+        emitFactoryUpdated()
     })
 
-    test("Should create new FutureVaultFactory entity for every registry update with unique address", () => {
-        assert.entityCount(FUTURE_VAULT_FACTORY_ENTITY, 2)
+    test("Should create new factory entity for every registry update with unique address", () => {
+        assert.entityCount(FACTORY_ENTITY, 2)
     })
 
     test("Should should save new address and add the old one to the entity", () => {
         assert.fieldEquals(
-            FUTURE_VAULT_FACTORY_ENTITY,
-            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
+            FACTORY_ENTITY,
+            FACTORY_ADDRESS_MOCK.toHex(),
             "address",
-            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHexString()
+            FACTORY_ADDRESS_MOCK.toHexString()
         )
         assert.fieldEquals(
-            FUTURE_VAULT_FACTORY_ENTITY,
-            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
-            "old",
+            FACTORY_ENTITY,
+            FACTORY_ADDRESS_MOCK.toHex(),
+            "oldFactory",
             OLD_ADDRESS_MOCK.toHexString()
         )
     })
 
-    test("Should create FutureVaultFactory entity with old address if the one has been updated but entity with the old address does not exist", () => {
+    test("Should create factory entity with old address if the one has been updated but entity with the old address does not exist", () => {
         // third event
-        let registryUpdateEvent = changetype<PrincipalTokenFactoryUpdated>(
-            newMockEvent()
-        )
+        let registryUpdateEvent = changetype<FactoryUpdated>(newMockEvent())
 
         let newAddressParam = new ethereum.EventParam(
             "_new",
@@ -80,22 +73,22 @@ describe("handlePrincipalTokenFactoryUpdated()", () => {
         )
 
         registryUpdateEvent.parameters = [oldAddressParam, newAddressParam]
-        handlePrincipalTokenFactoryUpdated(registryUpdateEvent)
+        handleFactoryUpdated(registryUpdateEvent)
 
         assert.fieldEquals(
-            FUTURE_VAULT_FACTORY_ENTITY,
+            FACTORY_ENTITY,
             NEW_ADDRESS_MOCK.toHex(),
             "address",
             NEW_ADDRESS_MOCK.toHex()
         )
         assert.fieldEquals(
-            FUTURE_VAULT_FACTORY_ENTITY,
+            FACTORY_ENTITY,
             NEW_ADDRESS_MOCK.toHex(),
-            "old",
+            "oldFactory",
             THIRD_EVENT_ADDRESS_MOCK
         )
         assert.fieldEquals(
-            FUTURE_VAULT_FACTORY_ENTITY,
+            FACTORY_ENTITY,
             THIRD_EVENT_ADDRESS_MOCK,
             "address",
             THIRD_EVENT_ADDRESS_MOCK
@@ -108,12 +101,12 @@ describe("handlePrincipalTokenFactoryUpdated()", () => {
         assert.fieldEquals(NETWORK_ENTITY, "1", "chainId", "1")
     })
 
-    test("Should assign Pool Factory to the Principal Token factory ", () => {
+    test("Should assign Curve Factory to the Principal Token factory ", () => {
         assert.fieldEquals(
-            FUTURE_VAULT_FACTORY_ENTITY,
-            FIRST_FUTURE_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
-            "poolFactory",
-            POOL_FACTORY_ADDRESS_MOCK.toHex()
+            FACTORY_ENTITY,
+            FACTORY_ADDRESS_MOCK.toHex(),
+            "curveFactory",
+            CURVE_FACTORY_ADDRESS_MOCK.toHex()
         )
     })
 })

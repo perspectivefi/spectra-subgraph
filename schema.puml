@@ -42,12 +42,12 @@ enum FutureState {
 
 '#####################################
 
-class FutureVaultFactory {
+class factory {
     id: ID!
     createdAtTimestamp: BigInt!
     address: Bytes!
 
-    + old: FutureVaultFactory
+    + old: factory
     + poolFactory: PoolFactory
 }
 
@@ -67,9 +67,7 @@ class PoolFactory {
     createdAtTimestamp
     admin
 
-    + ammProvider
-    + feeReceiver
-    + futureVaultFactory
+    + factory
     + pools: [ ]
 }
 
@@ -214,8 +212,6 @@ class Transfer {
 '#####################################
 
 
-AMM --> PoolFactory : ammProvider
-
 AssetType --> Asset : type
 
 TransactionType -> Transaction : type
@@ -226,19 +222,18 @@ FeeClaim::feeCollector <---> Account : collectedFees
 FeeClaim::future ---> Future::feeClaims : feeClaims
 FeeClaim::pool ---> Pool : feeClaims
 
-PoolFactory::futureVaultFactory --> FutureVaultFactory::poolFactory : poolFactory
+PoolFactory::factory --> factory::poolFactory : poolFactory
 PoolFactory::pools --> Pool::factory : factory
 
-FutureVaultFactory ---> Pool::futureVaultFactory : futureVaultFactory
-FutureVaultFactory ---> Future::futureVaultFactory : futureVaultFactory
+factory ---> Pool::factory : factory
+factory ---> Future::factory : factory
 
-Future ---> FutureVaultFactory::deployedFutures : deployedFutures
+Future ---> factory::deployedFutures : deployedFutures
 Future ---> Asset::futureVault : futureVault
 
 Pool ---> AccountAsset : pool
-Pool ---> FutureVaultFactory::deployedPools : deployedPools
+Pool ---> factory::deployedPools : deployedPools
 
-Account ---> PoolFactory::feeReceiver : feeReceiver
 Account ---> Transfer::from : from
 Account ---> Transfer::to : to
 
