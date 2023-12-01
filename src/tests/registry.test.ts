@@ -9,7 +9,7 @@ import {
 } from "matchstick-as/assembly"
 
 import { FactoryUpdated } from "../../generated/Registry/Registry"
-import { handleFactoryUpdated } from "../mappings/Registry"
+import { handleFactoryUpdated } from "../mappings/registry"
 import { emitFactoryUpdated } from "./events/Factory"
 import { mockCurvePoolFunctions } from "./mocks/CurvePool"
 import {

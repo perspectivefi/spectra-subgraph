@@ -33,7 +33,7 @@ export function handleCurvePoolUpdated(event: CurvePoolUpdated): void {
         lpVault.pool = createPool({
             poolAddress: event.params._newCurvePool,
             ibtAddress: Address.fromString(lpVault.ibt),
-            factoryAddress: Address.fromString(lpVault.factory!),
+            factoryAddress: Address.fromString(lpVault.factory),
             ptAddress: Address.fromString(lpVault.future),
             timestamp: event.block.timestamp,
             transactionHash: event.transaction.hash,

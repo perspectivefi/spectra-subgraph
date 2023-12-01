@@ -23,7 +23,7 @@ import {
     emitDeposit,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
-import { emitFactoryUpdated } from "./events/factory"
+import { emitFactoryUpdated } from "./events/Factory"
 import {
     FIRST_POOL_ADDRESS_MOCK,
     mockCurvePoolFunctions,

@@ -39,7 +39,7 @@ import {
     SHARES_RETURN,
     UNDERLYING_DEPOSIT,
 } from "./events/FutureVault"
-import { emitFactoryUpdated } from "./events/factory"
+import { emitFactoryUpdated } from "./events/Factory"
 import {
     mockCurvePoolFunctions,
     POOL_LP_ADDRESS_MOCK,
