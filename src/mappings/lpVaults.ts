@@ -1,4 +1,4 @@
-import { Address, log } from "@graphprotocol/graph-ts"
+import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
 import { LPVault, Pool } from "../../generated/schema"
 import {
@@ -110,6 +110,31 @@ export function handleDeposit(event: Deposit): void {
         )
 
         lpVaultPosition.lpVault = lpVault.id
+
+        let totalUnderlyingDeposit = ZERO_BI
+        let totalMintedShares = ZERO_BI
+        if (lpVaultPosition.totalUnderlyingDeposit) {
+            totalUnderlyingDeposit = lpVaultPosition.totalUnderlyingDeposit!
+            totalMintedShares = lpVaultPosition.totalMintedShares!
+        }
+
+        lpVaultPosition.totalUnderlyingDeposit = totalUnderlyingDeposit.plus(
+            event.params.assets
+        )
+
+        lpVaultPosition.totalMintedShares = totalMintedShares.plus(
+            event.params.shares
+        )
+
+        if (
+            lpVaultPosition.totalUnderlyingDeposit !== ZERO_BI &&
+            lpVaultPosition.totalMintedShares !== ZERO_BI
+        ) {
+            lpVaultPosition.averageShareCost = lpVaultPosition
+                .totalUnderlyingDeposit!.times(BigInt.fromI32(10).pow(18 as u8))
+                .div(lpVaultPosition.totalMintedShares!)
+        }
+
         lpVaultPosition.save()
 
         let lpVaultAddress = Address.fromBytes(lpVault.address)
