@@ -18,20 +18,6 @@ export function getExpirationTimestamp(futureVault: Address): BigInt {
     return ZERO_BI
 }
 
-export function getFeeRate(futureVault: Address): BigInt {
-    const futureContract = PrincipalToken.bind(futureVault)
-
-    let protocolFeeCall = futureContract.try_getProtocolFee()
-
-    if (!protocolFeeCall.reverted) {
-        return protocolFeeCall.value
-    }
-
-    log.warning("getProtocolFee() call reverted for {}", [futureVault.toHex()])
-
-    return ZERO_BI
-}
-
 export function getUnclaimedFees(futureVault: Address): BigInt {
     const futureContract = PrincipalToken.bind(futureVault)
 

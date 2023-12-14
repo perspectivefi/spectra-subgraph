@@ -17,7 +17,7 @@ import {
     RemoveLiquidityOne,
     TokenExchange,
 } from "../../generated/CurvePool/CurvePool"
-import { Account, FeeClaim, Pool } from "../../generated/schema"
+import { Account, Pool } from "../../generated/schema"
 import { DAY_ID_0, ZERO_BI } from "../constants"
 import {
     handleAddLiquidity,
@@ -36,12 +36,12 @@ import {
 } from "../utils"
 import { generateTransactionId } from "../utils/idGenerators"
 import { toPrecision } from "../utils/toPrecision"
+import { emitFactoryUpdated } from "./events/Factory"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
-import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
 import {
     mockCurvePoolFunctions,
     POOL_ADD_LIQUIDITY_TRANSACTION_HASH,
@@ -50,15 +50,9 @@ import {
     POOL_LP_ADDRESS_MOCK,
     POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH,
     POOL_SECOND_EXCHANGE_TRANSACTION_HASH,
-} from "./mocks/CurvePool"
-import {
-    POOL_DEPLOY_TRANSACTION_HASH,
     FIRST_POOL_ADDRESS_MOCK,
-    mockCurvePoolFactoryFunctions,
-    POOL_IBT_ADDRESS_MOCK,
-    POOL_PT_ADDRESS_MOCK,
     SECOND_POOL_ADDRESS_MOCK,
-} from "./mocks/CurvePoolFactory"
+} from "./mocks/CurvePool"
 import {
     STANDARD_DECIMALS_MOCK,
     mockERC20Functions,
@@ -72,6 +66,12 @@ import {
     createConvertToAssetsCallMock,
     createConvertToSharesCallMock,
 } from "./mocks/ERC4626"
+import {
+    POOL_DEPLOY_TRANSACTION_HASH,
+    mockFactoryFunctions,
+    POOL_IBT_ADDRESS_MOCK,
+    POOL_PT_ADDRESS_MOCK,
+} from "./mocks/Factory"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
     FEE_COLLECTOR_ADDRESS_MOCK,
@@ -80,7 +80,6 @@ import {
     IBT_ADDRESS_MOCK,
     mockFutureVaultFunctions,
 } from "./mocks/FutureVault"
-import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory"
 import {
     ASSET_AMOUNT_ENTITY,
     FEE_CLAIM_ENTITY,
@@ -139,9 +138,9 @@ describe("handleAddLiquidity()", () => {
         mockERC20Functions()
         mockERC20Balances()
 
-        mockCurvePoolFactoryFunctions()
+        mockFactoryFunctions()
 
-        mockFutureVaultFactoryFunctions()
+        mockFactoryFunctions()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
         mockCurvePoolFunctions()
@@ -151,7 +150,7 @@ describe("handleAddLiquidity()", () => {
             toPrecision(BigInt.fromI32(10), 0, 18)
         )
 
-        emitPrincipalTokenFactoryUpdated()
+        emitFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChanged()
         emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)

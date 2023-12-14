@@ -1,35 +1,35 @@
-import { PrincipalTokenFactoryUpdated } from "../../generated/Registry/Registry"
-import { FutureVaultFactory } from "../../generated/schema"
-import { createFutureVaultFactory } from "../entities/FutureVaultFactory"
+import { FactoryUpdated } from "../../generated/Registry/Registry"
+import { Factory } from "../../generated/schema"
+import { createFactory } from "../entities/Factory"
 import { setNetwork } from "../entities/Network"
 
-export function handlePrincipalTokenFactoryUpdated(
-    event: PrincipalTokenFactoryUpdated
-): void {
+export function handleFactoryUpdated(event: FactoryUpdated): void {
     setNetwork()
 
     let contractAddress = event.params._new
-    let futureVaultFactory = FutureVaultFactory.load(contractAddress.toHex())
+    let factory = Factory.load(contractAddress.toHex())
 
-    if (!futureVaultFactory) {
-        futureVaultFactory = createFutureVaultFactory(
+    if (!factory) {
+        factory = createFactory(
+            event.address,
             contractAddress,
             event.block.timestamp
         )
     }
 
     let oldAddress = event.params._old
-    let oldFutureVaultFactory = FutureVaultFactory.load(oldAddress.toHex())
+    let oldFactory = Factory.load(oldAddress.toHex())
 
-    if (!oldFutureVaultFactory) {
-        oldFutureVaultFactory = createFutureVaultFactory(
+    if (!oldFactory) {
+        oldFactory = createFactory(
+            event.address,
             oldAddress,
             event.block.timestamp
         )
-        oldFutureVaultFactory.save()
+        oldFactory.save()
     }
 
-    futureVaultFactory.old = oldFutureVaultFactory.address.toHex()
+    factory.oldFactory = oldFactory.address
 
-    futureVaultFactory.save()
+    factory.save()
 }

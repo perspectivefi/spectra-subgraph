@@ -3,7 +3,11 @@ import { createMockedFunction } from "matchstick-as"
 
 import { toPrecision } from "../../utils/toPrecision"
 import { POOL_LP_ADDRESS_MOCK } from "./CurvePool"
-import { POOL_IBT_ADDRESS_MOCK, POOL_PT_ADDRESS_MOCK } from "./CurvePoolFactory"
+import {
+    POOL_IBT_ADDRESS_MOCK,
+    POOL_PT_ADDRESS_MOCK,
+    OLD_LP_VAULT_REGISTRY_ADDRESS_MOCK,
+} from "./Factory"
 import {
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
     SECOND_FUTURE_VAULT_ADDRESS_MOCK,
@@ -13,7 +17,6 @@ import {
     FEE_COLLECTOR_ADDRESS_MOCK,
 } from "./FutureVault"
 import { LP_VAULT_ADDRESS_MOCK, LP_VAULT_ASSET_ADDRESS_MOCK } from "./LPVault"
-import { OLD_LP_VAULT_REGISTRY_ADDRESS_MOCK } from "./LPVaultFactory"
 import { RECEIVER_USER_MOCK } from "./Transaction"
 
 export const ETH_ADDRESS_MOCK = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"

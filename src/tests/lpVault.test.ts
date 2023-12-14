@@ -5,9 +5,8 @@ import { beforeAll } from "matchstick-as"
 import { Account, LPVault } from "../../generated/schema"
 import {
     Deposit,
-    FeeUpdated,
     Paused,
-    PoolIndexUpdated,
+    CurvePoolUpdated,
     Unpaused,
     Withdraw,
 } from "../../generated/templates/LPVault/LPVault"
@@ -16,39 +15,42 @@ import {
     handleWithdraw,
     handlePaused,
     handleUnpaused,
-    handleFeeUpdated,
-    handlePoolIndexUpdated,
+    handleCurvePoolUpdated,
 } from "../mappings/lpVaults"
 import { generateAccountAssetId, generateAssetAmountId } from "../utils"
 import AssetType from "../utils/AssetType"
 import transactionType from "../utils/TransactionType"
 import { generateTransactionId } from "../utils/idGenerators"
+import { emitFactoryUpdated } from "./events/Factory"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
-import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
-import { emitLPVaultDeployed } from "./events/LPVault"
-import { emitLPVaultRegistryUpdate } from "./events/LPVaultFactory"
+import { emitLPVDeployed } from "./events/LPVault"
 import {
     FIRST_POOL_ADDRESS_MOCK,
     mockCurvePoolFunctions,
+    SECOND_POOL_ADDRESS_MOCK,
 } from "./mocks/CurvePool"
-import { mockCurvePoolFactoryFunctions } from "./mocks/CurvePoolFactory"
 import {
+    ETH_ADDRESS_MOCK,
     LP_VAULT_SHARES_BALANCE_MOCK,
     LP_VAULT_UNDERLYING_BALANCE_MOCK,
     mockERC20Balances,
     mockERC20Functions,
 } from "./mocks/ERC20"
+import {
+    mockFactoryFunctions,
+    FACTORY_ADDRESS_MOCK,
+    CURVE_FACTORY_ADDRESS_MOCK,
+} from "./mocks/Factory"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
     FIRST_USER_MOCK,
     mockFutureVaultFunctions,
 } from "./mocks/FutureVault"
-import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory"
 import {
     LP_VAULT_ASSET_ADDRESS_MOCK,
     LP_VAULT_ADDRESS_MOCK,
@@ -60,16 +62,10 @@ import {
     LP_VAULT_TOTAL_ASSETS_MOCK,
 } from "./mocks/LPVault"
 import {
-    LP_VAULT_FACTORY_ADDRESS_MOCK,
-    OLD_LP_VAULT_REGISTRY_ADDRESS_MOCK,
-} from "./mocks/LPVaultFactory"
-import {
     ACCOUNT_ASSET_ENTITY,
-    ACCOUNT_ENTITY,
     ASSET_AMOUNT_ENTITY,
     ASSET_ENTITY,
     LP_VAULT_ENTITY,
-    LP_VAULT_FACTORY_ENTITY,
     POOL_ENTITY,
     TRANSACTION_ENTITY,
 } from "./utils/entities"
@@ -87,52 +83,24 @@ const withdrawTransactionId = generateTransactionId(
     WITHDRAW_LOG_INDEX.toString()
 )
 
-describe("handleRegistryUpdated()", () => {
-    beforeAll(() => {
-        clearStore()
-
-        emitLPVaultRegistryUpdate()
-    })
-
-    test("Should create new LPVaultFactory entity for both - old and new factories", () => {
-        assert.entityCount(LP_VAULT_FACTORY_ENTITY, 1)
-    })
-
-    test("Should should save new address and add the old one to the entity", () => {
-        assert.fieldEquals(
-            LP_VAULT_FACTORY_ENTITY,
-            LP_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
-            "address",
-            LP_VAULT_FACTORY_ADDRESS_MOCK.toHexString()
-        )
-
-        assert.fieldEquals(
-            LP_VAULT_FACTORY_ENTITY,
-            LP_VAULT_FACTORY_ADDRESS_MOCK.toHex(),
-            "oldRegistry",
-            OLD_LP_VAULT_REGISTRY_ADDRESS_MOCK.toHexString()
-        )
-    })
-})
-
-describe("handleLPVaultDeployed()", () => {
+describe("handleLPVDeployed()", () => {
     beforeAll(() => {
         mockFeedRegistryInterfaceFunctions()
         mockERC20Functions()
 
-        mockCurvePoolFactoryFunctions()
+        mockFactoryFunctions()
         mockCurvePoolFunctions()
 
         mockFutureVaultFunctions()
-        mockFutureVaultFactoryFunctions()
+        mockFactoryFunctions()
 
         mockLPVaultFunctions()
 
-        emitPrincipalTokenFactoryUpdated()
+        emitFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emitFutureVaultDeployed(PRINCIPAL_TOKEN_ADDRESS_MOCK)
 
-        emitLPVaultDeployed()
+        emitLPVDeployed()
     })
 
     test("Should create new LPVaultFactory entity for both - old and new factories", () => {
@@ -150,22 +118,22 @@ describe("handleLPVaultDeployed()", () => {
         assert.fieldEquals(
             LP_VAULT_ENTITY,
             LP_VAULT_ADDRESS_MOCK.toHex(),
-            "lpVaultFactory",
-            LP_VAULT_FACTORY_ADDRESS_MOCK.toHexString()
+            "factory",
+            FACTORY_ADDRESS_MOCK.toHexString()
         )
     })
 
     test("Should create new Asset entities if necessary and assign this entity as LPVault underlying and ibt fields", () => {
         assert.fieldEquals(
             ASSET_ENTITY,
-            LP_VAULT_ASSET_ADDRESS_MOCK.toHex(),
+            ETH_ADDRESS_MOCK,
             "address",
-            LP_VAULT_ASSET_ADDRESS_MOCK.toHexString()
+            ETH_ADDRESS_MOCK
         )
 
         assert.fieldEquals(
             ASSET_ENTITY,
-            LP_VAULT_ASSET_ADDRESS_MOCK.toHex(),
+            ETH_ADDRESS_MOCK,
             "type",
             AssetType.UNDERLYING
         )
@@ -174,7 +142,7 @@ describe("handleLPVaultDeployed()", () => {
             LP_VAULT_ENTITY,
             LP_VAULT_ADDRESS_MOCK.toHex(),
             "underlying",
-            LP_VAULT_ASSET_ADDRESS_MOCK.toHexString()
+            ETH_ADDRESS_MOCK
         )
     })
 
@@ -622,65 +590,56 @@ describe("handleWithdraw()", () => {
     })
 })
 
-describe("handleFeeUpdated()", () => {
+describe("handleCurvePoolUpdated()", () => {
     beforeAll(() => {
-        let feeUpdatedEvent = changetype<FeeUpdated>(newMockEvent())
-        feeUpdatedEvent.address = LP_VAULT_ADDRESS_MOCK
-
-        let feesParam = new ethereum.EventParam(
-            "fees",
-            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(15))
-        )
-
-        feeUpdatedEvent.parameters = [feesParam]
-        handleFeeUpdated(feeUpdatedEvent)
-    })
-
-    test("Should change LPVault fees", () => {
-        assert.fieldEquals(
-            LP_VAULT_ENTITY,
-            LP_VAULT_ADDRESS_MOCK.toHex(),
-            "fee",
-            BigInt.fromI32(15).toString()
-        )
-    })
-})
-
-describe("handlePoolIndexUpdated()", () => {
-    beforeAll(() => {
-        mockCurvePoolFactoryFunctions()
+        mockFactoryFunctions()
         mockCurvePoolFunctions()
 
         emiCurveFactoryChanged()
         emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
 
-        let poolIndexUpdatedEvent = changetype<PoolIndexUpdated>(newMockEvent())
-        poolIndexUpdatedEvent.address = LP_VAULT_ADDRESS_MOCK
+        let curvePoolUpdatedEvent = changetype<CurvePoolUpdated>(newMockEvent())
+        curvePoolUpdatedEvent.address = LP_VAULT_ADDRESS_MOCK
 
-        let newIndexParam = new ethereum.EventParam(
-            "_newIndex",
-            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(2))
+        let oldCurvePoolParam = new ethereum.EventParam(
+            "_oldCurvePool",
+            ethereum.Value.fromAddress(FIRST_POOL_ADDRESS_MOCK)
         )
 
-        poolIndexUpdatedEvent.parameters = [newIndexParam]
-        handlePoolIndexUpdated(poolIndexUpdatedEvent)
-    })
-
-    test("Should assign new pool index", () => {
-        assert.fieldEquals(
-            LP_VAULT_ENTITY,
-            LP_VAULT_ADDRESS_MOCK.toHex(),
-            "poolIndex",
-            BigInt.fromI32(2).toString()
+        let newCurvePoolParam = new ethereum.EventParam(
+            "_newCurvePool",
+            ethereum.Value.fromAddress(SECOND_POOL_ADDRESS_MOCK)
         )
+
+        curvePoolUpdatedEvent.parameters = [
+            oldCurvePoolParam,
+            newCurvePoolParam,
+        ]
+        handleCurvePoolUpdated(curvePoolUpdatedEvent)
     })
 
-    test("Should assign relation between LPVault and Pool", () => {
+    test("Should assign new pool address", () => {
         assert.fieldEquals(
             LP_VAULT_ENTITY,
             LP_VAULT_ADDRESS_MOCK.toHex(),
             "pool",
-            FIRST_POOL_ADDRESS_MOCK.toHex()
+            SECOND_POOL_ADDRESS_MOCK.toHex()
+        )
+    })
+
+    test("Should create Pool if does not exist", () => {
+        assert.fieldEquals(
+            POOL_ENTITY,
+            SECOND_POOL_ADDRESS_MOCK.toHex(),
+            "id",
+            SECOND_POOL_ADDRESS_MOCK.toHex()
+        )
+
+        assert.fieldEquals(
+            POOL_ENTITY,
+            SECOND_POOL_ADDRESS_MOCK.toHex(),
+            "factory",
+            CURVE_FACTORY_ADDRESS_MOCK.toHex()
         )
     })
 })

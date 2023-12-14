@@ -22,19 +22,17 @@ dataSources:
       abis:
         - name: Registry
           file: ./abis/Registry.json
-        - name: PrincipalTokenFactory
-          file: ./abis/PrincipalTokenFactory.json
-        - name: CurvePoolFactory
-          file: ./abis/CurvePoolFactory.json
+        - name: Factory
+          file: ./abis/Factory.json
       eventHandlers:
-        - event: PrincipalTokenFactoryUpdated(indexed address,indexed address)
-          handler: handlePrincipalTokenFactoryUpdated
-  - name: PrincipalTokenFactory
+        - event: FactoryUpdated(indexed address,indexed address)
+          handler: handleFactoryUpdated
+  - name: Factory
     kind: ethereum/contract
     network: {{ network }}
     source:
-      abi: PrincipalTokenFactory
-      address: '{{ principalTokenFactory }}'
+      abi: Factory
+      address: '{{ factory }}'
       startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
@@ -43,8 +41,8 @@ dataSources:
       entities: [ ]
       file: ./src/mappings/futures.ts
       abis:
-        - name: PrincipalTokenFactory
-          file: ./abis/PrincipalTokenFactory.json
+        - name: Factory
+          file: ./abis/Factory.json
         - name: PrincipalToken
           file: ./abis/PrincipalToken.json
         - name: ERC20
@@ -53,17 +51,19 @@ dataSources:
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
         - name: FeedRegistryInterface
           file: ./node_modules/@chainlink/contracts/abi/v0.8/FeedRegistryInterface.json
-        - name: CurvePoolFactory
-          file: ./abis/CurvePoolFactory.json
         - name: CurvePool
           file: ./abis/CurvePool.json
       eventHandlers:
-        - event: PrincipalTokenDeployed(indexed address,indexed address)
-          handler: handlePrincipalTokenDeployed
+        - event: PTDeployed(indexed address,indexed address)
+          handler: handlePTDeployed
         - event: CurveFactoryChanged(indexed address)
           handler: handleCurveFactoryChanged
         - event: CurvePoolDeployed(indexed address,address,address)
           handler: handleCurvePoolDeployed
+        - event: LPVDeployed(indexed address,indexed address,indexed address)
+          handler: handleLPVDeployed
+        - event: RegistryUpdated(indexed address,indexed address)
+          handler: handleRegistryUpdated
   - name: CurvePool
     kind: ethereum/contract
     network: {{ network }}
@@ -79,8 +79,8 @@ dataSources:
       abis:
         - name: CurvePool
           file: ./abis/CurvePool.json
-        - name: CurvePoolFactory
-          file: ./abis/CurvePoolFactory.json
+        - name: Factory
+          file: ./abis/Factory.json
         - name: ERC20
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
         - name: ERC4626
@@ -102,35 +102,6 @@ dataSources:
           handler: handleCommitNewParameters
         - event: NewParameters(uint256,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleNewParameters
-  - name: LPVaultFactory
-    kind: ethereum/contract
-    network: {{ network }}
-    source:
-      abi: LPVaultFactory
-      address: '{{ lpVaultFactory }}'
-      startBlock: {{ startBlock }}
-    mapping:
-      kind: ethereum/events
-      language: wasm/assemblyscript
-      apiVersion: 0.0.5
-      entities: [ ]
-      file: ./src/mappings/lpVaults.ts
-      abis:
-        - name: LPVaultFactory
-          file: ./abis/LPVaultFactory.json
-        - name: LPVault
-          file: ./abis/LPVault.json
-        - name: PrincipalTokenFactory
-          file: ./abis/PrincipalTokenFactory.json
-        - name: PrincipalToken
-          file: ./abis/PrincipalToken.json
-        - name: ERC20
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
-      eventHandlers:
-        - event: RegistryUpdated(indexed address,indexed address)
-          handler: handleRegistryUpdated
-        - event: LPVaultDeployed(indexed address,indexed address,indexed address)
-          handler: handleLPVaultDeployed
 templates:
   - name: ERC20
     kind: ethereum/contract
@@ -182,10 +153,12 @@ templates:
           handler: handleDeposit
         - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleWithdraw
-        - event: YieldTransferred(indexed address,uint256)
-          handler: handleYieldTransferred
+        - event: YieldClaimed(indexed address,indexed address,uint256)
+          handler: handleYieldClaimed
         - event: YieldUpdated(indexed address,indexed uint256)
           handler: handleYieldUpdated
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handlePTTransfer
   - name: LPVault
     kind: ethereum/contract
     network: {{ network }}
@@ -209,13 +182,11 @@ templates:
           handler: handleDeposit
         - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleWithdraw
-        - event: FeeUpdated(indexed uint256)
-          handler: handleFeeUpdated
-        - event: InterestCompounded(indexed uint256,indexed uint256)
-          handler: handleInterestCompounded
+        - event: FeeClaimed(indexed address,uint256)
+          handler: handleFeeClaimed
         - event: Paused(address)
           handler: handlePaused
         - event: Unpaused(address)
           handler: handleUnpaused
-        - event: PoolIndexUpdated(uint256)
-          handler: handlePoolIndexUpdated
+        - event: CurvePoolUpdated(indexed address,indexed address)
+          handler: handleCurvePoolUpdated

@@ -1,8 +1,7 @@
 {
     "network": "goerli",
-    "startBlock": 8817188,
+    "startBlock": 8849329,
 
-    "registry": "0x11a3E4968C696D57b9A29e658f6e4e74f75f2099",
-    "principalTokenFactory": "0x67EA66C810da020F9B49A97815AdC7BD5d9F8e1e",
-    "lpVaultFactory": "0x72cDBa0356B2DE62435e5dCbb487BBBD0Da21330"
+    "registry": "0xd06873A2ce9bF0884FDDE4ecDBA9d953468D7C86",
+    "factory": "0xe70e11661725BC297a804d22Ce96606D7dE09Af5"
 }

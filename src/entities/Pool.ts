@@ -1,15 +1,9 @@
 import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 
-import {
-    Future,
-    FutureVaultFactory,
-    Pool,
-    PoolFactory,
-} from "../../generated/schema"
+import { Future, Factory, Pool } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
 import { AssetType } from "../utils"
 import { createAPRInTimeForPool } from "./APRInTime"
-import { getAccount } from "./Account"
 import { getAsset } from "./Asset"
 import { getAssetAmount } from "./AssetAmount"
 import {
@@ -20,14 +14,13 @@ import {
     getPoolPriceScale,
 } from "./CurvePool"
 import { getERC20TotalSupply } from "./ERC20"
-import { getPoolFactoryForPrincipalTokenFactory } from "./FutureVaultFactory"
-import { getPoolFactory } from "./PoolFactory"
+import { getCurveFactory } from "./Factory"
 
 class PoolDetails {
     poolAddress: Address
     ibtAddress: Address
     ptAddress: Address
-    ptFactoryAddress: Address
+    factoryAddress: Address
     timestamp: BigInt
     transactionHash: Bytes
 }
@@ -88,27 +81,18 @@ export function createPool(params: PoolDetails): Pool {
 
     pool.lpTotalSupply = lpTotalSupply
 
-    let futureVaultFactory = FutureVaultFactory.load(
-        params.ptFactoryAddress.toHex()
-    )
-    if (futureVaultFactory) {
-        if (futureVaultFactory.poolFactory) {
-            pool.factory = futureVaultFactory.poolFactory
+    let factory = Factory.load(params.factoryAddress.toHex())
+    if (factory) {
+        if (factory.curveFactory) {
+            pool.factory = factory.curveFactory!.toHex()
         }
-        pool.futureVaultFactory = futureVaultFactory.id
+        pool.factory = factory.id
 
-        // Pool factory
-        if (futureVaultFactory.poolFactory) {
-            const poolFactoryAddress = getPoolFactoryForPrincipalTokenFactory(
-                params.ptFactoryAddress
-            )
-            let poolFactory = getPoolFactory(
-                poolFactoryAddress,
-                params.ptFactoryAddress,
-                params.timestamp
-            )
+        // Curve factory
+        if (factory.curveFactory) {
+            let poolFactory = getCurveFactory(params.factoryAddress)
 
-            pool.factory = poolFactory.id
+            pool.factory = poolFactory.toHex()
         }
     }
 

@@ -17,20 +17,19 @@ import {
     generateTransferId,
 } from "../utils/idGenerators"
 import { toPrecision } from "../utils/toPrecision"
+import { emitFactoryUpdated } from "./events/Factory"
 import {
     emiCurveFactoryChanged,
     emitCurvePoolDeployed,
     emitDeposit,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
-import { emitPrincipalTokenFactoryUpdated } from "./events/FutureVaultFactory"
 import {
     FIRST_POOL_ADDRESS_MOCK,
     mockCurvePoolFunctions,
     POOL_LP_ADDRESS_MOCK,
     POOL_PT_ADDRESS_MOCK,
 } from "./mocks/CurvePool"
-import { mockCurvePoolFactoryFunctions } from "./mocks/CurvePoolFactory"
 import {
     mockERC20Balances,
     mockERC20Functions,
@@ -39,6 +38,7 @@ import {
     STANDARD_DECIMALS_MOCK,
 } from "./mocks/ERC20"
 import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
+import { mockFactoryFunctions } from "./mocks/Factory"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
@@ -48,13 +48,8 @@ import {
     SECOND_USER_MOCK,
     SENDER_YIELD_IN_IBT_MOCK,
 } from "./mocks/FutureVault"
-import { mockFutureVaultFactoryFunctions } from "./mocks/FutureVaultFactory"
 import { RECEIVER_USER_MOCK } from "./mocks/Transaction"
-import {
-    ACCOUNT_ASSET_ENTITY,
-    ACCOUNT_ENTITY,
-    TRANSFER_ENTITY,
-} from "./utils/entities"
+import { ACCOUNT_ASSET_ENTITY, TRANSFER_ENTITY } from "./utils/entities"
 
 const LP_TRANSFER_TRANSACTION_HASH = Address.fromString(
     "0x0000000000000000000000000000000005552222"
@@ -90,14 +85,13 @@ describe("handleTransfer()", () => {
         mockERC20Functions()
         mockERC20Balances()
 
-        mockCurvePoolFactoryFunctions()
+        mockFactoryFunctions()
 
-        mockFutureVaultFactoryFunctions()
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
         mockCurvePoolFunctions()
 
-        emitPrincipalTokenFactoryUpdated()
+        emitFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChanged()
         emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
