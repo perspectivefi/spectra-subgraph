@@ -18,18 +18,18 @@ export function handleFactoryUpdated(event: FactoryUpdated): void {
     }
 
     let oldAddress = event.params._old
-    let oldfactory = Factory.load(oldAddress.toHex())
+    let oldFactory = Factory.load(oldAddress.toHex())
 
-    if (!oldfactory) {
-        oldfactory = createFactory(
+    if (!oldFactory) {
+        oldFactory = createFactory(
             event.address,
             oldAddress,
             event.block.timestamp
         )
-        oldfactory.save()
+        oldFactory.save()
     }
 
-    factory.oldFactory = oldfactory.address
+    factory.oldFactory = oldFactory.address
 
     factory.save()
 }
