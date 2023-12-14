@@ -603,13 +603,13 @@ describe("handleWithdraw()", () => {
 
     test("Follows total underlying deposit amount", () => {
         assert.fieldEquals(
-          ACCOUNT_ASSET_ENTITY,
-          generateAccountAssetId(
-            FIRST_USER_MOCK.toHex(),
-            LP_VAULT_ADDRESS_MOCK.toHex()
-          ),
-          "totalUnderlyingDeposit",
-          "50"
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                FIRST_USER_MOCK.toHex(),
+                LP_VAULT_ADDRESS_MOCK.toHex()
+            ),
+            "totalUnderlyingDeposit",
+            "50"
         )
     })
 })
