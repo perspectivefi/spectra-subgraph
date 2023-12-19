@@ -178,6 +178,9 @@ type AccountAsset @entity {
 
     "if lp vault position"
     lpVault: LPVault
+    totalUnderlyingDeposit: BigInt
+    totalMintedShares: BigInt
+    averageShareCost: BigInt
 
     "YT position"
     principalToken: Future

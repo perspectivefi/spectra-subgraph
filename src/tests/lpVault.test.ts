@@ -436,6 +436,18 @@ describe("handleDeposit()", () => {
             )
         )
     })
+
+    test("Follows total underlying deposit amount", () => {
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                FIRST_USER_MOCK.toHex(),
+                LP_VAULT_ADDRESS_MOCK.toHex()
+            ),
+            "totalUnderlyingDeposit",
+            "50"
+        )
+    })
 })
 
 describe("handleWithdraw()", () => {
@@ -586,6 +598,18 @@ describe("handleWithdraw()", () => {
             ),
             "balance",
             LP_VAULT_SHARES_BALANCE_MOCK.toString()
+        )
+    })
+
+    test("Follows total underlying deposit amount", () => {
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                FIRST_USER_MOCK.toHex(),
+                LP_VAULT_ADDRESS_MOCK.toHex()
+            ),
+            "totalUnderlyingDeposit",
+            "50"
         )
     })
 })
