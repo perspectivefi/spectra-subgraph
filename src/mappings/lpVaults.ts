@@ -11,6 +11,7 @@ import {
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAssetAmount } from "../entities/AssetAmount"
+import { getERC20Decimals } from "../entities/ERC20"
 import {
     getTotalSupply,
     getTotalAssets,
@@ -126,12 +127,16 @@ export function handleDeposit(event: Deposit): void {
             event.params.shares
         )
 
+        const underlyingDecimals = getERC20Decimals(underlyingAddress)
+
         if (
             lpVaultPosition.totalUnderlyingDeposit !== ZERO_BI &&
             lpVaultPosition.totalMintedShares !== ZERO_BI
         ) {
             lpVaultPosition.averageShareCost = lpVaultPosition
-                .totalUnderlyingDeposit!.times(BigInt.fromI32(10).pow(18 as u8))
+                .totalUnderlyingDeposit!.times(
+                    BigInt.fromI32(10).pow(underlyingDecimals as u8)
+                )
                 .div(lpVaultPosition.totalMintedShares!)
         }
 

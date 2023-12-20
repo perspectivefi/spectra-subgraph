@@ -16,7 +16,7 @@ import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import { getPoolPriceScale, getPoolLPToken } from "../entities/CurvePool"
-import { getERC20TotalSupply } from "../entities/ERC20"
+import { getERC20Decimals, getERC20TotalSupply } from "../entities/ERC20"
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
@@ -25,7 +25,6 @@ import { generateTransactionId } from "../utils/idGenerators"
 import { toPrecision } from "../utils/toPrecision"
 
 const FEES_PRECISION = 10
-const CURVE_LP_TOKEN_PRECISION = 18
 
 export function handleAddLiquidity(event: AddLiquidity): void {
     let eventTimestamp = event.block.timestamp
@@ -98,21 +97,13 @@ export function handleAddLiquidity(event: AddLiquidity): void {
         lpPosition.pool = pool.id
         lpPosition.save()
 
-        let fee = toPrecision(
-            event.params.fee,
-            FEES_PRECISION,
-            CURVE_LP_TOKEN_PRECISION
-        )
+        const ibtDecimals = getERC20Decimals(Address.fromString(ibtAddress))
+
+        let fee = toPrecision(event.params.fee, FEES_PRECISION, ibtDecimals)
 
         let adminFee = fee
-            .times(
-                toPrecision(
-                    pool.adminFeeRate,
-                    FEES_PRECISION,
-                    CURVE_LP_TOKEN_PRECISION
-                )
-            )
-            .div(BigInt.fromI32(10).pow(18 as u8))
+            .times(toPrecision(pool.adminFeeRate, FEES_PRECISION, ibtDecimals))
+            .div(BigInt.fromI32(10).pow(ibtDecimals as u8))
 
         createTransaction({
             id: generateTransactionId(
