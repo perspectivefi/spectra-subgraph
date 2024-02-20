@@ -9,7 +9,7 @@ import {
 } from "../../../generated/Factory/Factory"
 import { Deposit } from "../../../generated/templates/PrincipalToken/PrincipalToken"
 import {
-    handleCurveFactoryChanged,
+    handleCurveFactoryChange,
     handleCurvePoolDeployed,
     handleDeposit,
     handlePTDeployed,
@@ -20,6 +20,7 @@ import {
     POOL_IBT_ADDRESS_MOCK,
     POOL_PT_ADDRESS_MOCK,
     CURVE_FACTORY_ADDRESS_MOCK,
+    CURVE_OLD_FACTORY_ADDRESS_MOCK,
 } from "../mocks/Factory"
 import {
     DEPOSIT_TRANSACTION_HASH,
@@ -91,14 +92,22 @@ export const emiCurveFactoryChanged = (): void => {
     )
     curveFactoryChangedEvent.address = FACTORY_ADDRESS_MOCK
 
+    let previousFactoryParam = new ethereum.EventParam(
+        "previousFactory",
+        ethereum.Value.fromAddress(CURVE_OLD_FACTORY_ADDRESS_MOCK)
+    )
+
     let newFactoryParam = new ethereum.EventParam(
         "newFactory",
         ethereum.Value.fromAddress(CURVE_FACTORY_ADDRESS_MOCK)
     )
 
-    curveFactoryChangedEvent.parameters = [newFactoryParam]
+    curveFactoryChangedEvent.parameters = [
+        previousFactoryParam,
+        newFactoryParam,
+    ]
 
-    handleCurveFactoryChanged(curveFactoryChangedEvent)
+    handleCurveFactoryChange(curveFactoryChangedEvent)
 }
 
 export const emitCurvePoolDeployed = (poolAddress: Address): void => {

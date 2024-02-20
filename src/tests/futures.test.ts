@@ -749,7 +749,7 @@ describe("handleWithdraw()", () => {
     })
 })
 
-describe("handleCurveFactoryChanged()", () => {
+describe("handleCurveFactoryChange()", () => {
     beforeAll(() => {
         mockFactoryFunctions()
         mockCurvePoolFunctions()

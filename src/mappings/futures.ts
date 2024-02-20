@@ -5,7 +5,7 @@ import {
     CurvePoolDeployed,
     LPVDeployed,
     PTDeployed,
-    RegistryUpdated,
+    RegistryChange,
 } from "../../generated/Factory/Factory"
 import {
     FeeClaim,
@@ -59,7 +59,7 @@ import transactionType from "../utils/TransactionType"
 import { calculateLpVaultAPR } from "../utils/calculateAPR"
 import { generateTransactionId } from "../utils/idGenerators"
 
-export function handleRegistryUpdated(event: RegistryUpdated): void {
+export function handleRegistryChange(event: RegistryChange): void {
     let factory = Factory.load(event.params.newRegistry.toHex())
 
     if (!factory) {
@@ -70,7 +70,7 @@ export function handleRegistryUpdated(event: RegistryUpdated): void {
         )
     }
 
-    factory.oldRegistry = event.params.oldRegistry
+    factory.oldRegistry = event.params.previousRegistry
     factory.registry = event.params.newRegistry
 
     factory.save()
@@ -411,7 +411,7 @@ export function handleWithdraw(event: Withdraw): void {
 //     }
 // }
 
-export function handleCurveFactoryChanged(event: CurveFactoryChanged): void {
+export function handleCurveFactoryChange(event: CurveFactoryChanged): void {
     let factory = Factory.load(event.address.toHex())
 
     if (factory) {
