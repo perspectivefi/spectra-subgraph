@@ -3,15 +3,15 @@ import { BigInt, ethereum } from "@graphprotocol/graph-ts"
 import { newMockEvent } from "matchstick-as/assembly"
 
 import {
-    CurveFactoryChanged,
+    CurveFactoryChange,
     CurvePoolDeployed,
     PTDeployed,
 } from "../../../generated/Factory/Factory"
-import { Deposit } from "../../../generated/templates/PrincipalToken/PrincipalToken"
+import { Mint } from "../../../generated/templates/PrincipalToken/PrincipalToken"
 import {
     handleCurveFactoryChange,
     handleCurvePoolDeployed,
-    handleDeposit,
+    handleMint,
     handlePTDeployed,
 } from "../../mappings/futures"
 import {
@@ -29,7 +29,6 @@ import {
 } from "../mocks/FutureVault"
 
 export const SHARES_RETURN = 51
-export const UNDERLYING_DEPOSIT = 15
 
 export const emitFutureVaultDeployed = (futureVaultAddress: Address): void => {
     let futureVaultDeployedEvent = changetype<PTDeployed>(newMockEvent())
@@ -43,54 +42,42 @@ export const emitFutureVaultDeployed = (futureVaultAddress: Address): void => {
     handlePTDeployed(futureVaultDeployedEvent)
 }
 
-export const emitDeposit = (
+export const emitMint = (
     timestamp: number = 0,
-    sender: Address = FIRST_USER_MOCK
-): Deposit => {
-    let depositEvent = changetype<Deposit>(newMockEvent())
-    depositEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
-    depositEvent.transaction.hash = DEPOSIT_TRANSACTION_HASH
-    depositEvent.logIndex = BigInt.fromI32(1)
+    from: Address = FIRST_USER_MOCK
+): Mint => {
+    let mintEvent = changetype<Mint>(newMockEvent())
+    mintEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+    mintEvent.transaction.hash = DEPOSIT_TRANSACTION_HASH
+    mintEvent.logIndex = BigInt.fromI32(1)
 
     if (timestamp) {
-        depositEvent.block.timestamp = BigInt.fromI32(timestamp as i32)
+        mintEvent.block.timestamp = BigInt.fromI32(timestamp as i32)
     }
     let senderParam = new ethereum.EventParam(
-        "sender",
-        ethereum.Value.fromAddress(sender)
+        "from",
+        ethereum.Value.fromAddress(from)
     )
 
     let ownerParam = new ethereum.EventParam(
-        "owner",
-        ethereum.Value.fromAddress(sender)
+        "to",
+        ethereum.Value.fromAddress(from)
     )
 
-    let assetsParam = new ethereum.EventParam(
-        "assets",
-        ethereum.Value.fromI32(UNDERLYING_DEPOSIT)
-    )
-
-    let sharesParam = new ethereum.EventParam(
-        "shares",
+    let amountParam = new ethereum.EventParam(
+        "amount",
         ethereum.Value.fromI32(SHARES_RETURN)
     )
 
-    depositEvent.parameters = [
-        senderParam,
-        ownerParam,
-        assetsParam,
-        sharesParam,
-    ]
+    mintEvent.parameters = [senderParam, ownerParam, amountParam]
 
-    handleDeposit(depositEvent)
-    return depositEvent
+    handleMint(mintEvent)
+    return mintEvent
 }
 
-export const emiCurveFactoryChanged = (): void => {
-    let curveFactoryChangedEvent = changetype<CurveFactoryChanged>(
-        newMockEvent()
-    )
-    curveFactoryChangedEvent.address = FACTORY_ADDRESS_MOCK
+export const emiCurveFactoryChange = (): void => {
+    let CurveFactoryChangeEvent = changetype<CurveFactoryChange>(newMockEvent())
+    CurveFactoryChangeEvent.address = FACTORY_ADDRESS_MOCK
 
     let previousFactoryParam = new ethereum.EventParam(
         "previousFactory",
@@ -102,12 +89,9 @@ export const emiCurveFactoryChanged = (): void => {
         ethereum.Value.fromAddress(CURVE_FACTORY_ADDRESS_MOCK)
     )
 
-    curveFactoryChangedEvent.parameters = [
-        previousFactoryParam,
-        newFactoryParam,
-    ]
+    CurveFactoryChangeEvent.parameters = [previousFactoryParam, newFactoryParam]
 
-    handleCurveFactoryChange(curveFactoryChangedEvent)
+    handleCurveFactoryChange(CurveFactoryChangeEvent)
 }
 
 export const emitCurvePoolDeployed = (poolAddress: Address): void => {

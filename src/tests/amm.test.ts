@@ -38,7 +38,7 @@ import { generateTransactionId } from "../utils/idGenerators"
 import { toPrecision } from "../utils/toPrecision"
 import { emitFactoryUpdated } from "./events/Factory"
 import {
-    emiCurveFactoryChanged,
+    emiCurveFactoryChange,
     emitCurvePoolDeployed,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
@@ -152,7 +152,7 @@ describe("handleAddLiquidity()", () => {
 
         emitFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
-        emiCurveFactoryChanged()
+        emiCurveFactoryChange()
         emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
 
         let addLiquidityEvent = changetype<AddLiquidity>(newMockEvent())

@@ -1,6 +1,6 @@
 {
     "name": "spectra-subgraph",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "repository": "https://github.com/perspectivefi/spectra-subgraph",
     "license": "MIT",
     "scripts": {
@@ -8,15 +8,18 @@
         "create": "graph create perspectivefi/spectra-mainnet --node https://api.thegraph.com/deploy/",
         "codegen": "graph codegen",
         "codegen:goerli": "graph codegen subgraph.goerli.yaml",
+        "codegen:sepolia": "graph codegen subgraph.sepolia.yaml",
         "authorize": "graph auth https://api.thegraph.com/deploy/",
         "build": "graph build",
         "deploy": "graph deploy perspectivefi/spectra-mainnet --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
         "deploy:local": "graph deploy perspectivefi/spectra-mainnet --debug --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
         "deploy:goerli": "graph deploy perspectivefi/spectra-goerli subgraph.goerli.yaml --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
+        "deploy:sepolia": "graph deploy --studio spectra-subgraph-sepolia subgraph.sepolia.yaml",
         "deploy:test": "graph deploy matstyler/spectra-subgraph subgraph.goerli.yaml --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
         "generate-config:local": "node ./src/scripts/subgraphConfigGenerator.js local",
         "generate-config": "node ./src/scripts/subgraphConfigGenerator.js",
         "generate-config:goerli": "node ./src/scripts/subgraphConfigGenerator.js goerli",
+        "generate-config:sepolia": "node ./src/scripts/subgraphConfigGenerator.js sepolia",
         "test": "graph test"
     },
     "devDependencies": {

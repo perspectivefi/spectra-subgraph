@@ -19,9 +19,9 @@ import {
 import { toPrecision } from "../utils/toPrecision"
 import { emitFactoryUpdated } from "./events/Factory"
 import {
-    emiCurveFactoryChanged,
+    emiCurveFactoryChange,
     emitCurvePoolDeployed,
-    emitDeposit,
+    emitMint,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
 import {
@@ -93,14 +93,14 @@ describe("handleTransfer()", () => {
 
         emitFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
-        emiCurveFactoryChanged()
+        emiCurveFactoryChange()
         emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
 
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
         // Necessary to have YT entity to follow yield
-        emitDeposit(0, SENDER_USER_MOCK)
-        emitDeposit(0, RECEIVER_USER_MOCK)
-        emitDeposit(0, SECOND_USER_MOCK)
+        emitMint(0, SENDER_USER_MOCK)
+        emitMint(0, RECEIVER_USER_MOCK)
+        emitMint(0, SECOND_USER_MOCK)
 
         let lpTransferEvent = changetype<Transfer>(newMockEvent())
         lpTransferEvent.address = POOL_LP_ADDRESS_MOCK

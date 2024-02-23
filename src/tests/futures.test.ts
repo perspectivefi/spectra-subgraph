@@ -12,16 +12,16 @@ import { Account, Factory } from "../../generated/schema"
 import {
     FeeClaimed,
     Paused,
+    Redeem,
     Unpaused,
-    Withdraw,
     YieldUpdated,
 } from "../../generated/templates/PrincipalToken/PrincipalToken"
 import { DAY_ID_0, ZERO_BI } from "../constants"
 import {
     handleFeeClaimed,
     handlePaused,
+    handleRedeem,
     handleUnpaused,
-    handleWithdraw,
     handleYieldUpdated,
 } from "../mappings/futures"
 import {
@@ -33,12 +33,11 @@ import {
 import { generateTransactionId } from "../utils/idGenerators"
 import { emitFactoryUpdated } from "./events/Factory"
 import {
-    emiCurveFactoryChanged,
+    emiCurveFactoryChange,
     emitCurvePoolDeployed,
-    emitDeposit,
+    emitMint,
     emitFutureVaultDeployed,
     SHARES_RETURN,
-    UNDERLYING_DEPOSIT,
 } from "./events/FutureVault"
 import {
     mockCurvePoolFunctions,
@@ -52,7 +51,6 @@ import {
     mockERC20Functions,
     POOL_IBT_BALANCE_MOCK,
     POOL_PT_BALANCE_MOCK,
-    UNDERLYING_BALANCE_MOCK,
     YT_BALANCE_MOCK,
 } from "./mocks/ERC20"
 import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
@@ -268,7 +266,7 @@ describe("handleYieldUpdated()", () => {
     beforeAll(() => {
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
 
-        emitDeposit(0, FEE_COLLECTOR_ADDRESS_MOCK)
+        emitMint(0, FEE_COLLECTOR_ADDRESS_MOCK)
 
         let yieldUpdatedEvent = changetype<YieldUpdated>(newMockEvent())
         yieldUpdatedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
@@ -353,21 +351,30 @@ describe("handleYieldUpdated()", () => {
 // })
 
 describe("handleFeeClaimed()", () => {
-    test("Should create a new FeeClam entity with properly assign future as well as fee collector entity", () => {
+    test("Should create a new FeeClaim entity with properly assign future as well as fee collector entity", () => {
         let feeClaimedEvent = changetype<FeeClaimed>(newMockEvent())
         feeClaimedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
 
         let feeCollectorParam = new ethereum.EventParam(
-            "_feeCollector",
+            "user",
             ethereum.Value.fromAddress(FEE_COLLECTOR_ADDRESS_MOCK)
         )
 
         let feesParam = new ethereum.EventParam(
-            "_fees",
+            "redeemedIbts",
             ethereum.Value.fromI32(COLLECTED_FEE)
         )
 
-        feeClaimedEvent.parameters = [feeCollectorParam, feesParam]
+        let receivedAssetsParam = new ethereum.EventParam(
+            "receivedAssets",
+            ethereum.Value.fromI32(COLLECTED_FEE)
+        )
+
+        feeClaimedEvent.parameters = [
+            feeCollectorParam,
+            feesParam,
+            receivedAssetsParam,
+        ]
 
         handleFeeClaimed(feeClaimedEvent)
 
@@ -415,10 +422,10 @@ describe("handleFeeClaimed()", () => {
     })
 })
 
-describe("handleDeposit()", () => {
+describe("handleMint()", () => {
     beforeAll(() => {
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
-        emitDeposit()
+        emitMint()
     })
 
     test("Should create a new Transaction entity with properly assigned future as well as account entity", () => {
@@ -438,15 +445,7 @@ describe("handleDeposit()", () => {
             FIRST_USER_MOCK.toHex()
         )
     })
-    test("Should create Asset entities for all the tokens in the transaction", () => {
-        // Underlying
-        assert.fieldEquals(
-            ASSET_ENTITY,
-            ETH_ADDRESS_MOCK,
-            "address",
-            ETH_ADDRESS_MOCK
-        )
-
+    test("Should create Asset entities for the output in the transaction", () => {
         // PT
         assert.fieldEquals(
             ASSET_ENTITY,
@@ -463,18 +462,8 @@ describe("handleDeposit()", () => {
             YT_ADDRESS_MOCK.toHex()
         )
     })
-    test("Should create three new AssetAmounts entities with properly assigned transaction relations", () => {
-        assert.entityCount(ASSET_AMOUNT_ENTITY, 3)
-
-        assert.fieldEquals(
-            TRANSACTION_ENTITY,
-            depositTransactionId,
-            "amountsIn",
-            `[${generateAssetAmountId(
-                DEPOSIT_TRANSACTION_HASH.toHex(),
-                ETH_ADDRESS_MOCK
-            )}]`
-        )
+    test("Should create two new AssetAmounts entities with properly assigned transaction relations", () => {
+        assert.entityCount(ASSET_AMOUNT_ENTITY, 2)
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
@@ -499,15 +488,8 @@ describe("handleDeposit()", () => {
             "1"
         )
     })
-    test("Should create three AccountAsset entities and fetch Underlying token balance", () => {
-        assert.entityCount(ACCOUNT_ASSET_ENTITY, 8)
-
-        assert.fieldEquals(
-            ACCOUNT_ASSET_ENTITY,
-            generateAccountAssetId(FIRST_USER_MOCK.toHex(), ETH_ADDRESS_MOCK),
-            "balance",
-            UNDERLYING_BALANCE_MOCK.toString()
-        )
+    test("Should create output AccountAsset entities", () => {
+        assert.entityCount(ACCOUNT_ASSET_ENTITY, 6)
 
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
@@ -533,7 +515,7 @@ describe("handleDeposit()", () => {
         const accountEntity = Account.load(FIRST_USER_MOCK.toHex())!
         let portfolio = accountEntity.portfolio.load()!
 
-        assert.i32Equals(portfolio.length, 4)
+        assert.i32Equals(portfolio.length, 3)
     })
     test("Should create FutureDailyStats with the correct details", () => {
         assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
@@ -578,47 +560,31 @@ describe("handleDeposit()", () => {
     })
 })
 
-describe("handleWithdraw()", () => {
+describe("handleRedeem()", () => {
     beforeAll(() => {
-        let withdrawEvent = changetype<Withdraw>(newMockEvent())
-        withdrawEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
-        withdrawEvent.transaction.hash = WITHDRAW_TRANSACTION_HASH
-        withdrawEvent.logIndex = WITHDRAW_LOG_INDEX
+        let redeemEvent = changetype<Redeem>(newMockEvent())
+        redeemEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+        redeemEvent.transaction.hash = WITHDRAW_TRANSACTION_HASH
+        redeemEvent.logIndex = WITHDRAW_LOG_INDEX
 
         let senderParam = new ethereum.EventParam(
-            "sender",
+            "from",
             ethereum.Value.fromAddress(FIRST_USER_MOCK)
         )
 
         let receiverParam = new ethereum.EventParam(
-            "receiver",
+            "to",
             ethereum.Value.fromAddress(FIRST_USER_MOCK)
-        )
-
-        let ownerParam = new ethereum.EventParam(
-            "owner",
-            ethereum.Value.fromAddress(FIRST_USER_MOCK)
-        )
-
-        let assetsParam = new ethereum.EventParam(
-            "assets",
-            ethereum.Value.fromI32(UNDERLYING_DEPOSIT)
         )
 
         let sharesParam = new ethereum.EventParam(
-            "shares",
+            "amount",
             ethereum.Value.fromI32(SHARES_RETURN)
         )
 
-        withdrawEvent.parameters = [
-            senderParam,
-            receiverParam,
-            ownerParam,
-            assetsParam,
-            sharesParam,
-        ]
+        redeemEvent.parameters = [senderParam, receiverParam, sharesParam]
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
-        handleWithdraw(withdrawEvent)
+        handleRedeem(redeemEvent)
     })
 
     test("Should create a new Transaction entity with properly assigned future as well as Account entity", () => {
@@ -638,9 +604,9 @@ describe("handleWithdraw()", () => {
             FIRST_USER_MOCK.toHex()
         )
     })
-    test("Should create three new AssetAmount entities with properly assigned user and transaction relations", () => {
-        // 3 created by `Deposit` event + 3 created by Withdraw event
-        assert.entityCount(ASSET_AMOUNT_ENTITY, 6)
+    test("Should create two new AssetAmount entities with properly assigned user and transaction relations", () => {
+        // 2 created by `Deposit` event + 2 created by Withdraw event
+        assert.entityCount(ASSET_AMOUNT_ENTITY, 4)
         assert.fieldEquals(
             TRANSACTION_ENTITY,
             withdrawTransactionId,
@@ -653,28 +619,8 @@ describe("handleWithdraw()", () => {
                 YT_ADDRESS_MOCK.toHex()
             )}]`
         )
-
-        assert.fieldEquals(
-            TRANSACTION_ENTITY,
-            withdrawTransactionId,
-            "amountsOut",
-            `[${generateAssetAmountId(
-                WITHDRAW_TRANSACTION_HASH.toHex(),
-                IBT_ADDRESS_MOCK.toHex()
-            )}]`
-        )
     })
-    test("Should update createAccountAsset entities and fetch Underlying token balance", () => {
-        assert.fieldEquals(
-            ACCOUNT_ASSET_ENTITY,
-            generateAccountAssetId(
-                FIRST_USER_MOCK.toHex(),
-                IBT_ADDRESS_MOCK.toHex()
-            ),
-            "balance",
-            POOL_IBT_BALANCE_MOCK.toString()
-        )
-
+    test("Should update createAccountAsset entities", () => {
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
             generateAccountAssetId(
@@ -753,7 +699,7 @@ describe("handleCurveFactoryChange()", () => {
     beforeAll(() => {
         mockFactoryFunctions()
         mockCurvePoolFunctions()
-        emiCurveFactoryChanged()
+        emiCurveFactoryChange()
     })
 
     test("Should create new factory entity", () => {

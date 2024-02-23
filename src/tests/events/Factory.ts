@@ -1,13 +1,13 @@
 import { ethereum } from "@graphprotocol/graph-ts"
 import { newMockEvent } from "matchstick-as"
 
-import { FactoryUpdated } from "../../../generated/Registry/Registry"
-import { handleFactoryUpdated } from "../../mappings/registry"
+import { FactoryChange } from "../../../generated/Registry/Registry"
+import { handleFactoryChange } from "../../mappings/registry"
 import { FACTORY_ADDRESS_MOCK } from "../mocks/Factory"
 import { OLD_ADDRESS_MOCK } from "../mocks/Registry"
 
 export const emitFactoryUpdated = (): void => {
-    let registryUpdateEvent = changetype<FactoryUpdated>(newMockEvent())
+    let registryUpdateEvent = changetype<FactoryChange>(newMockEvent())
 
     let newAddressParam = new ethereum.EventParam(
         "_new",
@@ -20,5 +20,5 @@ export const emitFactoryUpdated = (): void => {
     )
 
     registryUpdateEvent.parameters = [oldAddressParam, newAddressParam]
-    handleFactoryUpdated(registryUpdateEvent)
+    handleFactoryChange(registryUpdateEvent)
 }

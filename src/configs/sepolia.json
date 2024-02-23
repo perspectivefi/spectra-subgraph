@@ -1,7 +1,6 @@
 {
   "network": "sepolia",
-  "startBlock": 8849329,
-
-  "registry": "",
-  "factory": "0x664A272346dF98638BDDA12775A65a102Ae1C6E6"
+  "startBlock": 5329297,
+  "registry": "0x03E8E6e4F272214f6eb0706289f436a5644C271F",
+  "factory": "0x74eC8C933d25CA52F3F9d75b9dCdf2eAAcD2c9E0"
 }
