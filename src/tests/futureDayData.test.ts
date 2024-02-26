@@ -6,9 +6,9 @@ import { SECONDS_PER_DAY } from "../constants"
 import { generateFutureDailyStatsId } from "../utils"
 import { emitFactoryUpdated } from "./events/Factory"
 import {
-    emiCurveFactoryChanged,
+    emiCurveFactoryChange,
     emitCurvePoolDeployed,
-    emitDeposit,
+    emitMint,
     emitFutureVaultDeployed,
 } from "./events/FutureVault"
 import {
@@ -41,7 +41,7 @@ describe("APY Computations on futureDailyStats", () => {
 
         emitFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
-        emiCurveFactoryChanged()
+        emiCurveFactoryChange()
         emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
     })
 
@@ -50,12 +50,12 @@ describe("APY Computations on futureDailyStats", () => {
         let rate0D = "1000000000000000000"
         const expectedRate0D = BigDecimal.fromString(rate0D)
         createConvertToAssetsCallMockFromString(IBT_ADDRESS_MOCK, rate0D)
-        emitDeposit() // make a first deposit at timestamp 0
+        emitMint() // make a first deposit at timestamp 0
         let rate7D = "1009651000000000000"
         const expectedRate7D = BigDecimal.fromString(rate7D)
         // Mock a change of rate of the interest bearing token (1 IBT = 1.00961 underlying <=> 50% anualized APR)
         createConvertToAssetsCallMockFromString(IBT_ADDRESS_MOCK, rate7D)
-        emitDeposit(7 * SECONDS_PER_DAY) // make a second deposit at timestamp 7 days
+        emitMint(7 * SECONDS_PER_DAY) // make a second deposit at timestamp 7 days
 
         assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 2)
         assert.fieldEquals(
@@ -101,7 +101,7 @@ describe("APY Computations on futureDailyStats", () => {
 
         // Mock a change of rate of the interest bearing token (1 IBT = 1.04167 underlying <=> 50% anualized APR)
         createConvertToAssetsCallMockFromString(IBT_ADDRESS_MOCK, rate30D)
-        emitDeposit(30 * SECONDS_PER_DAY) // make a third deposit at timestamp 30 days
+        emitMint(30 * SECONDS_PER_DAY) // make a third deposit at timestamp 30 days
 
         assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 3)
         assert.fieldEquals(
@@ -127,7 +127,7 @@ describe("APY Computations on futureDailyStats", () => {
         )
         // Mock a change of rate of the interest bearing token (1 IBT = 1.125 underlying <=> 50% anualized APR)
         createConvertToAssetsCallMockFromString(IBT_ADDRESS_MOCK, rate90D)
-        emitDeposit(90 * SECONDS_PER_DAY) // make a third deposit at timestamp 90 days
+        emitMint(90 * SECONDS_PER_DAY) // make a third deposit at timestamp 90 days
 
         assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 4)
         assert.fieldEquals(
@@ -149,13 +149,13 @@ describe("IBT Rate Average computation in FutureDailyStats", () => {
     beforeAll(() => {
         let rate120D = "1000000000000000000"
         createConvertToAssetsCallMockFromString(IBT_ADDRESS_MOCK, rate120D)
-        emitDeposit(120 * SECONDS_PER_DAY) // make a deposit on day 120
+        emitMint(120 * SECONDS_PER_DAY) // make a deposit on day 120
         rate120D = "2000000000000000000"
         createConvertToAssetsCallMockFromString(IBT_ADDRESS_MOCK, rate120D)
-        emitDeposit(120 * SECONDS_PER_DAY) // make a deposit on day 120
+        emitMint(120 * SECONDS_PER_DAY) // make a deposit on day 120
         rate120D = "3000000000000000000"
         createConvertToAssetsCallMockFromString(IBT_ADDRESS_MOCK, rate120D)
-        emitDeposit(120 * SECONDS_PER_DAY) // make a deposit on day 120
+        emitMint(120 * SECONDS_PER_DAY) // make a deposit on day 120
     })
 
     test("Should create a single FutureDailyStats entities for the day 120", () => {

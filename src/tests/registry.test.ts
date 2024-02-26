@@ -8,8 +8,8 @@ import {
     beforeEach,
 } from "matchstick-as/assembly"
 
-import { FactoryUpdated } from "../../generated/Registry/Registry"
-import { handleFactoryUpdated } from "../mappings/registry"
+import { FactoryChange } from "../../generated/Registry/Registry"
+import { handleFactoryChange } from "../mappings/registry"
 import { emitFactoryUpdated } from "./events/Factory"
 import { mockCurvePoolFunctions } from "./mocks/CurvePool"
 import {
@@ -24,7 +24,7 @@ import {
 } from "./mocks/Registry"
 import { FACTORY_ENTITY, NETWORK_ENTITY } from "./utils/entities"
 
-describe("handleFactoryUpdated()", () => {
+describe("handleFactoryChange()", () => {
     beforeEach(() => {
         clearStore()
 
@@ -56,7 +56,7 @@ describe("handleFactoryUpdated()", () => {
 
     test("Should create factory entity with old address if the one has been updated but entity with the old address does not exist", () => {
         // third event
-        let registryUpdateEvent = changetype<FactoryUpdated>(newMockEvent())
+        let registryUpdateEvent = changetype<FactoryChange>(newMockEvent())
 
         let newAddressParam = new ethereum.EventParam(
             "_new",
@@ -73,7 +73,7 @@ describe("handleFactoryUpdated()", () => {
         )
 
         registryUpdateEvent.parameters = [oldAddressParam, newAddressParam]
-        handleFactoryUpdated(registryUpdateEvent)
+        handleFactoryChange(registryUpdateEvent)
 
         assert.fieldEquals(
             FACTORY_ENTITY,

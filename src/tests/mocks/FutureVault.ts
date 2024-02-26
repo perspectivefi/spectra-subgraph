@@ -130,8 +130,8 @@ export function mockFutureVaultFunctions(): void {
 
         createMockedFunction(
             addressMock,
-            "getCurrentYieldInIBTOfUser",
-            "getCurrentYieldInIBTOfUser(address):(uint256)"
+            "getCurrentYieldOfUserInIBT",
+            "getCurrentYieldOfUserInIBT(address):(uint256)"
         )
             .withArgs([ethereum.Value.fromAddress(YIELD_USER_ADDRESS_MOCK)])
             .returns([
@@ -140,8 +140,8 @@ export function mockFutureVaultFunctions(): void {
 
         createMockedFunction(
             addressMock,
-            "getCurrentYieldInIBTOfUser",
-            "getCurrentYieldInIBTOfUser(address):(uint256)"
+            "getCurrentYieldOfUserInIBT",
+            "getCurrentYieldOfUserInIBT(address):(uint256)"
         )
             .withArgs([ethereum.Value.fromAddress(FIRST_USER_MOCK)])
             .returns([
@@ -150,8 +150,8 @@ export function mockFutureVaultFunctions(): void {
 
         createMockedFunction(
             addressMock,
-            "getCurrentYieldInIBTOfUser",
-            "getCurrentYieldInIBTOfUser(address):(uint256)"
+            "getCurrentYieldOfUserInIBT",
+            "getCurrentYieldOfUserInIBT(address):(uint256)"
         )
             .withArgs([ethereum.Value.fromAddress(FEE_COLLECTOR_ADDRESS_MOCK)])
             .returns([
@@ -160,8 +160,8 @@ export function mockFutureVaultFunctions(): void {
 
         createMockedFunction(
             addressMock,
-            "getCurrentYieldInIBTOfUser",
-            "getCurrentYieldInIBTOfUser(address):(uint256)"
+            "getCurrentYieldOfUserInIBT",
+            "getCurrentYieldOfUserInIBT(address):(uint256)"
         )
             .withArgs([ethereum.Value.fromAddress(RECEIVER_USER_MOCK)])
             .returns([

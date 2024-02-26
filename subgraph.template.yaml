@@ -25,8 +25,8 @@ dataSources:
         - name: Factory
           file: ./abis/Factory.json
       eventHandlers:
-        - event: FactoryUpdated(indexed address,indexed address)
-          handler: handleFactoryUpdated
+        - event: FactoryChange(indexed address,indexed address)
+          handler: handleFactoryChange
   - name: Factory
     kind: ethereum/contract
     network: {{ network }}
@@ -56,14 +56,15 @@ dataSources:
       eventHandlers:
         - event: PTDeployed(indexed address,indexed address)
           handler: handlePTDeployed
-        - event: CurveFactoryChanged(indexed address)
-          handler: handleCurveFactoryChanged
-        - event: CurvePoolDeployed(indexed address,address,address)
+        - event: CurvePoolDeployed(indexed address,indexed address,indexed address)
           handler: handleCurvePoolDeployed
-        - event: LPVDeployed(indexed address,indexed address,indexed address)
-          handler: handleLPVDeployed
-        - event: RegistryUpdated(indexed address,indexed address)
-          handler: handleRegistryUpdated
+        - event: RegistryChange(indexed address,indexed address)
+          handler: handleRegistryChange
+        - event: CurveFactoryChange(indexed address,indexed address)
+          handler: handleCurveFactoryChange
+          # TODO: LPVaults
+  #        - event: LPVDeployed(indexed address,indexed address,indexed address)
+  #          handler: handleLPVDeployed
   - name: CurvePool
     kind: ethereum/contract
     network: {{ network }}
@@ -147,46 +148,48 @@ templates:
           handler: handlePaused
         - event: Unpaused(address)
           handler: handleUnpaused
-        - event: FeeClaimed(indexed address,uint256)
+        - event: FeeClaimed(indexed address,indexed uint256,indexed uint256)
           handler: handleFeeClaimed
-        - event: Deposit(indexed address,indexed address,uint256,uint256)
-          handler: handleDeposit
-        - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
-          handler: handleWithdraw
-        - event: YieldClaimed(indexed address,indexed address,uint256)
+        - event: YieldClaimed(indexed address,indexed address,indexed uint256)
           handler: handleYieldClaimed
         - event: YieldUpdated(indexed address,indexed uint256)
           handler: handleYieldUpdated
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handlePTTransfer
-  - name: LPVault
-    kind: ethereum/contract
-    network: {{ network }}
-    source:
-      abi: LPVault
-    mapping:
-      kind: ethereum/events
-      language: wasm/assemblyscript
-      apiVersion: 0.0.5
-      entities: [ ]
-      file: ./src/mappings/lpVaults.ts
-      abis:
-        - name: LPVault
-          file: ./abis/LPVault.json
-        - name: ERC4626
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
-        - name: ERC20
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
-      eventHandlers:
-        - event: Deposit(indexed address,indexed address,uint256,uint256)
-          handler: handleDeposit
-        - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
-          handler: handleWithdraw
-        - event: FeeClaimed(indexed address,uint256)
-          handler: handleFeeClaimed
-        - event: Paused(address)
-          handler: handlePaused
-        - event: Unpaused(address)
-          handler: handleUnpaused
-        - event: CurvePoolUpdated(indexed address,indexed address)
-          handler: handleCurvePoolUpdated
+        - event: Mint(indexed address,indexed address,uint256)
+          handler: handleMint
+        - event: Redeem(indexed address,indexed address,uint256)
+          handler: handleRedeem
+
+# TODO: LPVaults
+#  - name: LPVault
+#    kind: ethereum/contract
+#    network: {{ network }}
+#    source:
+#      abi: LPVault
+#    mapping:
+#      kind: ethereum/events
+#      language: wasm/assemblyscript
+#      apiVersion: 0.0.5
+#      entities: [ ]
+#      file: ./src/mappings/lpVaults.ts
+#      abis:
+#        - name: LPVault
+#          file: ./abis/LPVault.json
+#        - name: ERC4626
+#          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
+#        - name: ERC20
+#          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+#      eventHandlers:
+#        - event: Deposit(indexed address,indexed address,uint256,uint256)
+#          handler: handleDeposit
+#        - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
+#          handler: handleWithdraw
+#        - event: FeeClaimed(indexed address,uint256)
+#          handler: handleFeeClaimed
+#        - event: Paused(address)
+#          handler: handlePaused
+#        - event: Unpaused(address)
+#          handler: handleUnpaused
+#        - event: CurvePoolUpdated(indexed address,indexed address)
+#          handler: handleCurvePoolUpdated

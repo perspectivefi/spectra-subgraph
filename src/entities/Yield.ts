@@ -11,7 +11,7 @@ import {
     getName,
     getSymbol,
     getUnderlying,
-    getCurrentYieldInIBTOfUser,
+    getCurrentYieldOfUserInIBT,
 } from "./FutureVault"
 import { getNetwork } from "./Network"
 
@@ -104,7 +104,7 @@ export function updateAccountAssetBalance(
     )
 
     // TODO: Change IBT to Underlying
-    accountAsset.balance = getCurrentYieldInIBTOfUser(
+    accountAsset.balance = getCurrentYieldOfUserInIBT(
         principalToken,
         accountAddress
     )

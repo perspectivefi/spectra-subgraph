@@ -5,9 +5,9 @@ import { PrincipalToken } from "../../generated/templates/PrincipalToken/Princip
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 
 export function getExpirationTimestamp(futureVault: Address): BigInt {
-    const futureContract = PrincipalToken.bind(futureVault)
+    const principalTokenContract = PrincipalToken.bind(futureVault)
 
-    let expiryCall = futureContract.try_maturity()
+    let expiryCall = principalTokenContract.try_maturity()
 
     if (!expiryCall.reverted) {
         return expiryCall.value
@@ -19,9 +19,9 @@ export function getExpirationTimestamp(futureVault: Address): BigInt {
 }
 
 export function getUnclaimedFees(futureVault: Address): BigInt {
-    const futureContract = PrincipalToken.bind(futureVault)
+    const principalTokenContract = PrincipalToken.bind(futureVault)
 
-    let unclaimedFeesCall = futureContract.try_getUnclaimedFeesInIBT()
+    let unclaimedFeesCall = principalTokenContract.try_getUnclaimedFeesInIBT()
 
     if (!unclaimedFeesCall.reverted) {
         return unclaimedFeesCall.value
@@ -35,9 +35,9 @@ export function getUnclaimedFees(futureVault: Address): BigInt {
 }
 
 export function getName(address: Address): string {
-    const futureContract = PrincipalToken.bind(address)
+    const principalTokenContract = PrincipalToken.bind(address)
 
-    let nameCall = futureContract.try_name()
+    let nameCall = principalTokenContract.try_name()
 
     if (!nameCall.reverted) {
         return nameCall.value
@@ -49,9 +49,9 @@ export function getName(address: Address): string {
 }
 
 export function getSymbol(address: Address): string {
-    const futureContract = PrincipalToken.bind(address)
+    const principalTokenContract = PrincipalToken.bind(address)
 
-    let symbolCall = futureContract.try_symbol()
+    let symbolCall = principalTokenContract.try_symbol()
 
     if (!symbolCall.reverted) {
         return symbolCall.value
@@ -63,9 +63,9 @@ export function getSymbol(address: Address): string {
 }
 
 export function getUnderlying(address: Address): Address {
-    const futureContract = PrincipalToken.bind(address)
+    const principalTokenContract = PrincipalToken.bind(address)
 
-    let underlyingCall = futureContract.try_underlying()
+    let underlyingCall = principalTokenContract.try_underlying()
 
     if (!underlyingCall.reverted) {
         return underlyingCall.value
@@ -77,9 +77,9 @@ export function getUnderlying(address: Address): Address {
 }
 
 export function getIBT(address: Address): Address {
-    const futureContract = PrincipalToken.bind(address)
+    const principalTokenContract = PrincipalToken.bind(address)
 
-    let ibtCall = futureContract.try_getIBT()
+    let ibtCall = principalTokenContract.try_getIBT()
 
     if (!ibtCall.reverted) {
         return ibtCall.value
@@ -91,9 +91,9 @@ export function getIBT(address: Address): Address {
 }
 
 export function getIBTRate(address: Address): BigInt {
-    const futureContract = PrincipalToken.bind(address)
+    const principalTokenContract = PrincipalToken.bind(address)
 
-    let ibtRateCall = futureContract.try_getIBTRate()
+    let ibtRateCall = principalTokenContract.try_getIBTRate()
 
     if (!ibtRateCall.reverted) {
         return ibtRateCall.value
@@ -105,9 +105,9 @@ export function getIBTRate(address: Address): BigInt {
 }
 
 export function getYT(address: Address): Address {
-    const futureContract = PrincipalToken.bind(address)
+    const principalTokenContract = PrincipalToken.bind(address)
 
-    let ytCall = futureContract.try_getYT()
+    let ytCall = principalTokenContract.try_getYT()
 
     if (!ytCall.reverted) {
         return ytCall.value
@@ -119,9 +119,9 @@ export function getYT(address: Address): Address {
 }
 
 export function getTotalAssets(address: Address): BigInt {
-    const futureContract = PrincipalToken.bind(address)
+    const principalTokenContract = PrincipalToken.bind(address)
 
-    let totalAssetsCall = futureContract.try_totalAssets()
+    let totalAssetsCall = principalTokenContract.try_totalAssets()
 
     if (!totalAssetsCall.reverted) {
         return totalAssetsCall.value
@@ -133,9 +133,9 @@ export function getTotalAssets(address: Address): BigInt {
 }
 
 export function getIBTUnit(address: Address): BigInt {
-    const futureContract = PrincipalToken.bind(address)
+    const principalTokenContract = PrincipalToken.bind(address)
 
-    let ibtUnitCall = futureContract.try_getIBTUnit()
+    let ibtUnitCall = principalTokenContract.try_getIBTUnit()
 
     if (!ibtUnitCall.reverted) {
         return ibtUnitCall.value
@@ -146,14 +146,14 @@ export function getIBTUnit(address: Address): BigInt {
     return ZERO_BI
 }
 
-export function getCurrentYieldInIBTOfUser(
+export function getCurrentYieldOfUserInIBT(
     principalToken: Address,
     account: Address
 ): BigInt {
     const principalTokenContract = PrincipalToken.bind(principalToken)
 
     let userYieldInIBTCall =
-        principalTokenContract.try_getCurrentYieldInIBTOfUser(account)
+        principalTokenContract.try_getCurrentYieldOfUserInIBT(account)
 
     if (!userYieldInIBTCall.reverted) {
         return userYieldInIBTCall.value

@@ -1,12 +1,12 @@
-import { FactoryUpdated } from "../../generated/Registry/Registry"
+import { FactoryChange } from "../../generated/Registry/Registry"
 import { Factory } from "../../generated/schema"
 import { createFactory } from "../entities/Factory"
 import { setNetwork } from "../entities/Network"
 
-export function handleFactoryUpdated(event: FactoryUpdated): void {
+export function handleFactoryChange(event: FactoryChange): void {
     setNetwork()
 
-    let contractAddress = event.params._new
+    let contractAddress = event.params.newFactory
     let factory = Factory.load(contractAddress.toHex())
 
     if (!factory) {
@@ -17,7 +17,7 @@ export function handleFactoryUpdated(event: FactoryUpdated): void {
         )
     }
 
-    let oldAddress = event.params._old
+    let oldAddress = event.params.previousFactory
     let oldFactory = Factory.load(oldAddress.toHex())
 
     if (!oldFactory) {
