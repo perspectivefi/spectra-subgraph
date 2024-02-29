@@ -3,7 +3,6 @@ import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 import { Factory as FactoryContract } from "../../generated/Factory/Factory"
 import { Factory } from "../../generated/schema"
 import { ZERO_ADDRESS } from "../constants"
-import { logDebug } from "../utils"
 
 export function createFactory(
     registry: Address,
@@ -26,7 +25,6 @@ export function createFactory(
 export function getCurveFactory(factoryAddress: Address): Address {
     const factoryContract = FactoryContract.bind(factoryAddress)
 
-    // Not possible to call getCurveFactory() from here - unknown error
     let curveFactoryCall = factoryContract.try_getCurveFactory()
 
     if (!curveFactoryCall.reverted) {
