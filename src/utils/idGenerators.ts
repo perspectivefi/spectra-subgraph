@@ -23,8 +23,9 @@ export const generateAssetPriceId = (
 // AccountAsset
 export const generateAccountAssetId = (
     accountAddress: string,
-    assetAddress: string
-): string => `${accountAddress}-${assetAddress}`
+    assetAddress: string,
+    prefix: string = ""
+): string => `${prefix}${accountAddress}-${assetAddress}`
 
 // Fees
 export const generateFeeClaimId = (

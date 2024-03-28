@@ -1,4 +1,4 @@
-import { Address, BigInt, log } from "@graphprotocol/graph-ts"
+import { Address, BigInt } from "@graphprotocol/graph-ts"
 
 import { AccountAsset, Asset, Future } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
@@ -10,8 +10,8 @@ import { getERC20Decimals } from "./ERC20"
 import {
     getName,
     getSymbol,
-    getUnderlying,
     getCurrentYieldOfUserInIBT,
+    getIBT,
 } from "./FutureVault"
 import { getNetwork } from "./Network"
 
@@ -88,10 +88,41 @@ export function getAccountYieldAsset(
     return accountAsset
 }
 
-export function updateAccountAssetBalance(
+export function getAccountClaimedYieldAsset(
+    accountAddress: Address,
+    principalToken: Address,
+    timestamp: BigInt
+): AccountAsset {
+    const ibtAddress = getIBT(principalToken)
+    let asset = getAsset(ibtAddress.toHex(), timestamp, AssetType.IBT)
+
+    let account = getAccount(accountAddress.toHex(), timestamp)
+    let accountAssetId = generateAccountAssetId(
+        account.address.toHex(),
+        asset.id,
+        "claimed-"
+    )
+
+    let accountAsset = AccountAsset.load(accountAssetId)
+    if (accountAsset) {
+        return accountAsset
+    }
+
+    accountAsset = new AccountAsset(accountAssetId)
+
+    accountAsset.createdAtTimestamp = timestamp
+    accountAsset.balance = ZERO_BI
+
+    accountAsset.asset = asset.id
+    accountAsset.account = accountAddress.toHex()
+
+    accountAsset.save()
+    return accountAsset
+}
+
+export function updateYieldAccountAssetBalance(
     principalToken: Address,
     accountAddress: Address,
-    assetId: string,
     timestamp: BigInt
 ): AccountAsset {
     let yieldAsset = getYieldAsset(principalToken, accountAddress, timestamp)
@@ -103,11 +134,28 @@ export function updateAccountAssetBalance(
         timestamp
     )
 
-    // TODO: Change IBT to Underlying
     accountAsset.balance = getCurrentYieldOfUserInIBT(
         principalToken,
         accountAddress
     )
+
+    accountAsset.save()
+    return accountAsset
+}
+
+export function updateClaimedYieldAccountAssetBalance(
+    principalToken: Address,
+    accountAddress: Address,
+    claimBalance: BigInt,
+    timestamp: BigInt
+): AccountAsset {
+    let accountAsset = getAccountClaimedYieldAsset(
+        accountAddress,
+        principalToken,
+        timestamp
+    )
+
+    accountAsset.balance = accountAsset.balance.plus(claimBalance)
 
     accountAsset.save()
     return accountAsset
@@ -118,15 +166,7 @@ export function updateYield(
     accountAddress: Address,
     timestamp: BigInt
 ): void {
-    let underlyingAddress = getUnderlying(principalToken)
-    let yieldAsset = getYieldAsset(principalToken, underlyingAddress, timestamp)
-
-    updateAccountAssetBalance(
-        principalToken,
-        accountAddress,
-        yieldAsset.id,
-        timestamp
-    )
+    updateYieldAccountAssetBalance(principalToken, accountAddress, timestamp)
 }
 
 export function updateYieldForAll(

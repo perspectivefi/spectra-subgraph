@@ -49,7 +49,10 @@ import {
 import { getNetwork } from "../entities/Network"
 import { createPool } from "../entities/Pool"
 import { createTransaction } from "../entities/Transaction"
-import { updateYieldForAll } from "../entities/Yield"
+import {
+    updateClaimedYieldAccountAssetBalance,
+    updateYieldForAll,
+} from "../entities/Yield"
 import { AssetType, generateFeeClaimId } from "../utils"
 // import FutureState from "../utils/FutureState"
 import transactionType from "../utils/TransactionType"
@@ -420,7 +423,12 @@ export function handleYieldClaimed(event: YieldClaimed): void {
     let future = Future.load(event.address.toHex())
 
     if (future) {
-        updateYieldForAll(event.address, event.block.timestamp)
+        updateClaimedYieldAccountAssetBalance(
+            event.address,
+            event.params.receiver,
+            event.params.yieldInIBT,
+            event.block.timestamp
+        )
     } else {
         log.warning("YieldClaimed event call for not existing Future {}", [
             event.address.toHex(),

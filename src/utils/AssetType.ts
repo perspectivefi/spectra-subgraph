@@ -7,6 +7,7 @@ class AssetType {
     LP: string = "LP"
     LP_VAULT_SHARES: string = "LP_VAULT_SHARES"
     YIELD: string = "YIELD"
+    CLAIMED_YIELD: string = "CLAIMED_YIELD"
     UNKNOWN: string = "UNKNOWN"
 }
 
