@@ -1,5 +1,4 @@
-import { Bytes } from "@graphprotocol/graph-ts";
-
+import { Bytes } from "@graphprotocol/graph-ts"
 
 // FYTTokenDetails
 export const generateFYTInfoId = (tokenAddress: string): string =>
