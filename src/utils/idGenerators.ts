@@ -1,4 +1,5 @@
-import { Bytes } from "@graphprotocol/graph-ts"
+import { Bytes } from "@graphprotocol/graph-ts";
+
 
 // FYTTokenDetails
 export const generateFYTInfoId = (tokenAddress: string): string =>
@@ -52,3 +53,6 @@ export const generateTransactionId = (
 
 export const generateYieldAssetId = (principalToken: string): string =>
     `${principalToken}-yield`
+
+export const generateClaimedYieldAssetId = (principalToken: string): string =>
+    `${principalToken}-claimed-yield`

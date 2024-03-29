@@ -890,7 +890,7 @@ describe("handleYieldClaimed()", () => {
             ACCOUNT_ASSET_ENTITY,
             generateAccountAssetId(
                 FIRST_USER_MOCK.toHex(),
-                IBT_ADDRESS_MOCK.toHex(),
+                `${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}-claimed-yield`,
                 "claimed-"
             ),
             "balance",

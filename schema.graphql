@@ -21,6 +21,7 @@ enum AssetType {
     LP
     LP_VAULT_SHARES
     YIELD
+    CLAIMED_YIELD
     UNKNOWN
 }
 
@@ -138,6 +139,8 @@ type Asset @entity {
 
     "in the case the asset is an IBT we create relation between this IBT and its underlying asset"
     underlying: Asset
+    "in case the asset is a CLAIMED_YIELD we create relation between this CLAIMED_YIELD and its native IBT"
+    ibt: Asset
     fytTokenDetails: FYTTokenDetails
     lpTokenDetails: LPTokenDetails
 }

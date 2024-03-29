@@ -3,7 +3,10 @@ import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { AccountAsset, Asset, Future } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
 import { AssetType, generateAccountAssetId } from "../utils"
-import { generateYieldAssetId } from "../utils/idGenerators"
+import {
+    generateClaimedYieldAssetId,
+    generateYieldAssetId,
+} from "../utils/idGenerators"
 import { getAccount } from "./Account"
 import { getAsset } from "./Asset"
 import { getERC20Decimals } from "./ERC20"
@@ -88,18 +91,64 @@ export function getAccountYieldAsset(
     return accountAsset
 }
 
+function createClaimedYieldAsset(
+    principalToken: Address,
+    ibtAddress: Address,
+    timestamp: BigInt
+): Asset {
+    let asset = new Asset(generateClaimedYieldAssetId(principalToken.toHex()))
+    asset.chainId = getNetwork().chainId
+    asset.address = ibtAddress
+    asset.createdAtTimestamp = timestamp
+    asset.type = AssetType.CLAIMED_YIELD
+
+    asset.name = getName(principalToken) + " Claimed Yield"
+    asset.symbol = getSymbol(principalToken) + " Claimed Yield"
+    asset.decimals = getERC20Decimals(ibtAddress)
+
+    let ibtAsset = getAsset(ibtAddress.toHex(), timestamp, AssetType.IBT)
+    asset.ibt = ibtAsset.id
+    asset.futureVault = principalToken.toHex()
+
+    asset.save()
+    return asset
+}
+
+function getClaimedYieldAsset(
+    principalToken: Address,
+    ibtAddress: Address,
+    timestamp: BigInt
+): Asset {
+    let asset = Asset.load(generateClaimedYieldAssetId(principalToken.toHex()))
+    if (asset) {
+        return asset
+    }
+
+    asset = createClaimedYieldAsset(principalToken, ibtAddress, timestamp)
+
+    return asset as Asset
+}
+
 export function getAccountClaimedYieldAsset(
     accountAddress: Address,
     principalToken: Address,
     timestamp: BigInt
 ): AccountAsset {
     const ibtAddress = getIBT(principalToken)
-    let asset = getAsset(ibtAddress.toHex(), timestamp, AssetType.IBT)
+    let claimedYieldAsset = getClaimedYieldAsset(
+        principalToken,
+        ibtAddress,
+        timestamp
+    )
+    let ibtAsset = getAsset(ibtAddress.toHex(), timestamp, AssetType.IBT)
+
+    claimedYieldAsset.ibt = ibtAsset.id
+    claimedYieldAsset.save()
 
     let account = getAccount(accountAddress.toHex(), timestamp)
     let accountAssetId = generateAccountAssetId(
         account.address.toHex(),
-        asset.id,
+        claimedYieldAsset.id,
         "claimed-"
     )
 
@@ -113,7 +162,7 @@ export function getAccountClaimedYieldAsset(
     accountAsset.createdAtTimestamp = timestamp
     accountAsset.balance = ZERO_BI
 
-    accountAsset.asset = asset.id
+    accountAsset.asset = claimedYieldAsset.id
     accountAsset.account = accountAddress.toHex()
 
     accountAsset.save()
