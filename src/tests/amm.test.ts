@@ -35,7 +35,7 @@ import {
     generateFutureDailyStatsId,
 } from "../utils"
 import { generateTransactionId } from "../utils/idGenerators"
-import { toPrecision } from "../utils/toPrecision"
+import { RAYS_PRECISION, toPrecision } from "../utils/toPrecision"
 import { emitFactoryUpdated } from "./events/Factory"
 import {
     emiCurveFactoryChange,
@@ -147,7 +147,7 @@ describe("handleAddLiquidity()", () => {
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
         createConvertToSharesCallMock(
             IBT_ADDRESS_MOCK,
-            toPrecision(BigInt.fromI32(10), 0, 18)
+            toPrecision(BigInt.fromI32(10), 1, 18)
         )
 
         emitFactoryUpdated()
@@ -943,7 +943,7 @@ describe("handleTokenExchange()", () => {
             APR_IN_TIME_ENTITY,
             `${SECOND_POOL_ADDRESS_MOCK.toHex()}-0`,
             "apr",
-            "-7883709037.95"
+            "-2366769450"
         )
     })
 })
@@ -1169,21 +1169,21 @@ describe("handleRemoveLiquidityOne()", () => {
             APR_IN_TIME_ENTITY,
             aprInTimeId,
             "spotPrice",
-            "90000000000000000000"
+            "9000000000000000000"
         )
 
         assert.fieldEquals(
             APR_IN_TIME_ENTITY,
             aprInTimeId,
             "ibtRate",
-            "2000000000000000000"
+            "200000000000000000"
         )
 
         assert.fieldEquals(
             APR_IN_TIME_ENTITY,
             aprInTimeId,
             "underlyingToPT",
-            "90000000000000000000"
+            "9000000000000000000"
         )
 
         assert.fieldEquals(
