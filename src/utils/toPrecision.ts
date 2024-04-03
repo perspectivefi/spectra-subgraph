@@ -1,5 +1,7 @@
 import { BigInt } from "@graphprotocol/graph-ts"
 
+export const CURVE_PRECISION = 10
+export const RAYS_PRECISION = 27
 export const toPrecision = (
     value: BigInt,
     fromPrecision: i32,
