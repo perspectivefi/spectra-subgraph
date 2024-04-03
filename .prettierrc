@@ -18,9 +18,6 @@
             }
         }
     ],
-    "importOrder": [
-        "^@*/(.*)$",
-        "^[./]"
-    ],
+    "importOrder": ["^@*/(.*)$", "^[./]"],
     "importOrderSeparation": true
 }

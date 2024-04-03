@@ -23,8 +23,9 @@ export const generateAssetPriceId = (
 // AccountAsset
 export const generateAccountAssetId = (
     accountAddress: string,
-    assetAddress: string
-): string => `${accountAddress}-${assetAddress}`
+    assetAddress: string,
+    prefix: string = ""
+): string => `${prefix}${accountAddress}-${assetAddress}`
 
 // Fees
 export const generateFeeClaimId = (
@@ -51,3 +52,6 @@ export const generateTransactionId = (
 
 export const generateYieldAssetId = (principalToken: string): string =>
     `${principalToken}-yield`
+
+export const generateClaimedYieldAssetId = (principalToken: string): string =>
+    `${principalToken}-claimed-yield`

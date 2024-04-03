@@ -13,10 +13,10 @@ jobs:
             - name: Install modules
               run: yarn
             - name: Generate config
-              run: yarn generate-config:goerli
+              run: yarn generate-config:sepolia
             - name: Codegen
-              run: yarn codegen:goerli
+              run: yarn codegen:sepolia
             - name: Authorize TheGraph
               run: yarn authorize ${{secrets.THE_GRAPH_ACCESS_TOKEN}}
             - name: Deploy
-              run: yarn deploy:goerli
+              run: yarn deploy:sepolia

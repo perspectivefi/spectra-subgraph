@@ -7,7 +7,7 @@
 This subgraph can be found on The Graph Hosted Service for the following networks:
 
 -   [Mainnet](https://thegraph.com/hosted-service/subgraph/perspectivefi/spectra-mainnet)
--   [Goerli](https://thegraph.com/hosted-service/subgraph/perspectivefi/spectra-goerli)
+-   [Sepolia](https://api.studio.thegraph.com/query/58996/spectra-subgraph-sepolia/version/latest)
 
 You can also run this subgraph locally, if you wish. Instructions for that can be found in [The Graph Documentation](https://thegraph.com/docs/en/cookbook/quick-start/).
 
@@ -161,7 +161,7 @@ graph auth https://api.thegraph.com/deploy/ <ACCESS_TOKEN>
 
 ### 5. Create deployment script in `package.json` (if not exists for your network)
 
-### 6. Add network id (if missing) to the `ChainId` class in `src/utils/ChainId.ts` file 
+### 6. Add network id (if missing) to the `ChainId` class in `src/utils/ChainId.ts` file
 
 ### 7. Deploy the subgraph
 
@@ -180,7 +180,8 @@ yarn deploy:<NETWORK>
 #### IMPORTANT: If your network is not supported you have to go to `src/configs` and add new config file.
 
 ## Schema
-Graph definition written in PlantUML framework -  [schema.puml](schema.puml)
+
+Graph definition written in PlantUML framework - [schema.puml](schema.puml)
 
 ## Example queries
 

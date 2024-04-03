@@ -15,6 +15,7 @@ import {
     Redeem,
     Unpaused,
     YieldUpdated,
+    YieldClaimed,
 } from "../../generated/templates/PrincipalToken/PrincipalToken"
 import { DAY_ID_0, ZERO_BI } from "../constants"
 import {
@@ -23,6 +24,7 @@ import {
     handleRedeem,
     handleUnpaused,
     handleYieldUpdated,
+    handleYieldClaimed,
 } from "../mappings/futures"
 import {
     generateAssetAmountId,
@@ -850,6 +852,49 @@ describe("handleCurvePoolDeployed()", () => {
             `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`,
             "pool",
             FIRST_POOL_ADDRESS_MOCK.toHex()
+        )
+    })
+})
+
+describe("handleYieldClaimed()", () => {
+    beforeAll(() => {
+        let yieldClaimedEvent = changetype<YieldClaimed>(newMockEvent())
+        yieldClaimedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+
+        let ownerParam = new ethereum.EventParam(
+            "owner",
+            ethereum.Value.fromAddress(FIRST_USER_MOCK)
+        )
+
+        let receiverParam = new ethereum.EventParam(
+            "receiver",
+            ethereum.Value.fromAddress(FIRST_USER_MOCK)
+        )
+
+        let yieldInIBTParam = new ethereum.EventParam(
+            "yieldInIBT",
+            ethereum.Value.fromUnsignedBigInt(YIELD_USER_YIELD_IN_IBT_MOCK)
+        )
+
+        yieldClaimedEvent.parameters = [
+            ownerParam,
+            receiverParam,
+            yieldInIBTParam,
+        ]
+
+        handleYieldClaimed(yieldClaimedEvent)
+    })
+
+    test("Should update claim yield in user portfolio", () => {
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                FIRST_USER_MOCK.toHex(),
+                `${FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()}-claimed-yield`,
+                "claimed-"
+            ),
+            "balance",
+            YIELD_USER_YIELD_IN_IBT_MOCK.toString()
         )
     })
 })
