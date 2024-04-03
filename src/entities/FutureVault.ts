@@ -90,6 +90,7 @@ export function getIBT(address: Address): Address {
     return ZERO_ADDRESS
 }
 
+// With 27 decimals precision
 export function getIBTRate(address: Address): BigInt {
     const principalTokenContract = PrincipalToken.bind(address)
 
@@ -132,6 +133,7 @@ export function getTotalAssets(address: Address): BigInt {
     return ZERO_BI
 }
 
+// With 27 decimals precision
 export function getIBTUnit(address: Address): BigInt {
     const principalTokenContract = PrincipalToken.bind(address)
 

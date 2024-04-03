@@ -13,6 +13,7 @@ import {
     getIBTUnit,
 } from "../entities/FutureVault"
 import { bigDecimalToBigInt } from "./bigDecimalToBigInt"
+import { CURVE_PRECISION, RAYS_PRECISION, toPrecision } from "./toPrecision"
 
 export function updatePoolAPR(
     poolAddress: Address,
@@ -26,19 +27,31 @@ export function updatePoolAPR(
     let ibtDecimals = getERC20Decimals(ibtAddress)
     let smallInput = BigInt.fromI32(10).pow((ibtDecimals as u8) - 1) // small input to ensure correct rate for small amount
 
-    const ibtToPT = getIBTtoPTRate(poolAddress, smallInput)
+    const ibtToPT = toPrecision(
+        getIBTtoPTRate(poolAddress, smallInput),
+        CURVE_PRECISION,
+        ibtDecimals
+    )
     const principalTokenExpiration = getExpirationTimestamp(principalToken)
-    const ibtRate = getIBTRate(principalToken)
+    const ibtRate = toPrecision(
+        getIBTRate(principalToken),
+        RAYS_PRECISION,
+        ibtDecimals
+    )
 
     const spotPrice = ibtToPT.toBigDecimal().div(smallInput.toBigDecimal()) // Remove input
 
-    const ibtUnit = getIBTUnit(principalToken)
+    const ibtUnit = toPrecision(
+        getIBTUnit(principalToken),
+        RAYS_PRECISION,
+        ibtDecimals
+    )
 
     // Form rate to BigNumber value for calculations with better precision
     const spotPriceBigInt = bigDecimalToBigInt(
         spotPrice.times(ibtUnit.toBigDecimal())
     )
-    const ibtSharesRate = getSharesRate(ibtAddress, getIBTUnit(principalToken))
+    const ibtSharesRate = getSharesRate(ibtAddress, ibtUnit)
 
     poolAPR.spotPrice = spotPriceBigInt
     poolAPR.ibtRate = ibtRate
@@ -51,12 +64,16 @@ export function updatePoolAPR(
 
         poolAPR.underlyingToPT = underlyingToPTRate
 
+        const underlyingToPTRatePerSecond = principalTokenExpiration
+            .minus(currentTimestamp)
+            .toBigDecimal()
+
         let apr = underlyingToPTRate
             .minus(ibtUnit)
-            .div(principalTokenExpiration.minus(currentTimestamp)) // Get rate per second
-            .times(SECONDS_PER_YEAR) // Convert to rate per year
-            .times(BigInt.fromI32(100)) // to percentage
             .toBigDecimal()
+            .div(underlyingToPTRatePerSecond) // Get rate per second
+            .times(SECONDS_PER_YEAR) // Convert to rate per year
+            .times(BigDecimal.fromString("100")) // to percentage
             .div(ibtRate.toBigDecimal())
 
         poolAPR.apr = apr

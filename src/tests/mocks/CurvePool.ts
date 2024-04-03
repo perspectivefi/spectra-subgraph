@@ -122,9 +122,7 @@ const createGetDyCallMock = (addressMock: Address): void => {
             ),
         ])
         .returns([
-            ethereum.Value.fromSignedBigInt(
-                BigInt.fromString("900000000000000000")
-            ),
+            ethereum.Value.fromSignedBigInt(BigInt.fromString("9000000000")),
         ])
 }
 
@@ -142,9 +140,7 @@ const createNegativeGetDyCallMock = (addressMock: Address): void => {
             ),
         ])
         .returns([
-            ethereum.Value.fromSignedBigInt(
-                BigInt.fromString("70000000000000")
-            ),
+            ethereum.Value.fromSignedBigInt(BigInt.fromString("700000000")),
         ])
 }
 

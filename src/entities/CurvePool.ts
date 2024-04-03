@@ -134,6 +134,7 @@ export const getPoolCoins = (poolAddress: Address): Address[] => {
     return [token0Call.value, token1Call.value]
 }
 
+// With 10 decimals precision
 export const getIBTtoPTRate = (poolAddress: Address, input: BigInt): BigInt => {
     let curvePoolContract = CurvePool.bind(poolAddress)
 

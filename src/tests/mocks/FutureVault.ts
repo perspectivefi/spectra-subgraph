@@ -1,7 +1,7 @@
 import { Address, BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts"
 import { createMockedFunction } from "matchstick-as/assembly"
 
-import { toPrecision } from "../../utils/toPrecision"
+import { RAYS_PRECISION, toPrecision } from "../../utils/toPrecision"
 import { ETH_ADDRESS_MOCK, STANDARD_DECIMALS_MOCK } from "./ERC20"
 import { FACTORY_ADDRESS_MOCK } from "./Factory"
 import { PRINCIPAL_TOKEN_ADDRESS_MOCK } from "./LPVault"
@@ -50,7 +50,7 @@ export const YIELD_USER_YIELD_IN_IBT_MOCK = BigInt.fromString("110")
 export const SENDER_YIELD_IN_IBT_MOCK = BigInt.fromString("220")
 export const RECEIVER_YIELD_IN_IBT_MOCK = BigInt.fromString("330")
 
-const IBT_RATE_MOCK = toPrecision(BigInt.fromI32(2), 0, STANDARD_DECIMALS_MOCK)
+const IBT_RATE_MOCK = toPrecision(BigInt.fromI32(2), 1, RAYS_PRECISION)
 
 export function mockFutureVaultFunctions(): void {
     ;[
@@ -124,7 +124,7 @@ export function mockFutureVaultFunctions(): void {
             "getIBTUnit():(uint256)"
         ).returns([
             ethereum.Value.fromUnsignedBigInt(
-                toPrecision(BigInt.fromI32(10), 0, STANDARD_DECIMALS_MOCK)
+                toPrecision(BigInt.fromI32(10), 1, RAYS_PRECISION)
             ),
         ])
 
