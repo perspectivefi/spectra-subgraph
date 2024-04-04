@@ -1,7 +1,7 @@
 import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts"
 
 import { LPVault } from "../../generated/schema"
-import { SECONDS_PER_YEAR, ZERO_BD, ZERO_BI } from "../constants"
+import { SECONDS_PER_YEAR, UNIT_BI, ZERO_BD, ZERO_BI } from "../constants"
 import { createAPRInTimeForPool } from "../entities/APRInTime"
 import { getIBTtoPTRate } from "../entities/CurvePool"
 import { getERC20Decimals } from "../entities/ERC20"
@@ -57,7 +57,11 @@ export function updatePoolAPR(
     poolAPR.ibtRate = ibtRate
     poolAPR.ibtSharesRate = ibtSharesRate
 
-    if (principalTokenExpiration.gt(currentTimestamp) && ibtRate.gt(ZERO_BI)) {
+    if (
+        principalTokenExpiration.gt(currentTimestamp) &&
+        ibtRate.notEqual(ZERO_BI) &&
+        ibtSharesRate.notEqual(ZERO_BI)
+    ) {
         const underlyingToPTRate = ibtSharesRate // Reflect IBT/Underlying rate
             .times(spotPriceBigInt) // IBT/PT rate
             .div(ibtUnit)
@@ -68,18 +72,21 @@ export function updatePoolAPR(
             .minus(currentTimestamp)
             .toBigDecimal()
 
-        let apr = underlyingToPTRate
-            .minus(ibtUnit)
-            .toBigDecimal()
-            .div(underlyingToPTRatePerSecond) // Get rate per second
-            .times(SECONDS_PER_YEAR) // Convert to rate per year
-            .times(BigDecimal.fromString("100")) // to percentage
-            .div(ibtRate.toBigDecimal())
+        let apr = ZERO_BD
+        if (underlyingToPTRatePerSecond.gt(ZERO_BD)) {
+            apr = underlyingToPTRate
+                .minus(ibtUnit)
+                .toBigDecimal()
+                .div(underlyingToPTRatePerSecond) // Get rate per second
+                .times(SECONDS_PER_YEAR) // Convert to rate per year
+                .times(BigDecimal.fromString("100")) // to percentage
+                .div(ibtRate.toBigDecimal())
+        }
 
         poolAPR.apr = apr
     } else {
         poolAPR.apr = ZERO_BD
-        poolAPR.underlyingToPT = ZERO_BI
+        poolAPR.underlyingToPT = UNIT_BI
     }
 
     poolAPR.save()

@@ -2,7 +2,7 @@ import { BigInt } from "@graphprotocol/graph-ts"
 import { Address, log } from "@graphprotocol/graph-ts"
 
 import { PrincipalToken } from "../../generated/templates/PrincipalToken/PrincipalToken"
-import { ZERO_ADDRESS, ZERO_BI } from "../constants"
+import { UNIT_BI, ZERO_ADDRESS, ZERO_BI } from "../constants"
 
 export function getExpirationTimestamp(futureVault: Address): BigInt {
     const principalTokenContract = PrincipalToken.bind(futureVault)
@@ -102,7 +102,7 @@ export function getIBTRate(address: Address): BigInt {
 
     log.warning("getIBTRate() call reverted for {}", [address.toHex()])
 
-    return ZERO_BI
+    return UNIT_BI
 }
 
 export function getYT(address: Address): Address {
