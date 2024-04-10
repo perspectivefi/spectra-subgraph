@@ -12,7 +12,7 @@ export function getIBTRate(address: Address): BigInt {
     }
 
     log.warning("convertToAssets() call reverted for {}", [address.toHex()])
-    return ZERO_BI
+    return UNIT_BI
 }
 
 export function getERC4626Balance(
@@ -45,5 +45,5 @@ export function getSharesRate(tokenAddress: Address, value: BigInt): BigInt {
     log.warning("convertToSharesCall() call (BigNumber) reverted for {}", [
         tokenAddress.toHex(),
     ])
-    return ZERO_BI
+    return UNIT_BI
 }
