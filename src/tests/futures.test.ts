@@ -31,6 +31,7 @@ import {
     generateFeeClaimId,
     generateAccountAssetId,
     generateFutureDailyStatsId,
+    AssetType,
 } from "../utils"
 import { generateTransactionId } from "../utils/idGenerators"
 import { emitFactoryUpdated } from "./events/Factory"
@@ -208,7 +209,7 @@ describe("handleFutureVaultDeployed()", () => {
 
         let factoryEntity = Factory.load(FACTORY_ADDRESS_MOCK.toHex())!
 
-        let deployedFutures = factoryEntity.deployedFutures.load()!
+        let deployedFutures = factoryEntity.deployedFutures.load()
 
         assert.i32Equals(deployedFutures.length, 2)
     })
@@ -473,10 +474,12 @@ describe("handleMint()", () => {
             "amountsOut",
             `[${generateAssetAmountId(
                 DEPOSIT_TRANSACTION_HASH.toHex(),
-                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                AssetType.PT
             )}, ${generateAssetAmountId(
                 DEPOSIT_TRANSACTION_HASH.toHex(),
-                YT_ADDRESS_MOCK.toHex()
+                YT_ADDRESS_MOCK.toHex(),
+                AssetType.YT
             )}]`
         )
     })
@@ -515,7 +518,7 @@ describe("handleMint()", () => {
     })
     test("Should assign three AccountAsset entities to Account entity used in the transaction", () => {
         const accountEntity = Account.load(FIRST_USER_MOCK.toHex())!
-        let portfolio = accountEntity.portfolio.load()!
+        let portfolio = accountEntity.portfolio.load()
 
         assert.i32Equals(portfolio.length, 3)
     })
@@ -615,10 +618,12 @@ describe("handleRedeem()", () => {
             "amountsIn",
             `[${generateAssetAmountId(
                 WITHDRAW_TRANSACTION_HASH.toHex(),
-                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex()
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                AssetType.PT
             )}, ${generateAssetAmountId(
                 WITHDRAW_TRANSACTION_HASH.toHex(),
-                YT_ADDRESS_MOCK.toHex()
+                YT_ADDRESS_MOCK.toHex(),
+                AssetType.YT
             )}]`
         )
     })

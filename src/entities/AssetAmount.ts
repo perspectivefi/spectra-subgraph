@@ -14,7 +14,8 @@ export function getAssetAmount(
 ): AssetAmount {
     let id = generateAssetAmountId(
         transactionAddress.toHex(),
-        assetAddress.toHex()
+        assetAddress.toHex(),
+        type
     )
 
     let assetAmount = AssetAmount.load(id)

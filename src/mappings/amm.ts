@@ -1,40 +1,35 @@
-import { BigInt, Address } from "@graphprotocol/graph-ts"
+import { BigInt, Address, log } from "@graphprotocol/graph-ts";
 
-import {
-    AddLiquidity,
-    ClaimAdminFee,
-    CommitNewParameters,
-    NewParameters,
-    RemoveLiquidity,
-    RemoveLiquidityOne,
-    TokenExchange,
-} from "../../generated/CurvePool/CurvePool"
-import { AssetAmount, FeeClaim, Pool } from "../../generated/schema"
-import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
-import { getAccount } from "../entities/Account"
-import { updateAccountAssetBalance } from "../entities/AccountAsset"
-import { getAsset } from "../entities/Asset"
-import { getAssetAmount } from "../entities/AssetAmount"
-import { getPoolPriceScale, getPoolLPToken } from "../entities/CurvePool"
-import { getERC20Decimals, getERC20TotalSupply } from "../entities/ERC20"
-import { updateFutureDailyStats } from "../entities/FutureDailyStats"
-import { createTransaction } from "../entities/Transaction"
-import { AssetType, generateFeeClaimId } from "../utils"
-import { updatePoolAPR } from "../utils/calculateAPR"
-import { generateTransactionId } from "../utils/idGenerators"
-import { toPrecision } from "../utils/toPrecision"
+
+
+import { AddLiquidity, ClaimAdminFee, CommitNewParameters, NewParameters, RemoveLiquidity, RemoveLiquidityOne, TokenExchange } from "../../generated/CurvePool/CurvePool";
+import { AssetAmount, FeeClaim, Pool } from "../../generated/schema";
+import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants";
+import { getAccount } from "../entities/Account";
+import { updateAccountAssetBalance } from "../entities/AccountAsset";
+import { getAsset } from "../entities/Asset";
+import { getAssetAmount } from "../entities/AssetAmount";
+import { getPoolPriceScale, getPoolLPToken } from "../entities/CurvePool";
+import { getERC20Decimals, getERC20TotalSupply } from "../entities/ERC20";
+import { updateFutureDailyStats } from "../entities/FutureDailyStats";
+import { createTransaction } from "../entities/Transaction";
+import { AssetType, generateFeeClaimId } from "../utils";
+import { updatePoolAPR } from "../utils/calculateAPR";
+import { generateTransactionId } from "../utils/idGenerators";
+import { toPrecision } from "../utils/toPrecision";
+
 
 const FEES_PRECISION = 10
 
 export function handleAddLiquidity(event: AddLiquidity): void {
     let eventTimestamp = event.block.timestamp
 
-    let account = getAccount(event.params.provider.toHex(), eventTimestamp)
+    let account = getAccount(event.transaction.from.toHex(), eventTimestamp)
     let pool = Pool.load(event.address.toHex())
 
     if (pool) {
-        let ibtAmountAddress = pool.assets![0]
-        let ptAmountAddress = pool.assets![1]
+        let ibtAmountAddress = pool.ibtAsset
+        let ptAmountAddress = pool.ptAsset
 
         let poolIBTAssetAmount = AssetAmount.load(ibtAmountAddress)!
         let poolPTAssetAmount = AssetAmount.load(ptAmountAddress)!
@@ -113,7 +108,7 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             transactionAddress: event.transaction.hash,
 
             futureInTransaction: ZERO_ADDRESS,
-            userInTransaction: event.params.provider,
+            userInTransaction: Address.fromBytes(account.address),
             poolInTransaction: event.address,
             lpVaultInTransaction: ZERO_ADDRESS,
 
@@ -173,12 +168,12 @@ export function handleAddLiquidity(event: AddLiquidity): void {
 export function handleRemoveLiquidity(event: RemoveLiquidity): void {
     let eventTimestamp = event.block.timestamp
 
-    let account = getAccount(event.params.provider.toHex(), eventTimestamp)
+    let account = getAccount(event.transaction.from.toHex(), eventTimestamp)
     let pool = Pool.load(event.address.toHex())
 
     if (pool) {
-        let lpTokenDiff = pool.lpTotalSupply.minus(event.params.token_supply)
         let lpTokenAddress = getPoolLPToken(event.address)
+        let lpTokenDiff = pool.lpTotalSupply.minus(event.params.token_supply)
 
         let lpAmountIn = getAssetAmount(
             event.transaction.hash,
@@ -200,8 +195,8 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             lpPosition.save()
         }
 
-        let ibtAmountAddress = pool.assets![0]
-        let ptAmountAddress = pool.assets![1]
+        let ibtAmountAddress = pool.ibtAsset
+        let ptAmountAddress = pool.ptAsset
 
         let poolIBTAssetAmount = AssetAmount.load(ibtAmountAddress)!
         let poolPTAssetAmount = AssetAmount.load(ptAmountAddress)!
@@ -247,7 +242,7 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             transactionAddress: event.transaction.hash,
 
             futureInTransaction: ZERO_ADDRESS,
-            userInTransaction: event.params.provider,
+            userInTransaction: Address.fromBytes(account.address),
             poolInTransaction: event.address,
             lpVaultInTransaction: ZERO_ADDRESS,
 
@@ -267,8 +262,7 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             },
         })
 
-        const lpTotalSupply = getERC20TotalSupply(lpTokenAddress)
-        pool.lpTotalSupply = lpTotalSupply
+        pool.lpTotalSupply = event.params.token_supply
 
         pool.save()
 
@@ -303,8 +297,12 @@ export function handleTokenExchange(event: TokenExchange): void {
     let pool = Pool.load(event.address.toHex())
 
     if (pool) {
-        let assetSoldAddress = pool.assets![event.params.sold_id.toI32()]
-        let assetBoughtAddress = pool.assets![event.params.bought_id.toI32()]
+        let assetSoldAddress = event.params.sold_id.equals(ZERO_BI)
+            ? pool.ibtAsset
+            : pool.ptAsset
+        let assetBoughtAddress = event.params.bought_id.equals(ZERO_BI)
+            ? pool.ibtAsset
+            : pool.ptAsset
 
         let poolAssetInAmount = AssetAmount.load(assetSoldAddress)!
         let poolAssetOutAmount = AssetAmount.load(assetBoughtAddress)!
@@ -329,8 +327,8 @@ export function handleTokenExchange(event: TokenExchange): void {
             Address.fromString(poolAssetOutAmount.asset),
             event.params.tokens_bought,
             event.params.bought_id.equals(ZERO_BI)
-                ? AssetType.PT
-                : AssetType.IBT,
+                ? AssetType.IBT
+                : AssetType.PT,
             eventTimestamp
         )
 
@@ -339,16 +337,16 @@ export function handleTokenExchange(event: TokenExchange): void {
             poolAssetOutAmount.asset,
             event.block.timestamp,
             event.params.bought_id.equals(ZERO_BI)
-                ? AssetType.PT
-                : AssetType.IBT
+                ? AssetType.IBT
+                : AssetType.PT
         )
 
         let assetOut = getAsset(
             poolAssetOutAmount.asset,
             eventTimestamp,
             event.params.bought_id.equals(ZERO_BI)
-                ? AssetType.PT
-                : AssetType.IBT
+                ? AssetType.IBT
+                : AssetType.PT
         )
 
         let feeWithBoughtTokenPrecision = toPrecision(
@@ -450,7 +448,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
 
     let accountAddress = event.transaction.from.toHex()
     // there is a risc that provider will not exist and in that case the caller will become receiver - https://curve.readthedocs.io/factory-deposits.html
-    if (event.params.provider) accountAddress = event.params.provider.toHex()
+    // if (event.params.provider) accountAddress = event.params.provider.toHex()
 
     let account = getAccount(accountAddress, eventTimestamp)
     let pool = Pool.load(event.address.toHex())
@@ -478,7 +476,9 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             lpPosition.save()
         }
 
-        let withdrawnCoin = pool.assets![event.params.coin_index.toI32()]
+        let withdrawnCoin = event.params.coin_index.equals(ZERO_BI)
+            ? pool.ibtAsset
+            : pool.ptAsset
         let poolWithdrawnAssetAmount = AssetAmount.load(withdrawnCoin)!
         let withdrawnTokenAddress = poolWithdrawnAssetAmount.asset
 

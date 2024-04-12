@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
+import { Address, BigInt, Bytes, log } from "@graphprotocol/graph-ts"
 
 import { Future, Factory, Pool } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
@@ -36,6 +36,9 @@ export function createPool(params: PoolDetails): Pool {
         params.timestamp
     )
 
+    pool.ibtAsset = ibtAssetAmount.id
+    ibtAssetAmount.save()
+
     let ptAssetAmount = getAssetAmount(
         params.transactionHash,
         params.ptAddress,
@@ -43,6 +46,9 @@ export function createPool(params: PoolDetails): Pool {
         AssetType.PT,
         params.timestamp
     )
+
+    pool.ptAsset = ptAssetAmount.id
+    ptAssetAmount.save()
 
     pool.address = params.poolAddress
     pool.createdAtTimestamp = params.timestamp
@@ -54,8 +60,6 @@ export function createPool(params: PoolDetails): Pool {
     pool.futureAdminFeeRate = getPoolFutureAdminFee(params.poolAddress)
     pool.futureAdminFeeDeadline = ZERO_BI
     pool.totalClaimedAdminFees = ZERO_BI
-
-    pool.assets = [ibtAssetAmount.id, ptAssetAmount.id]
 
     pool.transactionCount = 0
 
