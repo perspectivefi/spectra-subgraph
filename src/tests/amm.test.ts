@@ -159,6 +159,7 @@ describe("handleAddLiquidity()", () => {
         let addLiquidityEvent = changetype<AddLiquidity>(newMockEvent())
         addLiquidityEvent.address = FIRST_POOL_ADDRESS_MOCK
         addLiquidityEvent.transaction.hash = POOL_ADD_LIQUIDITY_TRANSACTION_HASH
+        addLiquidityEvent.transaction.from = FIRST_USER_MOCK
         addLiquidityEvent.logIndex = ADD_LIQUIDITY_LOG_INDEX
 
         let providerParam = new ethereum.EventParam(
@@ -407,6 +408,7 @@ describe("handleRemoveLiquidity()", () => {
         removeLiquidityEvent.address = FIRST_POOL_ADDRESS_MOCK
         removeLiquidityEvent.transaction.hash =
             POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH
+        removeLiquidityEvent.transaction.from = FIRST_USER_MOCK
         removeLiquidityEvent.logIndex = REMOVE_LIQUIDITY_LOG_INDEX
 
         let providerParam = new ethereum.EventParam(
@@ -543,7 +545,7 @@ describe("handleRemoveLiquidity()", () => {
             ),
             "amount",
             toPrecision(
-                BigInt.fromI32(300).neg(),
+                BigInt.fromI32(300),
                 1,
                 STANDARD_DECIMALS_MOCK
             ).toString()
@@ -1029,9 +1031,11 @@ describe("handleRemoveLiquidityOne()", () => {
                 AssetType.PT
             ),
             "amount",
-            toPrecision(BigInt.fromI32(35), 0, STANDARD_DECIMALS_MOCK)
-                .neg()
-                .toString()
+            toPrecision(
+                BigInt.fromI32(35).neg(),
+                0,
+                STANDARD_DECIMALS_MOCK
+            ).toString()
         )
     })
 
@@ -1081,11 +1085,7 @@ describe("handleRemoveLiquidityOne()", () => {
                 AssetType.LP
             ),
             "amount",
-            toPrecision(
-                BigInt.fromI32(5).neg(),
-                0,
-                STANDARD_DECIMALS_MOCK
-            ).toString()
+            toPrecision(BigInt.fromI32(5), 0, STANDARD_DECIMALS_MOCK).toString()
         )
     })
 
