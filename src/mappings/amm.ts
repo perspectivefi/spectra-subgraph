@@ -1,23 +1,28 @@
-import { BigInt, Address, log } from "@graphprotocol/graph-ts";
+import { BigInt, Address, log } from "@graphprotocol/graph-ts"
 
-
-
-import { AddLiquidity, ClaimAdminFee, CommitNewParameters, NewParameters, RemoveLiquidity, RemoveLiquidityOne, TokenExchange } from "../../generated/CurvePool/CurvePool";
-import { AssetAmount, FeeClaim, Pool } from "../../generated/schema";
-import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants";
-import { getAccount } from "../entities/Account";
-import { updateAccountAssetBalance } from "../entities/AccountAsset";
-import { getAsset } from "../entities/Asset";
-import { getAssetAmount } from "../entities/AssetAmount";
-import { getPoolPriceScale, getPoolLPToken } from "../entities/CurvePool";
-import { getERC20Decimals, getERC20TotalSupply } from "../entities/ERC20";
-import { updateFutureDailyStats } from "../entities/FutureDailyStats";
-import { createTransaction } from "../entities/Transaction";
-import { AssetType, generateFeeClaimId } from "../utils";
-import { updatePoolAPR } from "../utils/calculateAPR";
-import { generateTransactionId } from "../utils/idGenerators";
-import { toPrecision } from "../utils/toPrecision";
-
+import {
+    AddLiquidity,
+    ClaimAdminFee,
+    CommitNewParameters,
+    NewParameters,
+    RemoveLiquidity,
+    RemoveLiquidityOne,
+    TokenExchange,
+} from "../../generated/CurvePool/CurvePool"
+import { AssetAmount, FeeClaim, Pool } from "../../generated/schema"
+import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
+import { getAccount } from "../entities/Account"
+import { updateAccountAssetBalance } from "../entities/AccountAsset"
+import { getAsset } from "../entities/Asset"
+import { getAssetAmount } from "../entities/AssetAmount"
+import { getPoolPriceScale, getPoolLPToken } from "../entities/CurvePool"
+import { getERC20Decimals, getERC20TotalSupply } from "../entities/ERC20"
+import { updateFutureDailyStats } from "../entities/FutureDailyStats"
+import { createTransaction } from "../entities/Transaction"
+import { AssetType, generateFeeClaimId } from "../utils"
+import { updatePoolAPR } from "../utils/calculateAPR"
+import { generateTransactionId } from "../utils/idGenerators"
+import { toPrecision } from "../utils/toPrecision"
 
 const FEES_PRECISION = 10
 
