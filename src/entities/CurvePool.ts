@@ -1,9 +1,7 @@
 import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
 import { CurvePool } from "../../generated/CurvePool/CurvePool"
-import { Pool } from "../../generated/schema"
 import { UNIT_BI, ZERO_ADDRESS, ZERO_BI } from "../constants"
-import { getERC20Decimals } from "./ERC20"
 
 export const getPoolLPToken = (poolAddress: Address): Address => {
     let curvePoolContract = CurvePool.bind(poolAddress)

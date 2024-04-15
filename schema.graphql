@@ -364,7 +364,8 @@ type Pool @entity {
     futureVault: Future
 
     liquidityToken: Asset!
-    assets: [AssetAmount!]
+    ibtAsset: AssetAmount!
+    ptAsset: AssetAmount!
 
     transactionCount: Int!
     transactions: [Transaction!] @derivedFrom(field: "poolInTransaction")

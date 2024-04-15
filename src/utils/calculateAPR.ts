@@ -10,10 +10,9 @@ import {
     getExpirationTimestamp,
     getIBT,
     getIBTRate,
-    getIBTUnit,
+    getUnderlying,
 } from "../entities/FutureVault"
-import { bigDecimalToBigInt } from "./bigDecimalToBigInt"
-import { CURVE_PRECISION, RAYS_PRECISION, toPrecision } from "./toPrecision"
+import { RAYS_PRECISION, toPrecision } from "./toPrecision"
 
 export function updatePoolAPR(
     poolAddress: Address,
@@ -22,38 +21,33 @@ export function updatePoolAPR(
 ): void {
     let poolAPR = createAPRInTimeForPool(poolAddress, currentTimestamp)
 
+    let underlyingAddress = getUnderlying(principalToken)
     let ibtAddress = getIBT(principalToken)
 
+    let underlyingDecimals = getERC20Decimals(underlyingAddress)
     let ibtDecimals = getERC20Decimals(ibtAddress)
     let smallInput = BigInt.fromI32(10).pow((ibtDecimals as u8) - 1) // small input to ensure correct rate for small amount
 
-    const ibtToPT = toPrecision(
-        getIBTtoPTRate(poolAddress, smallInput),
-        CURVE_PRECISION,
-        ibtDecimals
+    const ibtToPT = getIBTtoPTRate(poolAddress, smallInput).times(
+        BigInt.fromI32(10)
     )
+
     const principalTokenExpiration = getExpirationTimestamp(principalToken)
+
     const ibtRate = toPrecision(
         getIBTRate(principalToken),
         RAYS_PRECISION,
-        ibtDecimals
+        underlyingDecimals
     )
 
-    const spotPrice = ibtToPT.toBigDecimal().div(smallInput.toBigDecimal()) // Remove input
+    const spotPrice = ibtToPT
 
-    const ibtUnit = toPrecision(
-        getIBTUnit(principalToken),
-        RAYS_PRECISION,
-        ibtDecimals
-    )
+    const underlyingUnit = BigInt.fromI32(10).pow(underlyingDecimals as u8)
+    const ibtUnit = BigInt.fromI32(10).pow(ibtDecimals as u8)
 
-    // Form rate to BigNumber value for calculations with better precision
-    const spotPriceBigInt = bigDecimalToBigInt(
-        spotPrice.times(ibtUnit.toBigDecimal())
-    )
-    const ibtSharesRate = getSharesRate(ibtAddress, ibtUnit)
+    const ibtSharesRate = getSharesRate(ibtAddress, underlyingUnit)
 
-    poolAPR.spotPrice = spotPriceBigInt
+    poolAPR.spotPrice = spotPrice
     poolAPR.ibtRate = ibtRate
     poolAPR.ibtSharesRate = ibtSharesRate
 
@@ -63,7 +57,7 @@ export function updatePoolAPR(
         ibtSharesRate.notEqual(ZERO_BI)
     ) {
         const underlyingToPTRate = ibtSharesRate // Reflect IBT/Underlying rate
-            .times(spotPriceBigInt) // IBT/PT rate
+            .times(spotPrice) // IBT/PT rate
             .div(ibtUnit)
 
         poolAPR.underlyingToPT = underlyingToPTRate
