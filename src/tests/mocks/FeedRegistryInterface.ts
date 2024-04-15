@@ -1,4 +1,4 @@
-import { Address, ethereum, log } from "@graphprotocol/graph-ts"
+import { Address, ethereum } from "@graphprotocol/graph-ts"
 import { createMockedFunction } from "matchstick-as/assembly/index"
 
 import { FEED_REGISTRY, USD_DENOMINATION } from "../../constants"
