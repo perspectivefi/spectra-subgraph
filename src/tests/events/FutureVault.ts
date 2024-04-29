@@ -29,6 +29,7 @@ import {
 } from "../mocks/FutureVault"
 
 export const SHARES_RETURN = 51
+export const DEFAULT_EMIT_LOG_INDEX = BigInt.fromI32(1)
 
 export const emitFutureVaultDeployed = (futureVaultAddress: Address): void => {
     let futureVaultDeployedEvent = changetype<PTDeployed>(newMockEvent())
@@ -49,7 +50,7 @@ export const emitMint = (
     let mintEvent = changetype<Mint>(newMockEvent())
     mintEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
     mintEvent.transaction.hash = DEPOSIT_TRANSACTION_HASH
-    mintEvent.logIndex = BigInt.fromI32(1)
+    mintEvent.logIndex = DEFAULT_EMIT_LOG_INDEX
 
     if (timestamp) {
         mintEvent.block.timestamp = BigInt.fromI32(timestamp as i32)

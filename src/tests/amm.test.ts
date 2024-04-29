@@ -207,6 +207,7 @@ describe("handleAddLiquidity()", () => {
             generateAssetAmountId(
                 POOL_DEPLOY_TRANSACTION_HASH.toHex(),
                 POOL_IBT_ADDRESS_MOCK.toHex(),
+                ADD_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.IBT
             ),
             "amount",
@@ -218,6 +219,7 @@ describe("handleAddLiquidity()", () => {
             generateAssetAmountId(
                 POOL_DEPLOY_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex(),
+                ADD_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.PT
             ),
             "amount",
@@ -233,10 +235,12 @@ describe("handleAddLiquidity()", () => {
             `[${generateAssetAmountId(
                 POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_IBT_ADDRESS_MOCK.toHex(),
+                ADD_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.IBT
             )}, ${generateAssetAmountId(
                 POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex(),
+                ADD_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.PT
             )}]`
         )
@@ -247,6 +251,7 @@ describe("handleAddLiquidity()", () => {
             `[${generateAssetAmountId(
                 POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_LP_ADDRESS_MOCK.toHex(),
+                ADD_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.LP
             )}]`
         )
@@ -258,6 +263,7 @@ describe("handleAddLiquidity()", () => {
             generateAssetAmountId(
                 POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_IBT_ADDRESS_MOCK.toHex(),
+                ADD_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.IBT
             ),
             "amount",
@@ -268,6 +274,7 @@ describe("handleAddLiquidity()", () => {
             generateAssetAmountId(
                 POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex(),
+                ADD_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.PT
             ),
             "amount",
@@ -278,11 +285,11 @@ describe("handleAddLiquidity()", () => {
             generateAssetAmountId(
                 POOL_ADD_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_LP_ADDRESS_MOCK.toHex(),
+                ADD_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.LP
             ),
             "amount",
-            // as mock is the same for the supply before and after liquidity transaction so difference is 0
-            "0"
+            LP_TOTAL_SUPPLY.toString()
         )
     })
 
@@ -452,13 +459,14 @@ describe("handleRemoveLiquidity()", () => {
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
             generateAssetAmountId(
-                POOL_DEPLOY_TRANSACTION_HASH.toHex(),
+                POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_IBT_ADDRESS_MOCK.toHex(),
+                REMOVE_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.IBT
             ),
             "amount",
             toPrecision(
-                BigInt.fromI32(100),
+                BigInt.fromI32(50),
                 1,
                 STANDARD_DECIMALS_MOCK
             ).toString()
@@ -467,13 +475,14 @@ describe("handleRemoveLiquidity()", () => {
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
             generateAssetAmountId(
-                POOL_DEPLOY_TRANSACTION_HASH.toHex(),
+                POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex(),
+                REMOVE_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.PT
             ),
             "amount",
             toPrecision(
-                BigInt.fromI32(50),
+                BigInt.fromI32(100),
                 1,
                 STANDARD_DECIMALS_MOCK
             ).toString()
@@ -488,6 +497,7 @@ describe("handleRemoveLiquidity()", () => {
             `[${generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_LP_ADDRESS_MOCK.toHex(),
+                REMOVE_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.LP
             )}]`
         )
@@ -498,10 +508,12 @@ describe("handleRemoveLiquidity()", () => {
             `[${generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_IBT_ADDRESS_MOCK.toHex(),
+                REMOVE_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.IBT
             )}, ${generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex(),
+                REMOVE_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.PT
             )}]`
         )
@@ -513,6 +525,7 @@ describe("handleRemoveLiquidity()", () => {
             generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_IBT_ADDRESS_MOCK.toHex(),
+                REMOVE_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.IBT
             ),
             "amount",
@@ -527,6 +540,7 @@ describe("handleRemoveLiquidity()", () => {
             generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex(),
+                REMOVE_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.PT
             ),
             "amount",
@@ -541,6 +555,7 @@ describe("handleRemoveLiquidity()", () => {
             generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_TRANSACTION_HASH.toHex(),
                 POOL_LP_ADDRESS_MOCK.toHex(),
+                REMOVE_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.LP
             ),
             "amount",
@@ -707,25 +722,31 @@ describe("handleTokenExchange()", () => {
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
             generateAssetAmountId(
-                POOL_DEPLOY_TRANSACTION_HASH.toHex(),
+                POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
                 POOL_IBT_ADDRESS_MOCK.toHex(),
+                EXCHANGE_LOG_INDEX.toString(),
                 AssetType.IBT
             ),
             "amount",
-            "0"
+            toPrecision(
+                BigInt.fromI32(100),
+                1,
+                STANDARD_DECIMALS_MOCK
+            ).toString()
         )
 
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
             generateAssetAmountId(
-                POOL_DEPLOY_TRANSACTION_HASH.toHex(),
+                POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex(),
+                EXCHANGE_LOG_INDEX.toString(),
                 AssetType.PT
             ),
             "amount",
             toPrecision(
-                BigInt.fromI32(10),
-                0,
+                BigInt.fromI32(50),
+                1,
                 STANDARD_DECIMALS_MOCK
             ).toString()
         )
@@ -737,6 +758,7 @@ describe("handleTokenExchange()", () => {
             generateAssetAmountId(
                 POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
                 POOL_IBT_ADDRESS_MOCK.toHex(),
+                EXCHANGE_LOG_INDEX.toString(),
                 AssetType.IBT
             ),
             "amount",
@@ -751,6 +773,7 @@ describe("handleTokenExchange()", () => {
             generateAssetAmountId(
                 POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex(),
+                EXCHANGE_LOG_INDEX.toString(),
                 AssetType.PT
             ),
             "amount",
@@ -766,6 +789,7 @@ describe("handleTokenExchange()", () => {
             `[${generateAssetAmountId(
                 POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex(),
+                EXCHANGE_LOG_INDEX.toString(),
                 AssetType.PT
             )}]`
         )
@@ -776,6 +800,7 @@ describe("handleTokenExchange()", () => {
             `[${generateAssetAmountId(
                 POOL_EXCHANGE_TRANSACTION_HASH.toHex(),
                 POOL_IBT_ADDRESS_MOCK.toHex(),
+                EXCHANGE_LOG_INDEX.toString(),
                 AssetType.IBT
             )}]`
         )
@@ -1026,13 +1051,14 @@ describe("handleRemoveLiquidityOne()", () => {
         assert.fieldEquals(
             ASSET_AMOUNT_ENTITY,
             generateAssetAmountId(
-                POOL_DEPLOY_TRANSACTION_HASH.toHex(),
+                POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex(),
+                REMOVE_ONE_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.PT
             ),
             "amount",
             toPrecision(
-                BigInt.fromI32(35).neg(),
+                BigInt.fromI32(50),
                 0,
                 STANDARD_DECIMALS_MOCK
             ).toString()
@@ -1047,6 +1073,7 @@ describe("handleRemoveLiquidityOne()", () => {
             `[${generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
                 POOL_LP_ADDRESS_MOCK.toHex(),
+                REMOVE_ONE_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.LP
             )}]`
         )
@@ -1057,6 +1084,7 @@ describe("handleRemoveLiquidityOne()", () => {
             `[${generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex(),
+                REMOVE_ONE_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.PT
             )}]`
         )
@@ -1068,6 +1096,7 @@ describe("handleRemoveLiquidityOne()", () => {
             generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex(),
+                REMOVE_ONE_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.PT
             ),
             "amount",
@@ -1082,6 +1111,7 @@ describe("handleRemoveLiquidityOne()", () => {
             generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
                 POOL_LP_ADDRESS_MOCK.toHex(),
+                REMOVE_ONE_LIQUIDITY_LOG_INDEX.toString(),
                 AssetType.LP
             ),
             "amount",

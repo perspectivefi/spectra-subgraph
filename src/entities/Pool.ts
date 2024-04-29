@@ -22,6 +22,7 @@ class PoolDetails {
     ptAddress: Address
     factoryAddress: Address
     timestamp: BigInt
+    logIndex: BigInt
     transactionHash: Bytes
 }
 
@@ -33,6 +34,7 @@ export function createPool(params: PoolDetails): Pool {
         params.ibtAddress,
         ZERO_BI,
         AssetType.IBT,
+        params.logIndex.toString(),
         params.timestamp
     )
 
@@ -44,6 +46,7 @@ export function createPool(params: PoolDetails): Pool {
         params.ptAddress,
         ZERO_BI,
         AssetType.PT,
+        params.logIndex.toString(),
         params.timestamp
     )
 
@@ -79,11 +82,7 @@ export function createPool(params: PoolDetails): Pool {
 
     pool.liquidityToken = lpToken.id
 
-    const lpTotalSupply = getERC20TotalSupply(
-        Address.fromBytes(lpToken.address)
-    )
-
-    pool.lpTotalSupply = lpTotalSupply
+    pool.lpTotalSupply = ZERO_BI
 
     let factory = Factory.load(params.factoryAddress.toHex())
     if (factory) {
