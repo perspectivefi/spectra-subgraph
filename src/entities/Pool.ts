@@ -22,6 +22,7 @@ class PoolDetails {
     ptAddress: Address
     factoryAddress: Address
     timestamp: BigInt
+    blockNumber: BigInt
     logIndex: BigInt
     transactionHash: Bytes
 }
@@ -103,7 +104,8 @@ export function createPool(params: PoolDetails): Pool {
     if (pool.futureVault) {
         let poolAPR = createAPRInTimeForPool(
             params.poolAddress,
-            params.timestamp
+            params.timestamp,
+            params.blockNumber
         )
 
         poolAPR.save()

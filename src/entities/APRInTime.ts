@@ -5,13 +5,15 @@ import { UNIT_BI, ZERO_BD } from "../constants"
 
 export function createAPRInTimeForPool(
     poolAddress: Address,
-    timestamp: BigInt
+    timestamp: BigInt,
+    blockNumber: BigInt
 ): APRInTime {
     let aprInTime = new APRInTime(
         `${poolAddress.toHex()}-${timestamp.toString()}`
     )
 
     aprInTime.createdAtTimestamp = timestamp
+    aprInTime.block = blockNumber
     aprInTime.pool = poolAddress.toHex()
 
     aprInTime.spotPrice = UNIT_BI

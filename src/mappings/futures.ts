@@ -409,6 +409,7 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
         timestamp: event.block.timestamp,
         logIndex: event.logIndex,
         transactionHash: event.transaction.hash,
+        blockNumber: event.block.number,
     })
 }
 
