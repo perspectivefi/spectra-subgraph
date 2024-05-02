@@ -12,8 +12,9 @@ export const generateLPInfoId = (tokenAddress: string): string =>
 export const generateAssetAmountId = (
     transactionHash: string,
     assetAddress: string,
+    logIndex: string,
     type: string
-): string => `${transactionHash}-${assetAddress}-${type}`
+): string => `${transactionHash}-${assetAddress}-${type}-${logIndex}`
 
 // AssetPrice
 export const generateAssetPriceId = (

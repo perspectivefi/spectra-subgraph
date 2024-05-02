@@ -41,6 +41,7 @@ import {
     emitMint,
     emitFutureVaultDeployed,
     SHARES_RETURN,
+    DEFAULT_EMIT_LOG_INDEX,
 } from "./events/FutureVault"
 import {
     mockCurvePoolFunctions,
@@ -475,10 +476,12 @@ describe("handleMint()", () => {
             `[${generateAssetAmountId(
                 DEPOSIT_TRANSACTION_HASH.toHex(),
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                DEFAULT_EMIT_LOG_INDEX.toString(),
                 AssetType.PT
             )}, ${generateAssetAmountId(
                 DEPOSIT_TRANSACTION_HASH.toHex(),
                 YT_ADDRESS_MOCK.toHex(),
+                DEFAULT_EMIT_LOG_INDEX.toString(),
                 AssetType.YT
             )}]`
         )
@@ -619,10 +622,12 @@ describe("handleRedeem()", () => {
             `[${generateAssetAmountId(
                 WITHDRAW_TRANSACTION_HASH.toHex(),
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                WITHDRAW_LOG_INDEX.toString(),
                 AssetType.PT
             )}, ${generateAssetAmountId(
                 WITHDRAW_TRANSACTION_HASH.toHex(),
                 YT_ADDRESS_MOCK.toHex(),
+                WITHDRAW_LOG_INDEX.toString(),
                 AssetType.YT
             )}]`
         )

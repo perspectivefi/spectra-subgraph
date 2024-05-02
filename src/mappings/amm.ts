@@ -47,6 +47,7 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             Address.fromString(ibtAddress),
             event.params.token_amounts[0],
             AssetType.IBT,
+            event.logIndex.toString(),
             eventTimestamp
         )
 
@@ -62,6 +63,7 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             Address.fromString(ptAddress),
             event.params.token_amounts[1],
             AssetType.PT,
+            event.logIndex.toString(),
             eventTimestamp
         )
 
@@ -75,15 +77,15 @@ export function handleAddLiquidity(event: AddLiquidity): void {
         let lpTokenAddress = getPoolLPToken(event.address)
 
         const lpTotalSupply = getERC20TotalSupply(lpTokenAddress)
-        pool.lpTotalSupply = lpTotalSupply
-
         let lpTokenDiff = lpTotalSupply.minus(pool.lpTotalSupply)
+        pool.lpTotalSupply = lpTotalSupply
 
         let lpAmountOut = getAssetAmount(
             event.transaction.hash,
             lpTokenAddress,
             lpTokenDiff,
             AssetType.LP,
+            event.logIndex.toString(),
             eventTimestamp
         )
 
@@ -186,6 +188,7 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             lpTokenAddress,
             lpTokenDiff,
             AssetType.LP,
+            event.logIndex.toString(),
             eventTimestamp
         )
 
@@ -215,6 +218,7 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             Address.fromString(ibtAddress),
             event.params.token_amounts[0],
             AssetType.IBT,
+            event.logIndex.toString(),
             eventTimestamp
         )
 
@@ -230,6 +234,7 @@ export function handleRemoveLiquidity(event: RemoveLiquidity): void {
             Address.fromString(ptAddress),
             event.params.token_amounts[1],
             AssetType.PT,
+            event.logIndex.toString(),
             eventTimestamp
         )
 
@@ -318,6 +323,7 @@ export function handleTokenExchange(event: TokenExchange): void {
             Address.fromString(poolAssetInAmount.asset),
             event.params.tokens_sold,
             event.params.sold_id.equals(ZERO_BI) ? AssetType.IBT : AssetType.PT,
+            event.logIndex.toString(),
             eventTimestamp
         )
 
@@ -335,6 +341,7 @@ export function handleTokenExchange(event: TokenExchange): void {
             event.params.bought_id.equals(ZERO_BI)
                 ? AssetType.IBT
                 : AssetType.PT,
+            event.logIndex.toString(),
             eventTimestamp
         )
 
@@ -468,6 +475,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             lpTokenAddress,
             event.params.token_amount,
             AssetType.LP,
+            event.logIndex.toString(),
             eventTimestamp
         )
 
@@ -498,6 +506,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             Address.fromString(withdrawnTokenAddress),
             event.params.coin_amount,
             withdrawnAssetType,
+            event.logIndex.toString(),
             eventTimestamp
         )
 
