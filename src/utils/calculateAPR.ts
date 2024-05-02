@@ -17,9 +17,14 @@ import { RAYS_PRECISION, toPrecision } from "./toPrecision"
 export function updatePoolAPR(
     poolAddress: Address,
     principalToken: Address,
-    currentTimestamp: BigInt
+    currentTimestamp: BigInt,
+    blockNumber: BigInt
 ): void {
-    let poolAPR = createAPRInTimeForPool(poolAddress, currentTimestamp)
+    let poolAPR = createAPRInTimeForPool(
+        poolAddress,
+        currentTimestamp,
+        blockNumber
+    )
 
     let underlyingAddress = getUnderlying(principalToken)
     let ibtAddress = getIBT(principalToken)

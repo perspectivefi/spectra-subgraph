@@ -333,6 +333,7 @@ type Transaction @entity {
 type APRInTime @entity {
     id: ID!
     createdAtTimestamp: BigInt!
+    block: BigInt!
 
     spotPrice: BigInt!
     ibtRate: BigInt!

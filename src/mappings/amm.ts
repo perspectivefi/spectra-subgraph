@@ -164,7 +164,8 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             updatePoolAPR(
                 event.address,
                 Address.fromString(pool.futureVault!),
-                event.block.timestamp
+                event.block.timestamp,
+                event.block.number
             )
         }
     }
@@ -442,7 +443,8 @@ export function handleTokenExchange(event: TokenExchange): void {
             updatePoolAPR(
                 event.address,
                 Address.fromString(pool.futureVault!),
-                event.block.timestamp
+                event.block.timestamp,
+                event.block.number
             )
         }
     }
@@ -598,7 +600,8 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
             updatePoolAPR(
                 event.address,
                 Address.fromString(pool.futureVault!),
-                event.block.timestamp
+                event.block.timestamp,
+                event.block.number
             )
         }
     }
