@@ -219,6 +219,7 @@ export function handleMint(event: Mint): void {
             ptAddress,
             event.params.amount,
             AssetType.PT,
+            event.logIndex.toString(),
             event.block.timestamp
         )
 
@@ -234,6 +235,7 @@ export function handleMint(event: Mint): void {
             ytAddress,
             event.params.amount,
             AssetType.YT,
+            event.logIndex.toString(),
             event.block.timestamp
         )
 
@@ -301,6 +303,7 @@ export function handleRedeem(event: Redeem): void {
             ptAddress,
             event.params.amount,
             AssetType.PT,
+            event.logIndex.toString(),
             event.block.timestamp
         )
 
@@ -316,6 +319,7 @@ export function handleRedeem(event: Redeem): void {
             ytAddress,
             event.params.amount,
             AssetType.YT,
+            event.logIndex.toString(),
             event.block.timestamp
         )
 
@@ -403,6 +407,7 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
         factoryAddress: event.address,
         ptAddress: event.params.pt,
         timestamp: event.block.timestamp,
+        logIndex: event.logIndex,
         transactionHash: event.transaction.hash,
     })
 }

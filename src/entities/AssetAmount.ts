@@ -10,11 +10,13 @@ export function getAssetAmount(
     assetAddress: Address,
     amount: BigInt,
     type: string,
+    logIndex: string,
     timestamp: BigInt
 ): AssetAmount {
     let id = generateAssetAmountId(
         transactionAddress.toHex(),
         assetAddress.toHex(),
+        logIndex,
         type
     )
 

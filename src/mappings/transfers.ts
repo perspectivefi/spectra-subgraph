@@ -42,6 +42,7 @@ export function handleTransfer(event: TransferEvent): void {
             event.address,
             event.params.value,
             asset.type,
+            event.logIndex.toString(),
             eventTimestamp
         )
 
