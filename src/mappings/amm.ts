@@ -15,7 +15,11 @@ import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
-import { getPoolPriceScale, getPoolLPToken } from "../entities/CurvePool"
+import {
+    getPoolPriceScale,
+    getPoolLPToken,
+    getPoolVirtualPrice,
+} from "../entities/CurvePool"
 import { getERC20Decimals, getERC20TotalSupply } from "../entities/ERC20"
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import { createTransaction } from "../entities/Transaction"
@@ -137,6 +141,9 @@ export function handleAddLiquidity(event: AddLiquidity): void {
 
         pool.totalFees = pool.totalFees.plus(fee)
         pool.totalAdminFees = pool.totalAdminFees.plus(adminFee)
+
+        let virtualPrice = getPoolVirtualPrice(event.address)
+        pool.virtualPrice = virtualPrice
 
         pool.save()
 
@@ -422,6 +429,9 @@ export function handleTokenExchange(event: TokenExchange): void {
         let spotPrice = getPoolPriceScale(event.address)
         pool.spotPrice = spotPrice
 
+        let virtualPrice = getPoolVirtualPrice(event.address)
+        pool.virtualPrice = virtualPrice
+
         pool.save()
 
         poolAssetInAmount.amount = poolAssetInAmount.amount.plus(
@@ -585,6 +595,9 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
 
         let spotPrice = getPoolPriceScale(event.address)
         pool.spotPrice = spotPrice
+
+        let virtualPrice = getPoolVirtualPrice(event.address)
+        pool.virtualPrice = virtualPrice
 
         pool.save()
 

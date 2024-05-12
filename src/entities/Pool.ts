@@ -12,6 +12,7 @@ import {
     getPoolFutureAdminFee,
     getPoolLPToken,
     getPoolPriceScale,
+    getPoolVirtualPrice,
 } from "./CurvePool"
 import { getERC20TotalSupply } from "./ERC20"
 import { getCurveFactory } from "./Factory"
@@ -112,6 +113,9 @@ export function createPool(params: PoolDetails): Pool {
     }
 
     pool.spotPrice = spotPrice
+
+    let virtualPrice = getPoolVirtualPrice(params.poolAddress)
+    pool.virtualPrice = virtualPrice
 
     pool.save()
 

@@ -375,6 +375,7 @@ type Pool @entity {
     liquidityPositions: [AccountAsset!]! @derivedFrom(field: "pool")
 
     spotPrice: BigInt!
+    virtualPrice: BigInt!
     apr: [APRInTime!]! @derivedFrom(field: "pool")
 }
 
