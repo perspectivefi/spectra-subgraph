@@ -105,6 +105,21 @@ export function getIBTRate(address: Address): BigInt {
     return UNIT_BI
 }
 
+// With 27 decimals precision
+export function getPTRate(address: Address): BigInt {
+    const principalTokenContract = PrincipalToken.bind(address)
+
+    let ptRateCall = principalTokenContract.try_getPTRate()
+
+    if (!ptRateCall.reverted) {
+        return ptRateCall.value
+    }
+
+    log.warning("getPTRate() call reverted for {}", [address.toHex()])
+
+    return UNIT_BI
+}
+
 export function getYT(address: Address): Address {
     const principalTokenContract = PrincipalToken.bind(address)
 

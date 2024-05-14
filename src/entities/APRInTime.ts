@@ -17,10 +17,6 @@ export function createAPRInTimeForPool(
     aprInTime.pool = poolAddress.toHex()
 
     aprInTime.spotPrice = UNIT_BI
-    aprInTime.ibtRate = UNIT_BI
-    aprInTime.ibtSharesRate = UNIT_BI
-    aprInTime.underlyingToPT = UNIT_BI
-    aprInTime.apr = ZERO_BD
 
     aprInTime.save()
 
@@ -39,10 +35,6 @@ export function createAPRInTimeForLPVault(
     aprInTime.lpVault = lpVaultAddress.toHex()
 
     aprInTime.spotPrice = UNIT_BI
-    aprInTime.ibtRate = UNIT_BI
-    aprInTime.ibtSharesRate = UNIT_BI
-    aprInTime.underlyingToPT = UNIT_BI
-    aprInTime.apr = ZERO_BD
 
     aprInTime.save()
 

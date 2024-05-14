@@ -525,7 +525,7 @@ describe("handleMint()", () => {
 
         assert.i32Equals(portfolio.length, 3)
     })
-    test("Should create FutureDailyStats with the correct details", () => {
+    test("Should create FutureDailyStats with the correct details at Mint", () => {
         assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
@@ -562,8 +562,28 @@ describe("handleMint()", () => {
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 DAY_ID_0
             ),
-            "ibtRate",
-            "1"
+            "lastIBTRate",
+            "2000000000000000000000000000"
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                DAY_ID_0
+            ),
+            "lastPTRate",
+            "1000000000000000000000000000"
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                DAY_ID_0
+            ),
+            "ibtRateMA",
+            "2000000000000000000000000000"
         )
     })
 })
@@ -654,7 +674,7 @@ describe("handleRedeem()", () => {
         )
     })
 
-    test("Should create FutureDailyStats with the correct details", () => {
+    test("Should create FutureDailyStats with the correct details at Redeem", () => {
         assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 1)
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
@@ -701,8 +721,28 @@ describe("handleRedeem()", () => {
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 DAY_ID_0
             ),
-            "ibtRate",
-            "1"
+            "lastIBTRate",
+            "2000000000000000000000000000"
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                DAY_ID_0
+            ),
+            "lastPTRate",
+            "1000000000000000000000000000"
+        )
+
+        assert.fieldEquals(
+            FUTURE_DAILY_STATS_ENTITY,
+            generateFutureDailyStatsId(
+                FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+                DAY_ID_0
+            ),
+            "ibtRateMA",
+            "2000000000000000000000000000"
         )
     })
 })

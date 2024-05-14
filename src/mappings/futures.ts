@@ -435,6 +435,7 @@ export function handleYieldClaimed(event: YieldClaimed): void {
             event.params.yieldInIBT,
             event.block.timestamp
         )
+        updateFutureDailyStats(event, event.address)
     } else {
         log.warning("YieldClaimed event call for not existing Future {}", [
             event.address.toHex(),
@@ -447,6 +448,7 @@ export function handlePTTransfer(event: PTTransfer): void {
 
     if (future) {
         updateYieldForAll(event.address, event.block.timestamp)
+        updateFutureDailyStats(event, event.address)
     } else {
         log.warning("PTTransfer event call for not existing Future {}", [
             event.address.toHex(),
