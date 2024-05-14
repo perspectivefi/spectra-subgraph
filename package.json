@@ -20,7 +20,8 @@
         "generate-config": "node ./src/scripts/subgraphConfigGenerator.js",
         "generate-config:goerli": "node ./src/scripts/subgraphConfigGenerator.js goerli",
         "generate-config:sepolia": "node ./src/scripts/subgraphConfigGenerator.js sepolia",
-        "test": "graph test"
+        "test": "graph test",
+        "prettify": "prettier --write \"./**/*.{js,jsx,json,ts,tsx,css}\""
     },
     "devDependencies": {
         "@chainlink/contracts": "^0.4.1",
