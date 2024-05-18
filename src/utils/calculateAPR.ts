@@ -1,9 +1,14 @@
 import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts"
 
 import { LPVault } from "../../generated/schema"
-import { ZERO_BD } from "../constants"
+import { SECONDS_PER_YEAR, ZERO_BD } from "../constants"
 import { createAPRInTimeForPool } from "../entities/APRInTime"
 import { getPoolPriceScale } from "../entities/CurvePool"
+import {
+    getIBTRate,
+    getPTRate,
+    getExpirationTimestamp,
+} from "../entities/FutureVault"
 
 export function updatePoolAPR(
     poolAddress: Address,
@@ -17,9 +22,28 @@ export function updatePoolAPR(
         blockNumber
     )
 
-    const spotPrice = getPoolPriceScale(poolAddress)
-    poolAPR.spotPrice = spotPrice
+    const curveUnit = BigInt.fromI32(10).pow(18)
+    const rayUnit = BigInt.fromI32(10).pow(27)
 
+    const expirationTimestamp = getExpirationTimestamp(principalToken)
+    const timeLeft = expirationTimestamp.minus(currentTimestamp)
+    const spotPrice = getPoolPriceScale(poolAddress)
+
+    poolAPR.spotPrice = spotPrice
+    const ibtRate = getIBTRate(principalToken)
+    const ptRate = getPTRate(principalToken)
+    poolAPR.ptRate = ptRate
+    poolAPR.ibtRate = ibtRate
+
+    const baseAPY = ptRate
+        .times(curveUnit)
+        .times(rayUnit)
+        .div(spotPrice.times(ibtRate))
+    const expAPY = SECONDS_PER_YEAR.div(
+        BigDecimal.fromString(timeLeft.toString())
+    )
+    poolAPR.baseAPY = baseAPY
+    poolAPR.exponentAPY = expAPY
     poolAPR.save()
 }
 

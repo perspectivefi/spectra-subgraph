@@ -337,7 +337,11 @@ type APRInTime @entity {
     createdAtTimestamp: BigInt!
     block: BigInt!
     spotPrice: BigInt!
+    ptRate: BigInt!
+    ibtRate: BigInt!
     pool: Pool
+    baseAPY: BigInt!
+    exponentAPY: BigDecimal!
     lpVault: LPVault
 }
 
