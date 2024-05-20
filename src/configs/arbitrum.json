@@ -1,7 +1,7 @@
 {
     "network": "arbitrum",
-    "startBlock": 13850000,
-    "contracts": {
-        "controller": "0x4bA30FA240047c17FC557b8628799068d4396790"
-    }
+    "startBlock": 204418891,
+
+    "registry": "0x786Da12e9836a9ff9b7d92e8bac1C849e2ACe378",
+    "factory": "0x51100574E1CF11ee9fcC96D70ED146250b0Fdb60"
 }

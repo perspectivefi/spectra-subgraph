@@ -1,7 +1,7 @@
 {
     "network": "mainnet",
-    "startBlock": 0,
+    "startBlock": 19727256,
 
-    "registry": "0x0000000000000000000000000000000000000000",
-    "factory": "0x0000000000000000000000000000000000000000"
+    "registry": "0x4973b53b300d64ab72147EFF8C9d962f6b1dA02e",
+    "factory": "0xae4d5d5199265512B2a77Ad675107735B891aBc8"
 }
