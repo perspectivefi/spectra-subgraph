@@ -4,7 +4,8 @@ import { Future, FutureDailyStats } from "../../generated/schema"
 import { DAYS_PER_YEAR_BD, ZERO_BD, ZERO_BI } from "../constants"
 import { generateFutureDailyStatsId } from "../utils"
 import { getDayIdFromTimestamp, getPastDayId } from "../utils/dayId"
-import { getIBTRate, getPTRate } from "./FutureVault"
+import { getERC20Decimals } from "./ERC20"
+import { getIBTRate, getPTRate, getUnderlying } from "./FutureVault"
 
 /**
  * Update the daily data for a future. This function is called every time a
@@ -19,6 +20,8 @@ export function updateFutureDailyStats(
     futureAddress: Address
 ): FutureDailyStats {
     let dayId = getDayIdFromTimestamp(event.block.timestamp)
+    const asset = getUnderlying(futureAddress)
+    const underlyingDecimals = getERC20Decimals(asset)
     const futureDailyStatsID = generateFutureDailyStatsId(
         futureAddress.toHex(),
         dayId.toString()
@@ -31,7 +34,7 @@ export function updateFutureDailyStats(
     const currentPTRate = getPTRate(futureAddress)
     let currentIBTRateMA = futureDailyStats.ibtRateMA
     let dailyUpdates = futureDailyStats.dailyUpdates.plus(BigInt.fromI32(1))
-    const precision = BigInt.fromI32(10000000)
+    const precision = BigInt.fromI32(underlyingDecimals)
     // Compute the ibt rate new average
     let scaledDifference = currentRate.minus(currentIBTRateMA).times(precision)
     let scaledDivision = scaledDifference.div(dailyUpdates)
