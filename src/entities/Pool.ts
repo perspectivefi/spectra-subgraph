@@ -21,6 +21,7 @@ class PoolDetails {
     ibtAddress: Address
     ptAddress: Address
     factoryAddress: Address
+    lpAddress: Address
     timestamp: BigInt
     blockNumber: BigInt
     logIndex: BigInt
@@ -69,7 +70,7 @@ export function createPool(params: PoolDetails): Pool {
 
     // Asset - Future relation
     let lpToken = getAsset(
-        getPoolLPToken(params.poolAddress).toHex(),
+        params.lpAddress.toHex(),
         params.timestamp,
         AssetType.LP
     )
