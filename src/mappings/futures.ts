@@ -27,7 +27,7 @@ import {
     Redeem,
 } from "../../generated/templates/PrincipalToken/PrincipalToken"
 import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
-// import { createAPRInTimeForLPVault } from "../entities/APRInTime"
+// import { createAPYInTimeForLPVault } from "../entities/APYInTime"
 import { getAccount } from "../entities/Account"
 import {
     updateAccountAssetBalance,
@@ -56,7 +56,7 @@ import {
 import { AssetType, generateFeeClaimId } from "../utils"
 // import FutureState from "../utils/FutureState"
 import transactionType from "../utils/TransactionType"
-// import { calculateLpVaultAPR } from "../utils/calculateAPR"
+// import { calculateLpVaultAPY } from "../utils/calculateAPY"
 import { generateTransactionId } from "../utils/idGenerators"
 
 export function handleRegistryChange(event: RegistryChange): void {
@@ -520,10 +520,10 @@ export function handlePTTransfer(event: PTTransfer): void {
 //     // Create dynamic data source for LPVault events
 //     LPVaultTemplate.create(Address.fromBytes(lpVault.address))
 //
-//     let lpVaultAPR = createAPRInTimeForLPVault(
+//     let lpVaultAPY = createAPYInTimeForLPVault(
 //         event.params.lpv,
 //         event.block.timestamp
 //     )
-//     lpVaultAPR.apr = calculateLpVaultAPR(event.params.lpv)
-//     lpVaultAPR.save()
+//     lpVaultAPY.apy = calculateLpVaultAPY(event.params.lpv)
+//     lpVaultAPY.save()
 // }

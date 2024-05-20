@@ -3,7 +3,7 @@ import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 import { Future, Factory, Pool } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
 import { AssetType } from "../utils"
-import { createAPRInTimeForPool } from "./APRInTime"
+import { createAPYInTimeForPool } from "./APYInTime"
 import { getAsset } from "./Asset"
 import { getAssetAmount } from "./AssetAmount"
 import {
@@ -102,13 +102,13 @@ export function createPool(params: PoolDetails): Pool {
 
     let spotPrice = getPoolPriceScale(params.poolAddress)
     if (pool.futureVault) {
-        let poolAPR = createAPRInTimeForPool(
+        let poolAPY = createAPYInTimeForPool(
             params.poolAddress,
             params.timestamp,
             params.blockNumber
         )
 
-        poolAPR.save()
+        poolAPY.save()
     }
 
     pool.spotPrice = spotPrice

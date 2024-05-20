@@ -91,7 +91,7 @@ import {
     ACCOUNT_ASSET_ENTITY,
     ACCOUNT_ENTITY,
     FUTURE_DAILY_STATS_ENTITY,
-    APR_IN_TIME_ENTITY,
+    APY_IN_TIME_ENTITY,
 } from "./utils/entities"
 
 const ADD_LIQUIDITY_LOG_INDEX = BigInt.fromI32(1)
@@ -936,12 +936,12 @@ describe("handleTokenExchange()", () => {
         )
     })
 
-    // TODO: Fix pool APR
-    // test("Recalculate pool APR", () => {
+    // TODO: Fix pool APY
+    // test("Recalculate pool APY", () => {
     //     assert.fieldEquals(
-    //         APR_IN_TIME_ENTITY,
+    //         APY_IN_TIME_ENTITY,
     //         `${FIRST_POOL_ADDRESS_MOCK.toHex()}-0`,
-    //         "apr",
+    //         "apy",
     //         "63113852000"
     //     )
     // })
@@ -1224,11 +1224,11 @@ describe("handleRemoveLiquidityOne()", () => {
     })
 
     test("Recalculate pool APR", () => {
-        const aprInTimeId = `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`
+        const apyInTimeId = `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`
 
         assert.fieldEquals(
-            APR_IN_TIME_ENTITY,
-            aprInTimeId,
+            APY_IN_TIME_ENTITY,
+            apyInTimeId,
             "spotPrice",
             POOL_PRICE_SCALE_MOCK.toString()
         )

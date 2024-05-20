@@ -332,7 +332,7 @@ type Transaction @entity {
 # AMM
 ####################
 
-type APRInTime @entity {
+type APYInTime @entity {
     id: ID!
     createdAtTimestamp: BigInt!
     block: BigInt!
@@ -374,7 +374,7 @@ type Pool @entity {
     liquidityPositions: [AccountAsset!]! @derivedFrom(field: "pool")
 
     spotPrice: BigInt!
-    apr: [APRInTime!]! @derivedFrom(field: "pool")
+    apy: [APYInTime!]! @derivedFrom(field: "pool")
 }
 
 type Transfer @entity {
@@ -431,5 +431,5 @@ type LPVault @entity {
     transactions: [Transaction!]! @derivedFrom(field: "lpVaultInTransaction")
 
     # interestInTime: [LPVaultInterest!]! @derivedFrom(field: "lpVault")
-    apr: [APRInTime!]! @derivedFrom(field: "lpVault")
+    apy: [APYInTime!]! @derivedFrom(field: "lpVault")
 }

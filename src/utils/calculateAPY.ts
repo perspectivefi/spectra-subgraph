@@ -2,7 +2,7 @@ import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts"
 
 import { LPVault } from "../../generated/schema"
 import { SECONDS_PER_YEAR, ZERO_BD } from "../constants"
-import { createAPRInTimeForPool } from "../entities/APRInTime"
+import { createAPYInTimeForPool } from "../entities/APYInTime"
 import { getPoolPriceScale } from "../entities/CurvePool"
 import {
     getIBTRate,
@@ -10,13 +10,13 @@ import {
     getExpirationTimestamp,
 } from "../entities/FutureVault"
 
-export function updatePoolAPR(
+export function updatePoolAPY(
     poolAddress: Address,
     principalToken: Address,
     currentTimestamp: BigInt,
     blockNumber: BigInt
 ): void {
-    let poolAPR = createAPRInTimeForPool(
+    let poolAPY = createAPYInTimeForPool(
         poolAddress,
         currentTimestamp,
         blockNumber
@@ -29,11 +29,11 @@ export function updatePoolAPR(
     const timeLeft = expirationTimestamp.minus(currentTimestamp)
     const spotPrice = getPoolPriceScale(poolAddress)
 
-    poolAPR.spotPrice = spotPrice
+    poolAPY.spotPrice = spotPrice
     const ibtRate = getIBTRate(principalToken)
     const ptRate = getPTRate(principalToken)
-    poolAPR.ptRate = ptRate
-    poolAPR.ibtRate = ibtRate
+    poolAPY.ptRate = ptRate
+    poolAPY.ibtRate = ibtRate
 
     const baseAPY = ptRate
         .times(curveUnit)
@@ -42,17 +42,17 @@ export function updatePoolAPR(
     const expAPY = SECONDS_PER_YEAR.div(
         BigDecimal.fromString(timeLeft.toString())
     )
-    poolAPR.baseAPY = baseAPY
-    poolAPR.exponentAPY = expAPY
-    poolAPR.save()
+    poolAPY.baseAPY = baseAPY
+    poolAPY.exponentAPY = expAPY
+    poolAPY.save()
 }
 
-const LP_VAULT_APR_MOCK: BigDecimal[] = [
+const LP_VAULT_APY_MOCK: BigDecimal[] = [
     BigDecimal.fromString("3"),
     BigDecimal.fromString("6"),
 ]
 
-export function calculateLpVaultAPR(lpVaultAddress: Address): BigDecimal {
+export function calculateLpVaultAPY(lpVaultAddress: Address): BigDecimal {
     let lpVault = LPVault.load(lpVaultAddress.toHex())
 
     if (lpVault) {
@@ -60,11 +60,11 @@ export function calculateLpVaultAPR(lpVaultAddress: Address): BigDecimal {
         if (
             lpVault.underlying == "0x792f2d31b2aadac705d57735855b299f84b999b9"
         ) {
-            return LP_VAULT_APR_MOCK[0]
+            return LP_VAULT_APY_MOCK[0]
         } else if (
             lpVault.underlying == "0x8494a4761a5d969d3f80f7110fbaa29e4072cdcd"
         ) {
-            return LP_VAULT_APR_MOCK[1]
+            return LP_VAULT_APY_MOCK[1]
         }
     }
 
