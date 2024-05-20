@@ -35,6 +35,7 @@ import {
 } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
+import { getPoolLPToken } from "../entities/CurvePool"
 import { createFactory, getCurveFactory } from "../entities/Factory"
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import {
@@ -58,7 +59,6 @@ import { AssetType, generateFeeClaimId } from "../utils"
 import transactionType from "../utils/TransactionType"
 // import { calculateLpVaultAPR } from "../utils/calculateAPR"
 import { generateTransactionId } from "../utils/idGenerators"
-import { getPoolLPToken } from "../entities/CurvePool";
 
 export function handleRegistryChange(event: RegistryChange): void {
     let factory = Factory.load(event.address.toHex())
