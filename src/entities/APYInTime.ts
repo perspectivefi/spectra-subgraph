@@ -19,7 +19,7 @@ export function createAPYInTimeForPool(
     apyInTime.spotPrice = UNIT_BI
     apyInTime.ptRate = ZERO_BI
     apyInTime.ibtRate = ZERO_BI
-    apyInTime.baseAPY = ZERO_BI
+    apyInTime.baseAPY = ZERO_BD
     apyInTime.exponentAPY = ZERO_BD
 
     apyInTime.save()
@@ -41,7 +41,7 @@ export function createAPYInTimeForLPVault(
     apyInTime.spotPrice = UNIT_BI
     apyInTime.ptRate = ZERO_BI
     apyInTime.ibtRate = ZERO_BI
-    apyInTime.baseAPY = ZERO_BI
+    apyInTime.baseAPY = ZERO_BD
     apyInTime.exponentAPY = ZERO_BD
     apyInTime.save()
 

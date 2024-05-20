@@ -42,7 +42,9 @@ export function updatePoolAPY(
     const expAPY = SECONDS_PER_YEAR.div(
         BigDecimal.fromString(timeLeft.toString())
     )
-    poolAPY.baseAPY = baseAPY
+    poolAPY.baseAPY = BigDecimal.fromString(baseAPY.toString()).div(
+        BigDecimal.fromString(rayUnit.toString())
+    )
     poolAPY.exponentAPY = expAPY
     poolAPY.save()
 }

@@ -340,7 +340,7 @@ type APYInTime @entity {
     ptRate: BigInt!
     ibtRate: BigInt!
     pool: Pool
-    baseAPY: BigInt!
+    baseAPY: BigDecimal!
     exponentAPY: BigDecimal!
     lpVault: LPVault
 }
