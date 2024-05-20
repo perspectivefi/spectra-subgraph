@@ -58,6 +58,7 @@ import { AssetType, generateFeeClaimId } from "../utils"
 import transactionType from "../utils/TransactionType"
 // import { calculateLpVaultAPR } from "../utils/calculateAPR"
 import { generateTransactionId } from "../utils/idGenerators"
+import { getPoolLPToken } from "../entities/CurvePool";
 
 export function handleRegistryChange(event: RegistryChange): void {
     let factory = Factory.load(event.address.toHex())
@@ -401,16 +402,22 @@ export function handleCurveFactoryChange(event: CurveFactoryChange): void {
 }
 
 export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
+    const lpAddress = getPoolLPToken(event.params.poolAddress)
+
     createPool({
         poolAddress: event.params.poolAddress,
         ibtAddress: event.params.ibt,
         factoryAddress: event.address,
         ptAddress: event.params.pt,
+        lpAddress: lpAddress,
         timestamp: event.block.timestamp,
         logIndex: event.logIndex,
         transactionHash: event.transaction.hash,
         blockNumber: event.block.number,
     })
+
+    // Create dynamic data source for LP token events
+    ERC20.create(lpAddress)
 }
 
 export function handleYieldUpdated(event: YieldUpdated): void {
