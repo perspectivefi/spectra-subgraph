@@ -14,7 +14,7 @@
         "deploy": "graph deploy perspectivefi/spectra-mainnet --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
         "deploy:local": "graph deploy perspectivefi/spectra-mainnet --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
         "deploy:goerli": "graph deploy perspectivefi/spectra-goerli subgraph.goerli.yaml --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
-        "deploy:sepolia": "graph deploy --studio spectra-subgraph-sepolia subgraph.sepolia.yaml",
+        "deploy:sepolia": "graph deploy --studio spectra-sepolia subgraph.sepolia.yaml",
         "deploy:test": "graph deploy matstyler/spectra-subgraph subgraph.goerli.yaml --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/",
         "generate-config:local": "node ./src/scripts/subgraphConfigGenerator.js local",
         "generate-config": "node ./src/scripts/subgraphConfigGenerator.js",
