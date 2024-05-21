@@ -7,7 +7,7 @@
 This subgraph can be found on The Graph Hosted Service for the following networks:
 
 -   [Mainnet](https://thegraph.com/hosted-service/subgraph/perspectivefi/spectra-mainnet)
--   [Sepolia](https://api.studio.thegraph.com/query/58996/spectra-subgraph-sepolia/version/latest)
+-   [Sepolia](https://api.studio.thegraph.com/query/58996/spectra-sepolia/version/latest)
 
 You can also run this subgraph locally, if you wish. Instructions for that can be found in [The Graph Documentation](https://thegraph.com/docs/en/cookbook/quick-start/).
 
