@@ -20,7 +20,7 @@ import { getERC20Decimals, getERC20TotalSupply } from "../entities/ERC20"
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import { createTransaction } from "../entities/Transaction"
 import { AssetType, generateFeeClaimId } from "../utils"
-import { updatePoolAPR } from "../utils/calculateAPR"
+import { updatePoolAPY } from "../utils/calculateAPY"
 import { generateTransactionId } from "../utils/idGenerators"
 import { toPrecision } from "../utils/toPrecision"
 
@@ -163,7 +163,7 @@ export function handleAddLiquidity(event: AddLiquidity): void {
         }
 
         if (pool.futureVault) {
-            updatePoolAPR(
+            updatePoolAPY(
                 event.address,
                 Address.fromString(pool.futureVault!),
                 event.block.timestamp,
@@ -447,7 +447,7 @@ export function handleTokenExchange(event: TokenExchange): void {
         }
 
         if (pool.futureVault) {
-            updatePoolAPR(
+            updatePoolAPY(
                 event.address,
                 Address.fromString(pool.futureVault!),
                 event.block.timestamp,
@@ -606,7 +606,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
         }
 
         if (pool.futureVault) {
-            updatePoolAPR(
+            updatePoolAPY(
                 event.address,
                 Address.fromString(pool.futureVault!),
                 event.block.timestamp,

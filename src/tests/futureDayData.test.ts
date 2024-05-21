@@ -1,4 +1,4 @@
-import { BigDecimal } from "@graphprotocol/graph-ts"
+import { BigDecimal, BigInt } from "@graphprotocol/graph-ts"
 import { assert, beforeAll, clearStore, describe, test } from "matchstick-as"
 
 import { FutureDailyStats } from "../../generated/schema"
@@ -23,6 +23,7 @@ import {
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
     IBT_ADDRESS_MOCK,
     mockFutureVaultFunctions,
+    mockFutureVaultIBTRate,
 } from "./mocks/FutureVault"
 import { assertAlmostEquals } from "./utils/asserts"
 import { FUTURE_DAILY_STATS_ENTITY } from "./utils/entities"
@@ -47,14 +48,12 @@ describe("APY Computations on futureDailyStats", () => {
 
     test("Should create 2 FutureDailyStats entities with a 1 week interval", () => {
         // Mock the rate of the interest bearing token (1 IBT = 1 underlying)
-        let rate0D = "1000000000000000000"
-        const expectedRate0D = BigDecimal.fromString(rate0D)
-        createConvertToAssetsCallMockFromString(IBT_ADDRESS_MOCK, rate0D)
+        let rate0D = BigInt.fromU64(1000000000000000000)
+        mockFutureVaultIBTRate(FIRST_FUTURE_VAULT_ADDRESS_MOCK, rate0D)
         emitMint() // make a first deposit at timestamp 0
-        let rate7D = "1009651000000000000"
-        const expectedRate7D = BigDecimal.fromString(rate7D)
+        let rate7D = BigInt.fromU64(1009651000000000000)
         // Mock a change of rate of the interest bearing token (1 IBT = 1.00961 underlying <=> 50% anualized APR)
-        createConvertToAssetsCallMockFromString(IBT_ADDRESS_MOCK, rate7D)
+        mockFutureVaultIBTRate(FIRST_FUTURE_VAULT_ADDRESS_MOCK, rate7D)
         emitMint(7 * SECONDS_PER_DAY) // make a second deposit at timestamp 7 days
 
         assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 2)
@@ -64,8 +63,8 @@ describe("APY Computations on futureDailyStats", () => {
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 "0"
             ),
-            "ibtRate",
-            expectedRate0D.toString()
+            "ibtRateMA",
+            rate0D.toString()
         )
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
@@ -73,8 +72,8 @@ describe("APY Computations on futureDailyStats", () => {
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 "7"
             ),
-            "ibtRate",
-            expectedRate7D.toString()
+            "ibtRateMA",
+            rate7D.toString()
         )
     })
 
@@ -92,23 +91,22 @@ describe("APY Computations on futureDailyStats", () => {
     })
 
     test("Should compute correctly the 30D APR", () => {
-        let rate30D = "1041666666666666752"
-        const expectedRate30D = BigDecimal.fromString(rate30D)
+        let rate30D = BigInt.fromU64(1041666666666666752)
         const futureDailyStats30Id = generateFutureDailyStatsId(
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
             "30"
         )
 
         // Mock a change of rate of the interest bearing token (1 IBT = 1.04167 underlying <=> 50% anualized APR)
-        createConvertToAssetsCallMockFromString(IBT_ADDRESS_MOCK, rate30D)
+        mockFutureVaultIBTRate(FIRST_FUTURE_VAULT_ADDRESS_MOCK, rate30D)
         emitMint(30 * SECONDS_PER_DAY) // make a third deposit at timestamp 30 days
 
         assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 3)
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
             futureDailyStats30Id,
-            "ibtRate",
-            expectedRate30D.toString()
+            "ibtRateMA",
+            rate30D.toString()
         )
 
         let loadFutureDailyStats = FutureDailyStats.load(futureDailyStats30Id)
@@ -119,22 +117,21 @@ describe("APY Computations on futureDailyStats", () => {
     })
 
     test("Should compute correctly the 90D APR", () => {
-        let rate90D = "1125000000000000000"
-        const expectedRate90D = BigDecimal.fromString(rate90D)
+        let rate90D = BigInt.fromU64(1125000000000000000)
         const futureDailyStats90Id = generateFutureDailyStatsId(
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
             "90"
         )
         // Mock a change of rate of the interest bearing token (1 IBT = 1.125 underlying <=> 50% anualized APR)
-        createConvertToAssetsCallMockFromString(IBT_ADDRESS_MOCK, rate90D)
+        mockFutureVaultIBTRate(FIRST_FUTURE_VAULT_ADDRESS_MOCK, rate90D)
         emitMint(90 * SECONDS_PER_DAY) // make a third deposit at timestamp 90 days
 
         assert.entityCount(FUTURE_DAILY_STATS_ENTITY, 4)
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
             futureDailyStats90Id,
-            "ibtRate",
-            expectedRate90D.toString()
+            "ibtRateMA",
+            rate90D.toString()
         )
 
         let loadFutureDailyStats = FutureDailyStats.load(futureDailyStats90Id)
@@ -147,14 +144,14 @@ describe("APY Computations on futureDailyStats", () => {
 
 describe("IBT Rate Average computation in FutureDailyStats", () => {
     beforeAll(() => {
-        let rate120D = "1000000000000000000"
-        createConvertToAssetsCallMockFromString(IBT_ADDRESS_MOCK, rate120D)
+        let rate120D = BigInt.fromU64(1000000000000000000)
+        mockFutureVaultIBTRate(FIRST_FUTURE_VAULT_ADDRESS_MOCK, rate120D)
         emitMint(120 * SECONDS_PER_DAY) // make a deposit on day 120
-        rate120D = "2000000000000000000"
-        createConvertToAssetsCallMockFromString(IBT_ADDRESS_MOCK, rate120D)
+        rate120D = BigInt.fromU64(2000000000000000000)
+        mockFutureVaultIBTRate(FIRST_FUTURE_VAULT_ADDRESS_MOCK, rate120D)
         emitMint(120 * SECONDS_PER_DAY) // make a deposit on day 120
-        rate120D = "3000000000000000000"
-        createConvertToAssetsCallMockFromString(IBT_ADDRESS_MOCK, rate120D)
+        rate120D = BigInt.fromU64(3000000000000000000)
+        mockFutureVaultIBTRate(FIRST_FUTURE_VAULT_ADDRESS_MOCK, rate120D)
         emitMint(120 * SECONDS_PER_DAY) // make a deposit on day 120
     })
 
@@ -175,7 +172,7 @@ describe("IBT Rate Average computation in FutureDailyStats", () => {
         )
     })
 
-    test("The FutureDayDaya updated corretly the ibtRate using the incremental average formula", () => {
+    test("The FutureDayDaya updated corretly the ibtRateMA using the incremental average formula", () => {
         const futureDailyStats120Id = generateFutureDailyStatsId(
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
             "120"
@@ -183,7 +180,7 @@ describe("IBT Rate Average computation in FutureDailyStats", () => {
         assert.fieldEquals(
             FUTURE_DAILY_STATS_ENTITY,
             futureDailyStats120Id,
-            "ibtRate",
+            "ibtRateMA",
             "2000000000000000000"
         )
     })

@@ -53,6 +53,7 @@ import {
     POOL_SECOND_EXCHANGE_TRANSACTION_HASH,
     FIRST_POOL_ADDRESS_MOCK,
     SECOND_POOL_ADDRESS_MOCK,
+    POOL_PRICE_SCALE_MOCK,
 } from "./mocks/CurvePool"
 import {
     STANDARD_DECIMALS_MOCK,
@@ -80,6 +81,7 @@ import {
     FIRST_USER_MOCK,
     IBT_ADDRESS_MOCK,
     mockFutureVaultFunctions,
+    mockFutureVaultIBTRate,
 } from "./mocks/FutureVault"
 import {
     ASSET_AMOUNT_ENTITY,
@@ -89,7 +91,7 @@ import {
     ACCOUNT_ASSET_ENTITY,
     ACCOUNT_ENTITY,
     FUTURE_DAILY_STATS_ENTITY,
-    APR_IN_TIME_ENTITY,
+    APY_IN_TIME_ENTITY,
 } from "./utils/entities"
 
 const ADD_LIQUIDITY_LOG_INDEX = BigInt.fromI32(1)
@@ -145,7 +147,10 @@ describe("handleAddLiquidity()", () => {
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
         mockCurvePoolFunctions()
-        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        mockFutureVaultIBTRate(
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK,
+            BigInt.fromI32(1)
+        )
         createConvertToSharesCallMock(
             IBT_ADDRESS_MOCK,
             toPrecision(BigInt.fromI32(10), 1, 18)
@@ -403,7 +408,7 @@ describe("handleAddLiquidity()", () => {
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 DAY_ID_0
             ),
-            "ibtRate",
+            "ibtRateMA",
             "1"
         )
     })
@@ -655,7 +660,7 @@ describe("handleRemoveLiquidity()", () => {
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 DAY_ID_0
             ),
-            "ibtRate",
+            "ibtRateMA",
             "1"
         )
     })
@@ -926,17 +931,17 @@ describe("handleTokenExchange()", () => {
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 DAY_ID_0
             ),
-            "ibtRate",
+            "ibtRateMA",
             "1"
         )
     })
 
-    // TODO: Fix pool APR
-    // test("Recalculate pool APR", () => {
+    // TODO: Fix pool APY
+    // test("Recalculate pool APY", () => {
     //     assert.fieldEquals(
-    //         APR_IN_TIME_ENTITY,
+    //         APY_IN_TIME_ENTITY,
     //         `${FIRST_POOL_ADDRESS_MOCK.toHex()}-0`,
-    //         "apr",
+    //         "apy",
     //         "63113852000"
     //     )
     // })
@@ -1213,42 +1218,20 @@ describe("handleRemoveLiquidityOne()", () => {
                 FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
                 DAY_ID_0
             ),
-            "ibtRate",
+            "ibtRateMA",
             "1"
         )
     })
 
     test("Recalculate pool APR", () => {
-        const aprInTimeId = `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`
+        const apyInTimeId = `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`
 
         assert.fieldEquals(
-            APR_IN_TIME_ENTITY,
-            aprInTimeId,
+            APY_IN_TIME_ENTITY,
+            apyInTimeId,
             "spotPrice",
-            "90000000000"
+            POOL_PRICE_SCALE_MOCK.toString()
         )
-
-        assert.fieldEquals(
-            APR_IN_TIME_ENTITY,
-            aprInTimeId,
-            "ibtRate",
-            "200000000000000000"
-        )
-
-        assert.fieldEquals(
-            APR_IN_TIME_ENTITY,
-            aprInTimeId,
-            "underlyingToPT",
-            "90000000000"
-        )
-
-        // TODO: Fix pool APR
-        // assert.fieldEquals(
-        //     APR_IN_TIME_ENTITY,
-        //     aprInTimeId,
-        //     "apr",
-        //     "126227704000"
-        // )
     })
 })
 

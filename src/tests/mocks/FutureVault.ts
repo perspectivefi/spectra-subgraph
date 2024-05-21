@@ -50,7 +50,8 @@ export const YIELD_USER_YIELD_IN_IBT_MOCK = BigInt.fromString("110")
 export const SENDER_YIELD_IN_IBT_MOCK = BigInt.fromString("220")
 export const RECEIVER_YIELD_IN_IBT_MOCK = BigInt.fromString("330")
 
-const IBT_RATE_MOCK = toPrecision(BigInt.fromI32(2), 1, RAYS_PRECISION)
+const IBT_RATE_MOCK = toPrecision(BigInt.fromI32(2), 0, RAYS_PRECISION)
+const PT_RATE_MOCK = toPrecision(BigInt.fromI32(1), 0, RAYS_PRECISION)
 
 export function mockFutureVaultFunctions(): void {
     ;[
@@ -101,6 +102,12 @@ export function mockFutureVaultFunctions(): void {
             "getIBTRate",
             "getIBTRate():(uint256)"
         ).returns([ethereum.Value.fromUnsignedBigInt(IBT_RATE_MOCK)])
+
+        createMockedFunction(
+            addressMock,
+            "getPTRate",
+            "getPTRate():(uint256)"
+        ).returns([ethereum.Value.fromUnsignedBigInt(PT_RATE_MOCK)])
 
         createMockedFunction(addressMock, "getYT", "getYT():(address)").returns(
             [ethereum.Value.fromAddress(YT_ADDRESS_MOCK)]
@@ -168,4 +175,15 @@ export function mockFutureVaultFunctions(): void {
                 ethereum.Value.fromUnsignedBigInt(RECEIVER_YIELD_IN_IBT_MOCK),
             ])
     })
+}
+
+export function mockFutureVaultIBTRate(
+    futureVaultAddress: Address,
+    rate: BigInt
+): void {
+    createMockedFunction(
+        futureVaultAddress,
+        "getIBTRate",
+        "getIBTRate():(uint256)"
+    ).returns([ethereum.Value.fromUnsignedBigInt(rate)])
 }

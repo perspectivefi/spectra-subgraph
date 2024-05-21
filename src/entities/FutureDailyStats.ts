@@ -4,7 +4,8 @@ import { Future, FutureDailyStats } from "../../generated/schema"
 import { DAYS_PER_YEAR_BD, ZERO_BD, ZERO_BI } from "../constants"
 import { generateFutureDailyStatsId } from "../utils"
 import { getDayIdFromTimestamp, getPastDayId } from "../utils/dayId"
-import { getIBTRate } from "./ERC4626"
+import { getERC20Decimals } from "./ERC20"
+import { getIBTRate, getPTRate, getUnderlying } from "./FutureVault"
 
 /**
  * Update the daily data for a future. This function is called every time a
@@ -19,6 +20,8 @@ export function updateFutureDailyStats(
     futureAddress: Address
 ): FutureDailyStats {
     let dayId = getDayIdFromTimestamp(event.block.timestamp)
+    const asset = getUnderlying(futureAddress)
+    const underlyingDecimals = getERC20Decimals(asset)
     const futureDailyStatsID = generateFutureDailyStatsId(
         futureAddress.toHex(),
         dayId.toString()
@@ -27,17 +30,20 @@ export function updateFutureDailyStats(
     if (futureDailyStats === null) {
         futureDailyStats = createFutureDailyStats(futureAddress, dayId)
     }
-    let future = Future.load(futureAddress.toHex())
-    let ibt = future!.ibtAsset
-    const currentRate = getIBTRate(Address.fromString(ibt))
-
-    let currentIBTRate = futureDailyStats.ibtRate
+    const currentRate = getIBTRate(futureAddress)
+    const currentPTRate = getPTRate(futureAddress)
+    let currentIBTRateMA = futureDailyStats.ibtRateMA
     let dailyUpdates = futureDailyStats.dailyUpdates.plus(BigInt.fromI32(1))
+    const precision = BigInt.fromI32(underlyingDecimals)
     // Compute the ibt rate new average
-    futureDailyStats.ibtRate = currentIBTRate.plus(
-        currentRate.minus(currentIBTRate).div(dailyUpdates)
+    let scaledDifference = currentRate.minus(currentIBTRateMA).times(precision)
+    let scaledDivision = scaledDifference.div(dailyUpdates)
+    futureDailyStats.ibtRateMA = currentIBTRateMA.plus(
+        scaledDivision.div(precision)
     )
     futureDailyStats.dailyUpdates = dailyUpdates
+    futureDailyStats.lastIBTRate = currentRate
+    futureDailyStats.lastPTRate = currentPTRate
 
     futureDailyStats.realizedAPR7D = getAPR(
         futureAddress,
@@ -82,7 +88,7 @@ export function getAPR(
     if (previousFutureDailyStats === null) {
         return ZERO_BD
     }
-    const previousRate = previousFutureDailyStats.ibtRate
+    const previousRate = previousFutureDailyStats.ibtRateMA
     if (previousRate.equals(ZERO_BI)) {
         return ZERO_BD
     }
@@ -143,7 +149,9 @@ export function createFutureDailyStats(
     futureDailyStats.dailyAddLiquidity = ZERO_BI
     futureDailyStats.dailyRemoveLiquidity = ZERO_BI
     futureDailyStats.dailyUpdates = ZERO_BI
-    futureDailyStats.ibtRate = ZERO_BI
+    futureDailyStats.ibtRateMA = ZERO_BI
+    futureDailyStats.lastIBTRate = ZERO_BI
+    futureDailyStats.lastPTRate = ZERO_BI
     futureDailyStats.realizedAPR7D = ZERO_BD
     futureDailyStats.realizedAPR30D = ZERO_BD
     futureDailyStats.realizedAPR90D = ZERO_BD

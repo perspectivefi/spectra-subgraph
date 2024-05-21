@@ -268,7 +268,9 @@ type FutureDailyStats @entity {
   dailyAddLiquidity: BigInt! # total add liquidity in the day in the AMM (the unit is a count of transactions)
   dailyRemoveLiquidity: BigInt! # total remove liquidity in the day in the AMM (the unit is a count of transactions)
   dailyUpdates: BigInt! # total updates of the FutureDailyStats. This is used to compute the IBT rate as an incremental average (the unit is a count of transactions)
-  ibtRate: BigInt! # The average rate of the IBT token for the day
+  ibtRateMA: BigInt! # The average rate of the IBT token for the day
+  lastIBTRate: BigInt! # The last rate of the IBT token for the day
+  lastPTRate: BigInt! # The last rate of the PT token for the day
   realizedAPR7D: BigDecimal! # The realized APR (in % i.e: realizedAPR7D = 1 <==> APR = 100%) of the IBT token over the last 7 days
   realizedAPR30D: BigDecimal! # The realized APR of the IBT token over the last 30 days
   realizedAPR90D: BigDecimal! # The realized APR of the IBT token over the last 90 days
@@ -330,19 +332,16 @@ type Transaction @entity {
 # AMM
 ####################
 
-type APRInTime @entity {
+type APYInTime @entity {
     id: ID!
     createdAtTimestamp: BigInt!
     block: BigInt!
-
     spotPrice: BigInt!
+    ptRate: BigInt!
     ibtRate: BigInt!
-    ibtSharesRate: BigInt!
-    underlyingToPT: BigInt!
-    "in %"
-    apr: BigDecimal!
-
     pool: Pool
+    baseAPY: BigDecimal!
+    exponentAPY: BigDecimal!
     lpVault: LPVault
 }
 
@@ -375,7 +374,7 @@ type Pool @entity {
     liquidityPositions: [AccountAsset!]! @derivedFrom(field: "pool")
 
     spotPrice: BigInt!
-    apr: [APRInTime!]! @derivedFrom(field: "pool")
+    apy: [APYInTime!]! @derivedFrom(field: "pool")
 }
 
 type Transfer @entity {
@@ -432,5 +431,5 @@ type LPVault @entity {
     transactions: [Transaction!]! @derivedFrom(field: "lpVaultInTransaction")
 
     # interestInTime: [LPVaultInterest!]! @derivedFrom(field: "lpVault")
-    apr: [APRInTime!]! @derivedFrom(field: "lpVault")
+    apy: [APYInTime!]! @derivedFrom(field: "lpVault")
 }
