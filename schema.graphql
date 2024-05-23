@@ -116,6 +116,23 @@ type Factory @entity {
 }
 
 ####################
+# IBT and Rates
+####################
+
+type IBT @entity {
+    id: ID!
+    chainId: Int!
+    address: Bytes!
+    createdAtTimestamp: BigInt!
+    ibtDetails: Asset!
+    "IBT to underlying asset as a regular number with no decimals"
+    lastIBTRate: BigDecimal! 
+    "IBT to underlying asset as returned by convertToAssets(UNIT). The number is in underlying asset decimals"
+    convertToAssetsUnit: BigInt!
+    lastUpdateTimestamp: BigInt!
+}
+
+####################
 # Assets and prices
 ####################
 
@@ -229,6 +246,7 @@ type Future @entity {
     state: FutureState!
     underlyingAsset: Asset!
     ibtAsset: Asset!
+    ibt: IBT!
 
     pools: [Pool!]! @derivedFrom(field: "futureVault")
 

@@ -7,6 +7,7 @@ import {
     updateAccountAssetYTBalance,
 } from "../entities/AccountAsset"
 import { getAssetAmount } from "../entities/AssetAmount"
+import { updateIBTRates } from "../entities/IBT"
 import { updateYieldForAll } from "../entities/Yield"
 import { AssetType, logWarning } from "../utils"
 import { generateTransferId } from "../utils/idGenerators"
@@ -88,4 +89,13 @@ export function handleTransfer(event: TransferEvent): void {
             event.address.toHex(),
         ])
     }
+}
+
+/** @dev Handles the Transfer event for IBT tokens.
+ * @param event The Transfer event.
+ * @notice We use a separate function for IBT tokens because to limit the number of entities stored we won't store all IBT transfer entities. We will simply update the IBT entity to update its IBTRate.
+ * @returns void
+ */
+export function handleIBTTransfer(event: TransferEvent): void {
+    updateIBTRates(event.address, event.block.timestamp)
 }

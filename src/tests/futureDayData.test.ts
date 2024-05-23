@@ -1,4 +1,4 @@
-import { BigDecimal, BigInt } from "@graphprotocol/graph-ts"
+import { Address, BigDecimal, BigInt } from "@graphprotocol/graph-ts"
 import { assert, beforeAll, clearStore, describe, test } from "matchstick-as"
 
 import { FutureDailyStats } from "../../generated/schema"
@@ -15,8 +15,15 @@ import {
     FIRST_POOL_ADDRESS_MOCK,
     mockCurvePoolFunctions,
 } from "./mocks/CurvePool"
-import { mockERC20Balances, mockERC20Functions } from "./mocks/ERC20"
-import { createConvertToAssetsCallMockFromString } from "./mocks/ERC4626"
+import {
+    ETH_ADDRESS_MOCK,
+    mockERC20Balances,
+    mockERC20Functions,
+} from "./mocks/ERC20"
+import {
+    createAssetCallMock,
+    createConvertToAssetsCallMock,
+} from "./mocks/ERC4626"
 import { mockFactoryFunctions } from "./mocks/Factory"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
@@ -39,6 +46,11 @@ describe("APY Computations on futureDailyStats", () => {
         mockFeedRegistryInterfaceFunctions()
         mockFactoryFunctions()
         mockCurvePoolFunctions()
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        createAssetCallMock(
+            IBT_ADDRESS_MOCK,
+            Address.fromString(ETH_ADDRESS_MOCK)
+        )
 
         emitFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)

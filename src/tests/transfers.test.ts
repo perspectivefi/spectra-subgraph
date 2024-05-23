@@ -31,13 +31,17 @@ import {
     POOL_PT_ADDRESS_MOCK,
 } from "./mocks/CurvePool"
 import {
+    ETH_ADDRESS_MOCK,
     mockERC20Balances,
     mockERC20Functions,
     POOL_LP_BALANCE_MOCK,
     POOL_PT_BALANCE_MOCK,
     STANDARD_DECIMALS_MOCK,
 } from "./mocks/ERC20"
-import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
+import {
+    createAssetCallMock,
+    createConvertToAssetsCallMock,
+} from "./mocks/ERC4626"
 import { mockFactoryFunctions } from "./mocks/Factory"
 import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
@@ -87,6 +91,12 @@ describe("handleTransfer()", () => {
 
         mockFactoryFunctions()
 
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        createAssetCallMock(
+            IBT_ADDRESS_MOCK,
+            Address.fromString(ETH_ADDRESS_MOCK)
+        )
+
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
         mockCurvePoolFunctions()
@@ -95,8 +105,6 @@ describe("handleTransfer()", () => {
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChange()
         emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
-
-        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
         // Necessary to have YT entity to follow yield
         emitMint(0, SENDER_USER_MOCK)
         emitMint(0, RECEIVER_USER_MOCK)
