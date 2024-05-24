@@ -97,6 +97,14 @@ const createPriceScaleCallMock = (addressMock: Address): void => {
     ).returns([ethereum.Value.fromSignedBigInt(POOL_PRICE_SCALE_MOCK)])
 }
 
+const createLastPricesCallMock = (addressMock: Address): void => {
+    createMockedFunction(
+        addressMock,
+        "last_prices",
+        "last_prices():(uint256)"
+    ).returns([ethereum.Value.fromSignedBigInt(POOL_PRICE_SCALE_MOCK)])
+}
+
 const createCoinsCallMock = (addressMock: Address): void => {
     createMockedFunction(addressMock, "coins", "coins(uint256):(address)")
         .withArgs([ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(0))])
@@ -153,6 +161,7 @@ export function mockCurvePoolFunctions(): void {
             createFutureAdminFeeCallMock(addressMock)
             createFutureAdminFeeChangeDeadlineCallMock(addressMock)
             createPriceScaleCallMock(addressMock)
+            createLastPricesCallMock(addressMock)
             createCoinsCallMock(addressMock)
         }
     )

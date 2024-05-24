@@ -10,10 +10,8 @@ import {
     getPoolAdminFee,
     getPoolFee,
     getPoolFutureAdminFee,
-    getPoolLPToken,
-    getPoolPriceScale,
+    getPoolLastPrices,
 } from "./CurvePool"
-import { getERC20TotalSupply } from "./ERC20"
 import { getCurveFactory } from "./Factory"
 
 class PoolDetails {
@@ -101,7 +99,7 @@ export function createPool(params: PoolDetails): Pool {
         }
     }
 
-    let spotPrice = getPoolPriceScale(params.poolAddress)
+    let spotPrice = getPoolLastPrices(params.poolAddress)
     if (pool.futureVault) {
         let poolAPY = createAPYInTimeForPool(
             params.poolAddress,
