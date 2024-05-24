@@ -15,7 +15,7 @@ import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
-import { getPoolPriceScale, getPoolLPToken } from "../entities/CurvePool"
+import { getPoolLastPrices, getPoolLPToken } from "../entities/CurvePool"
 import { getERC20Decimals, getERC20TotalSupply } from "../entities/ERC20"
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import { createTransaction } from "../entities/Transaction"
@@ -419,7 +419,7 @@ export function handleTokenExchange(event: TokenExchange): void {
         pool.totalFees = pool.totalFees.plus(fee)
         pool.totalAdminFees = pool.totalAdminFees.plus(adminFee)
 
-        let spotPrice = getPoolPriceScale(event.address)
+        let spotPrice = getPoolLastPrices(event.address)
         pool.spotPrice = spotPrice
 
         pool.save()
@@ -583,7 +583,7 @@ export function handleRemoveLiquidityOne(event: RemoveLiquidityOne): void {
         const lpTotalSupply = getERC20TotalSupply(lpTokenAddress)
         pool.lpTotalSupply = lpTotalSupply
 
-        let spotPrice = getPoolPriceScale(event.address)
+        let spotPrice = getPoolLastPrices(event.address)
         pool.spotPrice = spotPrice
 
         pool.save()

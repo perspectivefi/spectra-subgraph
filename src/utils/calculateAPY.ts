@@ -3,7 +3,7 @@ import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts"
 import { LPVault } from "../../generated/schema"
 import { SECONDS_PER_YEAR, ZERO_BD } from "../constants"
 import { createAPYInTimeForPool } from "../entities/APYInTime"
-import { getPoolPriceScale } from "../entities/CurvePool"
+import { getPoolLastPrices } from "../entities/CurvePool"
 import {
     getIBTRate,
     getPTRate,
@@ -27,7 +27,7 @@ export function updatePoolAPY(
 
     const expirationTimestamp = getExpirationTimestamp(principalToken)
     const timeLeft = expirationTimestamp.minus(currentTimestamp)
-    const spotPrice = getPoolPriceScale(poolAddress)
+    const spotPrice = getPoolLastPrices(poolAddress)
 
     poolAPY.spotPrice = spotPrice
     const ibtRate = getIBTRate(principalToken)

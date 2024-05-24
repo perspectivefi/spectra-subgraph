@@ -109,6 +109,20 @@ export const getPoolPriceScale = (poolAddress: Address): BigInt => {
     return ZERO_BI
 }
 
+export const getPoolLastPrices = (poolAddress: Address): BigInt => {
+    let curvePoolContract = CurvePool.bind(poolAddress)
+
+    let lastPricesCall = curvePoolContract.try_last_prices()
+
+    if (!lastPricesCall.reverted) {
+        return lastPricesCall.value
+    }
+
+    log.warning("last_prices() call reverted for {}", [poolAddress.toHex()])
+
+    return ZERO_BI
+}
+
 export const getPoolCoins = (poolAddress: Address): Address[] => {
     let curvePoolContract = CurvePool.bind(poolAddress)
 
