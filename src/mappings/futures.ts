@@ -1,4 +1,4 @@
-import { Address, ethereum, log } from "@graphprotocol/graph-ts"
+import { Address, Bytes, ethereum, log } from "@graphprotocol/graph-ts"
 
 import {
     CurveFactoryChange, // CurveFactoryChange,
@@ -48,7 +48,7 @@ import {
     getTotalAssets,
     getYT,
 } from "../entities/FutureVault"
-import { getIBT as getIBTEntity } from "../entities/IBT"
+import { getIBTAsset } from "../entities/IBTAsset"
 import { getNetwork } from "../entities/Network"
 import { createPool } from "../entities/Pool"
 import { createTransaction } from "../entities/Transaction"
@@ -106,17 +106,15 @@ export function handlePTDeployed(event: PTDeployed): void {
     underlyingAsset.save()
 
     let ibtAddress = getIBT(ptAddress)
-    let ibtAsset = getAsset(
-        ibtAddress.toHex(),
-        event.block.timestamp,
-        AssetType.IBT
+    let ibtAsset = getIBTAsset(
+        Bytes.fromHexString(ibtAddress.toHex()),
+        event.block.timestamp
     )
     ibtAsset.underlying = underlyingAsset.id
     ibtAsset.save()
 
     newFuture.underlyingAsset = underlyingAddress.toHex()
     newFuture.ibtAsset = ibtAddress.toHex()
-    newFuture.ibt = getIBTEntity(ibtAddress, event.block.timestamp).id
     newFuture.yieldGenerators = []
 
     newFuture.save()

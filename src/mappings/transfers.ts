@@ -7,7 +7,7 @@ import {
     updateAccountAssetYTBalance,
 } from "../entities/AccountAsset"
 import { getAssetAmount } from "../entities/AssetAmount"
-import { updateIBTRates } from "../entities/IBT"
+import { updateIBTRates } from "../entities/IBTAsset"
 import { updateYieldForAll } from "../entities/Yield"
 import { AssetType, logWarning } from "../utils"
 import { generateTransferId } from "../utils/idGenerators"

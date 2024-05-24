@@ -57,5 +57,3 @@ export const generateYieldAssetId = (principalToken: string): string =>
 
 export const generateClaimedYieldAssetId = (principalToken: string): string =>
     `${principalToken}-claimed-yield`
-
-export const generateIBTId = (ibtAddress: string): string => `${ibtAddress}-IBT`
