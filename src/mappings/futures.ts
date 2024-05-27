@@ -1,4 +1,4 @@
-import { Address, ethereum, log } from "@graphprotocol/graph-ts"
+import { Address, Bytes, ethereum, log } from "@graphprotocol/graph-ts"
 
 import {
     CurveFactoryChange, // CurveFactoryChange,
@@ -15,6 +15,7 @@ import {
 import {
     ERC20, // LPVault as LPVaultTemplate,
     PrincipalToken as PrincipalTokenTemplate,
+    IBT,
 } from "../../generated/templates"
 import {
     FeeClaimed,
@@ -47,6 +48,7 @@ import {
     getTotalAssets,
     getYT,
 } from "../entities/FutureVault"
+import { getIBTAsset } from "../entities/IBTAsset"
 import { getNetwork } from "../entities/Network"
 import { createPool } from "../entities/Pool"
 import { createTransaction } from "../entities/Transaction"
@@ -104,17 +106,15 @@ export function handlePTDeployed(event: PTDeployed): void {
     underlyingAsset.save()
 
     let ibtAddress = getIBT(ptAddress)
-    let ibtAsset = getAsset(
-        ibtAddress.toHex(),
-        event.block.timestamp,
-        AssetType.IBT
+    let ibtAsset = getIBTAsset(
+        Bytes.fromHexString(ibtAddress.toHex()),
+        event.block.timestamp
     )
     ibtAsset.underlying = underlyingAsset.id
     ibtAsset.save()
 
     newFuture.underlyingAsset = underlyingAddress.toHex()
     newFuture.ibtAsset = ibtAddress.toHex()
-
     newFuture.yieldGenerators = []
 
     newFuture.save()
@@ -139,6 +139,9 @@ export function handlePTDeployed(event: PTDeployed): void {
 
     // Create dynamic data source for PT token events
     ERC20.create(event.params.pt)
+
+    // Create dynamic data source for IBT token events
+    IBT.create(ibtAddress)
 
     // Create dynamic data source for YT token events
     ERC20.create(Address.fromBytes(ytToken.address))

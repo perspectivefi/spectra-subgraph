@@ -1,11 +1,17 @@
 import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
+import { Asset } from "../../generated/schema"
 import { ERC20 } from "../../generated/templates/ERC20/ERC20"
 import { ZERO_BI } from "../constants"
 
 const UNKNOWN = "Unknown"
 
 export function getERC20Name(address: Address): string {
+    let asset = Asset.load(address.toHex())
+    if (asset) {
+        return asset.name
+    }
+
     let erc20Contract = ERC20.bind(address)
 
     let nameCall = erc20Contract.try_name()
@@ -21,6 +27,11 @@ export function getERC20Name(address: Address): string {
 }
 
 export function getERC20Symbol(address: Address): string {
+    let asset = Asset.load(address.toHex())
+    if (asset) {
+        return asset.symbol
+    }
+
     let erc20Contract = ERC20.bind(address)
 
     let symbolCall = erc20Contract.try_symbol()
@@ -36,6 +47,11 @@ export function getERC20Symbol(address: Address): string {
 }
 
 export function getERC20Decimals(address: Address): i32 {
+    let asset = Asset.load(address.toHex())
+    if (asset) {
+        return asset.decimals
+    }
+
     let erc20Contract = ERC20.bind(address)
 
     let decimalsCall = erc20Contract.try_decimals()

@@ -143,6 +143,12 @@ type Asset @entity {
     ibt: Asset
     fytTokenDetails: FYTTokenDetails
     lpTokenDetails: LPTokenDetails
+    "in case the AssetType is IBT we give the IBT Rates"
+    lastIBTRate: BigDecimal
+    "IBT to underlying asset as returned by convertToAssets(UNIT). The number is in underlying asset decimals"
+    convertToAssetsUnit: BigInt
+    lastUpdateTimestamp: BigInt
+
 }
 
 "AssetPrice entity to assign a price of a token to an Asset entity and its price source"

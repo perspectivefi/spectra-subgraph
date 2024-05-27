@@ -1,4 +1,4 @@
-import { BigInt, ethereum } from "@graphprotocol/graph-ts"
+import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
 import {
     assert,
     beforeAll,
@@ -57,7 +57,10 @@ import {
     POOL_PT_BALANCE_MOCK,
     YT_BALANCE_MOCK,
 } from "./mocks/ERC20"
-import { createConvertToAssetsCallMock } from "./mocks/ERC4626"
+import {
+    createAssetCallMock,
+    createConvertToAssetsCallMock,
+} from "./mocks/ERC4626"
 import {
     mockFactoryFunctions,
     FACTORY_ADDRESS_MOCK,
@@ -120,6 +123,12 @@ describe("handleFutureVaultDeployed()", () => {
 
         mockFutureVaultFunctions()
         mockFeedRegistryInterfaceFunctions()
+
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        createAssetCallMock(
+            IBT_ADDRESS_MOCK,
+            Address.fromString(ETH_ADDRESS_MOCK)
+        )
 
         emitFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
@@ -269,6 +278,10 @@ describe("handleUnpaused()", () => {
 describe("handleYieldUpdated()", () => {
     beforeAll(() => {
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        createAssetCallMock(
+            IBT_ADDRESS_MOCK,
+            Address.fromString(ETH_ADDRESS_MOCK)
+        )
 
         emitMint(0, FEE_COLLECTOR_ADDRESS_MOCK)
 
@@ -356,6 +369,11 @@ describe("handleYieldUpdated()", () => {
 
 describe("handleFeeClaimed()", () => {
     test("Should create a new FeeClaim entity with properly assign future as well as fee collector entity", () => {
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        createAssetCallMock(
+            IBT_ADDRESS_MOCK,
+            Address.fromString(ETH_ADDRESS_MOCK)
+        )
         let feeClaimedEvent = changetype<FeeClaimed>(newMockEvent())
         feeClaimedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
 
@@ -429,6 +447,10 @@ describe("handleFeeClaimed()", () => {
 describe("handleMint()", () => {
     beforeAll(() => {
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        createAssetCallMock(
+            IBT_ADDRESS_MOCK,
+            Address.fromString(ETH_ADDRESS_MOCK)
+        )
         emitMint()
     })
 
@@ -612,6 +634,10 @@ describe("handleRedeem()", () => {
 
         redeemEvent.parameters = [senderParam, receiverParam, sharesParam]
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        createAssetCallMock(
+            IBT_ADDRESS_MOCK,
+            Address.fromString(ETH_ADDRESS_MOCK)
+        )
         handleRedeem(redeemEvent)
     })
 
@@ -931,7 +957,11 @@ describe("handleYieldClaimed()", () => {
             receiverParam,
             yieldInIBTParam,
         ]
-
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        createAssetCallMock(
+            IBT_ADDRESS_MOCK,
+            Address.fromString(ETH_ADDRESS_MOCK)
+        )
         handleYieldClaimed(yieldClaimedEvent)
     })
 

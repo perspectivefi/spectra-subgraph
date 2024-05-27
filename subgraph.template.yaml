@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.4
 description: Spectra Subgraph
 repository: https://github.com/perspectivefi/spectra-subgraph
 schema:
@@ -16,7 +16,7 @@ dataSources:
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       entities: [ ]
       file: ./src/mappings/registry.ts
       abis:
@@ -37,7 +37,7 @@ dataSources:
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       entities: [ ]
       file: ./src/mappings/futures.ts
       abis:
@@ -74,7 +74,7 @@ dataSources:
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       entities: [ ]
       file: ./src/mappings/amm.ts
       abis:
@@ -111,7 +111,7 @@ templates:
       abi: ERC20
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities: [ ]
       file: ./src/mappings/transfers.ts
@@ -125,6 +125,27 @@ templates:
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
+  - name: IBT
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: ERC4626
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities: [ ]
+      file: ./src/mappings/transfers.ts
+      abis:
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+        - name: ERC4626
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
+        - name: PrincipalToken
+          file: ./abis/PrincipalToken.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleIBTTransfer
   - name: PrincipalToken
     kind: ethereum/contract
     network: {{ network }}
@@ -133,7 +154,7 @@ templates:
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       entities: [ ]
       file: ./src/mappings/futures.ts
       abis:
@@ -170,7 +191,7 @@ templates:
 #    mapping:
 #      kind: ethereum/events
 #      language: wasm/assemblyscript
-#      apiVersion: 0.0.5
+#      apiVersion: 0.0.6
 #      entities: [ ]
 #      file: ./src/mappings/lpVaults.ts
 #      abis:

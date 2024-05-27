@@ -1,4 +1,4 @@
-import { BigInt, ethereum } from "@graphprotocol/graph-ts"
+import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
 import {
     describe,
     test,
@@ -63,8 +63,10 @@ import {
     POOL_PT_BALANCE_MOCK,
     POOL_LP_BALANCE_MOCK,
     LP_TOTAL_SUPPLY,
+    ETH_ADDRESS_MOCK,
 } from "./mocks/ERC20"
 import {
+    createAssetCallMock,
     createConvertToAssetsCallMock,
     createConvertToSharesCallMock,
 } from "./mocks/ERC4626"
@@ -155,7 +157,11 @@ describe("handleAddLiquidity()", () => {
             IBT_ADDRESS_MOCK,
             toPrecision(BigInt.fromI32(10), 1, 18)
         )
-
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        createAssetCallMock(
+            IBT_ADDRESS_MOCK,
+            Address.fromString(ETH_ADDRESS_MOCK)
+        )
         emitFactoryUpdated()
         emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
         emiCurveFactoryChange()
@@ -448,6 +454,10 @@ describe("handleRemoveLiquidity()", () => {
             tokenSupplyParam,
         ]
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        createAssetCallMock(
+            IBT_ADDRESS_MOCK,
+            Address.fromString(ETH_ADDRESS_MOCK)
+        )
         handleRemoveLiquidity(removeLiquidityEvent)
     })
 
@@ -710,7 +720,11 @@ describe("handleTokenExchange()", () => {
             boughtIdParam,
             tokensBoughtParam,
         ]
-
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        createAssetCallMock(
+            IBT_ADDRESS_MOCK,
+            Address.fromString(ETH_ADDRESS_MOCK)
+        )
         handleTokenExchange(tokenExchangeEvent)
     })
 
@@ -1039,7 +1053,11 @@ describe("handleRemoveLiquidityOne()", () => {
             coinIndexParam,
             coinAmountParam,
         ]
-
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        createAssetCallMock(
+            IBT_ADDRESS_MOCK,
+            Address.fromString(ETH_ADDRESS_MOCK)
+        )
         handleRemoveLiquidityOne(removeLiquidityOneEvent)
     })
 
@@ -1319,6 +1337,11 @@ describe("handleClaimAdminFee", () => {
 
         claimAdminFeeEvent.parameters = [adminParam, tokensParam]
 
+        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+        createAssetCallMock(
+            IBT_ADDRESS_MOCK,
+            Address.fromString(ETH_ADDRESS_MOCK)
+        )
         handleClaimAdminFee(claimAdminFeeEvent)
     })
 
