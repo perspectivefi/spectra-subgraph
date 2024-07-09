@@ -2,6 +2,7 @@ class ChainId {
     mainnet: i32 = 1
     goerli: i32 = 5
     sepolia: i32 = 11155111
+    arbitrum: i32 = 42161
 }
 
 const chainId = new ChainId()
@@ -13,6 +14,8 @@ export function getChainId(network: string): i32 {
         return chainId.goerli
     } else if (network == "sepolia") {
         return chainId.sepolia
+    } else if (network == "arbitrum-one") {
+        return chainId.arbitrum
     }
-    return chainId.mainnet
+    throw new Error("Unsupported network")
 }
