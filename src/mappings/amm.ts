@@ -146,7 +146,7 @@ export function handleAddLiquidity(event: AddLiquidity): void {
             poolIBTAssetAmount.amount.equals(ZERO_BI) &&
             poolPTAssetAmount.amount.equals(ZERO_BI)
         ) {
-            pool.feeRate = getPoolFee(pool.address)
+            pool.feeRate = getPoolFee(Address.fromBytes(pool.address))
         }
 
         pool.save()
