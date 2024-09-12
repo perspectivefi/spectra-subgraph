@@ -15,7 +15,11 @@ import { getAccount } from "../entities/Account"
 import { updateAccountAssetBalance } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
-import { getPoolLastPrices, getPoolLPToken } from "../entities/CurvePool"
+import {
+    getPoolFee,
+    getPoolLastPrices,
+    getPoolLPToken,
+} from "../entities/CurvePool"
 import { getERC20Decimals, getERC20TotalSupply } from "../entities/ERC20"
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import { createTransaction } from "../entities/Transaction"
@@ -137,6 +141,14 @@ export function handleAddLiquidity(event: AddLiquidity): void {
 
         pool.totalFees = pool.totalFees.plus(fee)
         pool.totalAdminFees = pool.totalAdminFees.plus(adminFee)
+
+        // In case of no liquidity, the fee() will revert on the "CurvePoolDeployed" event so we have to set the fee rate here
+        if (
+            poolIBTAssetAmount.amount.equals(ZERO_BI) &&
+            poolPTAssetAmount.amount.equals(ZERO_BI)
+        ) {
+            pool.feeRate = getPoolFee(Address.fromBytes(pool.address))
+        }
 
         pool.save()
 
