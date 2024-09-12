@@ -142,6 +142,7 @@ export function handleAddLiquidity(event: AddLiquidity): void {
         pool.totalFees = pool.totalFees.plus(fee)
         pool.totalAdminFees = pool.totalAdminFees.plus(adminFee)
 
+        // In case of no liquidity, the fee() will revert on the "CurvePoolDeployed" event so we have to set the fee rate here
         if (
             poolIBTAssetAmount.amount.equals(ZERO_BI) &&
             poolPTAssetAmount.amount.equals(ZERO_BI)
