@@ -673,6 +673,7 @@ export function handleNewParameters(event: NewParameters): void {
     let pool = Pool.load(event.address.toHex())
 
     if (pool) {
+        pool.feeRate = getPoolFee(event.address)
         pool.adminFeeRate = event.params.admin_fee
         pool.save()
     }
