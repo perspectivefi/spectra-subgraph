@@ -10,6 +10,7 @@
         "codegen:arbitrum": "graph codegen subgraph.arbitrum.yaml",
         "codegen:goerli": "graph codegen subgraph.goerli.yaml",
         "codegen:sepolia": "graph codegen subgraph.sepolia.yaml",
+        "codegen:sonic": "graph codegen subgraph.sonic.yaml",
         "authorize": "graph auth https://api.thegraph.com/deploy/",
         "build": "graph build",
         "deploy": "graph deploy --studio spectra-mainnet subgraph.yaml",
@@ -23,6 +24,7 @@
         "generate-config:arbitrum": "node ./src/scripts/subgraphConfigGenerator.js arbitrum",
         "generate-config:goerli": "node ./src/scripts/subgraphConfigGenerator.js goerli",
         "generate-config:sepolia": "node ./src/scripts/subgraphConfigGenerator.js sepolia",
+        "generate-config:sonic": "node ./src/scripts/subgraphConfigGenerator.js sonic",
         "test": "graph test",
         "prettify": "prettier --write \"./**/*.{js,jsx,json,ts,tsx,css}\""
     },

@@ -73,6 +73,7 @@ subgraph.polygon.yaml
 subgraph.arbitrum.yaml
 subgraph.goerli.yaml
 subgraph.sepolia.yaml
+subgraph.sonic.yaml
 
 # Tests
 src/tests/.bin/
