@@ -22,6 +22,9 @@ export function createAPYInTimeForPool(
     apyInTime.baseAPY = ZERO_BD
     apyInTime.exponentAPY = ZERO_BD
 
+    apyInTime.ibtToPt = ZERO_BI
+    apyInTime.ptToIbt = ZERO_BI
+
     apyInTime.save()
 
     return apyInTime

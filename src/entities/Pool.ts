@@ -11,6 +11,7 @@ import {
     getPoolFee,
     getPoolFutureAdminFee,
     getPoolLastPrices,
+    getPoolVirtualPrice,
 } from "./CurvePool"
 import { getCurveFactory } from "./Factory"
 
@@ -24,6 +25,7 @@ class PoolDetails {
     blockNumber: BigInt
     logIndex: BigInt
     transactionHash: Bytes
+    type: string
 }
 
 export function createPool(params: PoolDetails): Pool {
@@ -63,6 +65,7 @@ export function createPool(params: PoolDetails): Pool {
     pool.futureAdminFeeRate = getPoolFutureAdminFee(params.poolAddress)
     pool.futureAdminFeeDeadline = ZERO_BI
     pool.totalClaimedAdminFees = ZERO_BI
+    pool.initialVirtualPrice = getPoolVirtualPrice(params.poolAddress)
 
     pool.transactionCount = 0
 
@@ -99,7 +102,7 @@ export function createPool(params: PoolDetails): Pool {
         }
     }
 
-    let spotPrice = getPoolLastPrices(params.poolAddress)
+    let spotPrice = getPoolLastPrices(params.poolAddress, params.type)
     if (pool.futureVault) {
         let poolAPY = createAPYInTimeForPool(
             params.poolAddress,
@@ -111,6 +114,8 @@ export function createPool(params: PoolDetails): Pool {
     }
 
     pool.spotPrice = spotPrice
+
+    pool.type = params.type
 
     pool.save()
 

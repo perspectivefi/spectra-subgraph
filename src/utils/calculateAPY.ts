@@ -1,9 +1,9 @@
 import { Address, BigDecimal, BigInt, log } from "@graphprotocol/graph-ts"
 
-import { LPVault } from "../../generated/schema"
-import { SECONDS_PER_YEAR, ZERO_BD } from "../constants"
+import { PoolType } from "."
+import { SECONDS_PER_YEAR, ZERO_BI } from "../constants"
 import { createAPYInTimeForPool } from "../entities/APYInTime"
-import { getPoolLastPrices } from "../entities/CurvePool"
+import { getPoolLastPrices, getPoolSwapPreview } from "../entities/CurvePool"
 import {
     getIBTRate,
     getPTRate,
@@ -12,6 +12,7 @@ import {
 
 export function updatePoolAPY(
     poolAddress: Address,
+    poolType: string,
     principalToken: Address,
     currentTimestamp: BigInt,
     blockNumber: BigInt
@@ -27,7 +28,20 @@ export function updatePoolAPY(
 
     const expirationTimestamp = getExpirationTimestamp(principalToken)
     const timeLeft = expirationTimestamp.minus(currentTimestamp)
-    const spotPrice = getPoolLastPrices(poolAddress)
+    const spotPrice = getPoolLastPrices(poolAddress, poolType)
+
+    poolAPY.ibtToPt = getPoolSwapPreview(
+        poolAddress,
+        poolType,
+        BigInt.fromI32(0),
+        BigInt.fromI32(1)
+    )
+    poolAPY.ptToIbt = getPoolSwapPreview(
+        poolAddress,
+        poolType,
+        BigInt.fromI32(1),
+        BigInt.fromI32(0)
+    )
 
     poolAPY.spotPrice = spotPrice
     const ibtRate = getIBTRate(principalToken)
@@ -35,40 +49,19 @@ export function updatePoolAPY(
     poolAPY.ptRate = ptRate
     poolAPY.ibtRate = ibtRate
 
-    const baseAPY = ptRate
-        .times(curveUnit)
-        .times(rayUnit)
-        .div(spotPrice.times(ibtRate))
-    const expAPY = SECONDS_PER_YEAR.div(
-        BigDecimal.fromString(timeLeft.toString())
-    )
-    poolAPY.baseAPY = BigDecimal.fromString(baseAPY.toString()).div(
-        BigDecimal.fromString(rayUnit.toString())
-    )
-    poolAPY.exponentAPY = expAPY
-    poolAPY.save()
-}
-
-const LP_VAULT_APY_MOCK: BigDecimal[] = [
-    BigDecimal.fromString("3"),
-    BigDecimal.fromString("6"),
-]
-
-export function calculateLpVaultAPY(lpVaultAddress: Address): BigDecimal {
-    let lpVault = LPVault.load(lpVaultAddress.toHex())
-
-    if (lpVault) {
-        log.warning(lpVault.underlying, [])
-        if (
-            lpVault.underlying == "0x792f2d31b2aadac705d57735855b299f84b999b9"
-        ) {
-            return LP_VAULT_APY_MOCK[0]
-        } else if (
-            lpVault.underlying == "0x8494a4761a5d969d3f80f7110fbaa29e4072cdcd"
-        ) {
-            return LP_VAULT_APY_MOCK[1]
-        }
+    if (spotPrice.gt(ZERO_BI) && timeLeft.gt(ZERO_BI) && ibtRate.gt(ZERO_BI)) {
+        const baseAPY = ptRate
+            .times(curveUnit)
+            .times(rayUnit)
+            .div(spotPrice.times(ibtRate))
+        const expAPY = SECONDS_PER_YEAR.div(
+            BigDecimal.fromString(timeLeft.toString())
+        )
+        poolAPY.baseAPY = BigDecimal.fromString(baseAPY.toString()).div(
+            BigDecimal.fromString(rayUnit.toString())
+        )
+        poolAPY.exponentAPY = expAPY
     }
 
-    return ZERO_BD
+    poolAPY.save()
 }

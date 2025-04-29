@@ -15,6 +15,7 @@ class CreateTransactionParams {
 
     amountsIn: string[]
     amountsOut: string[]
+    valueUnderlying: BigInt
 
     transaction: TransactionDetails
 }
@@ -78,6 +79,8 @@ export function createTransaction(
     if (params.transaction.adminFee !== ZERO_BI) {
         transaction.adminFee = params.transaction.adminFee
     }
+
+    transaction.valueUnderlying = params.valueUnderlying
 
     transaction.save()
     return transaction

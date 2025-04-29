@@ -282,6 +282,22 @@ type FutureDailyStats @entity {
   realizedAPR90D: BigDecimal! # The realized APR of the IBT token over the last 90 days
 }
 
+"The daily/hourly data of the pool"
+type PoolStats @entity {
+  id: ID! # pool address and timestamp rounded to current day or hour by dividing by 86400 or 3600
+  pool: Pool! # pool address
+  timestamp: Int! # future address and timestamp rounded to current day by dividing by 86400
+  span: Int! # length of the time period (e.g. 3600 for hourly, 86400 for daily)
+  deposits: BigInt! # total deposits per data point (the unit is a count of transactions)
+  withdrawals: BigInt! # total deposits per data point (the unit is a count of transactions)
+  buys: BigInt! # total buys per data point (the unit is a count of transactions)
+  sells: BigInt! # total sells per data point (the unit is a count of transactions)
+  depositVolume: BigInt! # total value (in underlying) of deposits per data point
+  withdrawVolume: BigInt! # total value (in underlying) of withdrawals per data point
+  buyVolume: BigInt! # total value (in underlying) of buys per data point
+  sellVolume: BigInt! # total value (in underlying) of sells per data point
+}
+
 ####################
 # Account
 ####################
@@ -332,6 +348,8 @@ type Transaction @entity {
     amountsIn: [AssetAmount!]!
     "in case if more than one token was received"
     amountsOut: [AssetAmount!]!
+
+    valueUnderlying: BigInt!
 }
 
 ####################
@@ -349,12 +367,22 @@ type APYInTime @entity {
     baseAPY: BigDecimal!
     exponentAPY: BigDecimal!
     lpVault: LPVault
+    ibtToPt: BigInt!
+    ptToIbt: BigInt!
+}
+
+enum PoolType {
+    CURVE
+    CURVE_NG
+    CURVE_SNG
 }
 
 type Pool @entity {
     id: ID!
     address: Bytes!
     createdAtTimestamp: BigInt!
+
+    type: PoolType!
 
     "pool fees details"
     feeRate: BigInt!
@@ -365,6 +393,7 @@ type Pool @entity {
     feeClaims: [FeeClaim!]! @derivedFrom(field: "pool")
     futureAdminFeeRate: BigInt!
     futureAdminFeeDeadline: BigInt!
+    initialVirtualPrice: BigInt!
 
     factory: Factory
     futureVault: Future

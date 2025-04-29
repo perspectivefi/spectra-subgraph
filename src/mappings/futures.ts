@@ -1,12 +1,6 @@
 import { Address, Bytes, ethereum, log } from "@graphprotocol/graph-ts"
 
 import {
-    CurveFactoryChange, // CurveFactoryChange,
-    CurvePoolDeployed, // LPVDeployed,
-    PTDeployed,
-    RegistryChange,
-} from "../../generated/Factory/Factory"
-import {
     FeeClaim,
     Future,
     Factory, // LPVault,
@@ -16,7 +10,14 @@ import {
     ERC20, // LPVault as LPVaultTemplate,
     PrincipalToken as PrincipalTokenTemplate,
     IBT,
+    CurvePool as CurvePoolTemplate,
 } from "../../generated/templates"
+import {
+    CurveFactoryChange, // CurveFactoryChange,
+    CurvePoolDeployed, // LPVDeployed,
+    PTDeployed,
+    RegistryChange,
+} from "../../generated/templates/Factory/Factory"
 import {
     FeeClaimed,
     Paused,
@@ -36,7 +37,7 @@ import {
 } from "../entities/AccountAsset"
 import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
-import { getPoolLPToken } from "../entities/CurvePool"
+import { getPoolLPToken, getPoolType } from "../entities/CurvePool"
 import { createFactory, getCurveFactory } from "../entities/Factory"
 import { updateFutureDailyStats } from "../entities/FutureDailyStats"
 import {
@@ -265,6 +266,7 @@ export function handleMint(event: Mint): void {
 
             amountsIn: [],
             amountsOut: [firstAmountOut.id, secondAmountOut.id],
+            valueUnderlying: ZERO_BI,
 
             transaction: {
                 timestamp: event.block.timestamp,
@@ -349,6 +351,7 @@ export function handleRedeem(event: Redeem): void {
 
             amountsIn: [firstAmountIn.id, secondAmountIn.id],
             amountsOut: [],
+            valueUnderlying: ZERO_BI,
 
             transaction: {
                 timestamp: event.block.timestamp,
@@ -405,7 +408,8 @@ export function handleCurveFactoryChange(event: CurveFactoryChange): void {
 }
 
 export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
-    const lpAddress = getPoolLPToken(event.params.poolAddress)
+    const poolType = getPoolType(event.params.poolAddress)
+    const lpAddress = getPoolLPToken(event.params.poolAddress, poolType)
 
     createPool({
         poolAddress: event.params.poolAddress,
@@ -417,7 +421,11 @@ export function handleCurvePoolDeployed(event: CurvePoolDeployed): void {
         logIndex: event.logIndex,
         transactionHash: event.transaction.hash,
         blockNumber: event.block.number,
+        type: poolType,
     })
+
+    // Create dynamic data source for CurvePool events
+    CurvePoolTemplate.create(event.params.poolAddress)
 
     // Create dynamic data source for LP token events
     ERC20.create(lpAddress)

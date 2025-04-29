@@ -47,6 +47,13 @@ export const generateFutureDailyStatsId = (
     dayId: string
 ): string => `${futureAddress}-${dayId}`
 
+// PoolStats
+export const generatePoolStatsId = (
+    poolAddress: string,
+    span: string,
+    statId: string
+): string => `${poolAddress}-S-${span}-${statId}`
+
 export const generateTransactionId = (
     transactionHash: Bytes,
     eventIterator: string

@@ -10,3 +10,4 @@ export {
     generateFutureDailyStatsId,
 } from "./idGenerators"
 export { default as AssetType } from "./AssetType"
+export { default as PoolType } from "./PoolType"

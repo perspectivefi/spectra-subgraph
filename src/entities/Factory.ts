@@ -1,7 +1,8 @@
 import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
-import { Factory as FactoryContract } from "../../generated/Factory/Factory"
 import { Factory } from "../../generated/schema"
+import { Factory as FactoryTemplate } from "../../generated/templates"
+import { Factory as FactoryContract } from "../../generated/templates/Factory/Factory"
 import { ZERO_ADDRESS } from "../constants"
 
 export function createFactory(
@@ -18,6 +19,8 @@ export function createFactory(
     let curveFactory = getCurveFactory(address)
 
     factory.curveFactory = curveFactory
+
+    FactoryTemplate.create(address)
 
     return factory
 }

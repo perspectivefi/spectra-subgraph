@@ -8,11 +8,11 @@ features:
 dataSources:
   - name: Registry
     kind: ethereum/contract
-    network: {{ network }}
+    network: base
     source:
       abi: Registry
-      address: '{{ registry }}'
-      startBlock: {{ startBlock }}
+      address: '0x786Da12e9836a9ff9b7d92e8bac1C849e2ACe378'
+      startBlock: 16537641
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
@@ -33,7 +33,7 @@ dataSources:
 templates:
   - name: Factory
     kind: ethereum/contract
-    network: {{ network }}
+    network: base
     source:
       abi: Factory
     mapping:
@@ -70,7 +70,7 @@ templates:
           handler: handleCurveFactoryChange
   - name: ERC20
     kind: ethereum/contract
-    network: {{ network }}
+    network: base
     source:
       abi: ERC20
     mapping:
@@ -91,7 +91,7 @@ templates:
           handler: handleTransfer
   - name: IBT
     kind: ethereum/contract
-    network: {{ network }}
+    network: base
     source:
       abi: ERC4626
     mapping:
@@ -112,7 +112,7 @@ templates:
           handler: handleIBTTransfer
   - name: PrincipalToken
     kind: ethereum/contract
-    network: {{ network }}
+    network: base
     source:
       abi: PrincipalToken
     mapping:
@@ -147,7 +147,7 @@ templates:
           handler: handleRedeem
   - name: CurvePool
     kind: ethereum/contract
-    network: {{ network }}
+    network: base
     source:
       abi: CurvePool
     mapping:
@@ -216,7 +216,7 @@ templates:
 # TODO: LPVaults
 #  - name: LPVault
 #    kind: ethereum/contract
-#    network: {{ network }}
+#    network: base
 #    source:
 #      abi: LPVault
 #    mapping:

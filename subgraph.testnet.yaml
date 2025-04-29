@@ -8,11 +8,11 @@ features:
 dataSources:
   - name: Registry
     kind: ethereum/contract
-    network: {{ network }}
+    network: optimism
     source:
       abi: Registry
-      address: '{{ registry }}'
-      startBlock: {{ startBlock }}
+      address: '0xFaEab86919811213539295b4eBaB1c9D65B66946'
+      startBlock: 133699900
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
@@ -33,7 +33,7 @@ dataSources:
 templates:
   - name: Factory
     kind: ethereum/contract
-    network: {{ network }}
+    network: optimism
     source:
       abi: Factory
     mapping:
@@ -70,7 +70,7 @@ templates:
           handler: handleCurveFactoryChange
   - name: ERC20
     kind: ethereum/contract
-    network: {{ network }}
+    network: optimism
     source:
       abi: ERC20
     mapping:
@@ -91,7 +91,7 @@ templates:
           handler: handleTransfer
   - name: IBT
     kind: ethereum/contract
-    network: {{ network }}
+    network: optimism
     source:
       abi: ERC4626
     mapping:
@@ -112,7 +112,7 @@ templates:
           handler: handleIBTTransfer
   - name: PrincipalToken
     kind: ethereum/contract
-    network: {{ network }}
+    network: optimism
     source:
       abi: PrincipalToken
     mapping:
@@ -147,7 +147,7 @@ templates:
           handler: handleRedeem
   - name: CurvePool
     kind: ethereum/contract
-    network: {{ network }}
+    network: optimism
     source:
       abi: CurvePool
     mapping:
@@ -216,7 +216,7 @@ templates:
 # TODO: LPVaults
 #  - name: LPVault
 #    kind: ethereum/contract
-#    network: {{ network }}
+#    network: optimism
 #    source:
 #      abi: LPVault
 #    mapping:

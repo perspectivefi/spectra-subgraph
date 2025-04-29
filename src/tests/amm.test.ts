@@ -8,6 +8,7 @@ import {
     beforeAll,
 } from "matchstick-as/assembly"
 
+import { Account, Pool } from "../../generated/schema"
 import {
     AddLiquidity,
     ClaimAdminFee,
@@ -16,8 +17,7 @@ import {
     RemoveLiquidity,
     RemoveLiquidityOne,
     TokenExchange,
-} from "../../generated/CurvePool/CurvePool"
-import { Account, Pool } from "../../generated/schema"
+} from "../../generated/templates/CurvePool/CurvePool"
 import { DAY_ID_0, ZERO_BI } from "../constants"
 import {
     handleAddLiquidity,

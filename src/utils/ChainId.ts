@@ -4,6 +4,9 @@ class ChainId {
     sepolia: i32 = 11155111
     arbitrum: i32 = 42161
     sonic: i32 = 146
+    base: i32 = 8453
+    optimism: i32 = 10
+    hemi: i32 = 43111
 }
 
 const chainId = new ChainId()
@@ -19,6 +22,12 @@ export function getChainId(network: string): i32 {
         return chainId.arbitrum
     } else if (network == "sonic-mainnet") {
         return chainId.sonic
+    } else if (network == "base") {
+        return chainId.base
+    } else if (network == "optimism") {
+        return chainId.optimism
+    } else if (network == "spectra-hemi") {
+        return chainId.hemi
     }
     throw new Error(`Unsupported network: ${network}`)
 }
