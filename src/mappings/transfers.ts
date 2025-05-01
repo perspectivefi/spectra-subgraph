@@ -18,7 +18,8 @@ export function handleTransfer(event: TransferEvent): void {
     let transfer = new Transfer(
         generateTransferId(
             event.transaction.hash.toHex(),
-            eventTimestamp.toString()
+            eventTimestamp.toString(),
+            event.logIndex.toString()
         )
     )
 

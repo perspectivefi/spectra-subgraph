@@ -22,6 +22,7 @@ enum AssetType {
     LP_VAULT_SHARES
     YIELD
     CLAIMED_YIELD
+    WRAPPER
     UNKNOWN
 }
 
@@ -467,4 +468,31 @@ type LPVault @entity {
 
     # interestInTime: [LPVaultInterest!]! @derivedFrom(field: "lpVault")
     apy: [APYInTime!]! @derivedFrom(field: "lpVault")
+}
+
+####################
+# Wrapper entities
+####################
+
+type SpectraWrapper @entity {
+    id: ID!
+    address: Bytes!
+    createdAtTimestamp: BigInt!
+    
+    # Wrapper token details
+    name: String!
+    symbol: String!
+    decimals: Int!
+    
+    # Vault share details
+    vaultShare: Bytes!
+    vaultShareName: String!
+    vaultShareSymbol: String!
+    vaultShareDecimals: Int!
+    
+    # Underlying asset details
+    asset: Bytes!
+    assetName: String!
+    assetSymbol: String!
+    assetDecimals: Int!
 }

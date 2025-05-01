@@ -212,6 +212,23 @@ templates:
           handler: handleNewParameters
         - event: NewParameters(uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleNewParametersNG
+  - name: SpectraWrapper
+    kind: ethereum/contract
+    network: {{network}}
+    source:
+      abi: Spectra4626Wrapper
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities: []
+      file: ./src/mappings/wrappers.ts
+      abis:
+        - name: Spectra4626Wrapper
+          file: ./abis/Spectra4626Wrapper.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
 
 # TODO: LPVaults
 #  - name: LPVault
