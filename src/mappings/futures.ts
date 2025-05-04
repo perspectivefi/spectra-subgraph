@@ -89,6 +89,7 @@ export function handlePTDeployed(event: PTDeployed): void {
 
     newFuture.state = "ACTIVE"
     newFuture.createdAtTimestamp = event.block.timestamp
+    newFuture.createdAtBlock = event.block.number
     newFuture.expirationAtTimestamp = getExpirationTimestamp(ptAddress)
 
     newFuture.unclaimedFees = ZERO_BI

@@ -218,6 +218,7 @@ type Future @entity {
     chainId: Int!
     address: Bytes!
     createdAtTimestamp: BigInt!
+    createdAtBlock: BigInt!
     expirationAtTimestamp: BigInt!
     symbol: String!
     name: String!
