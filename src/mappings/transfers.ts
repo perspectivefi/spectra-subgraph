@@ -26,6 +26,8 @@ export function handleTransfer(event: TransferEvent): void {
     transfer.createdAtTimestamp = eventTimestamp
     transfer.address = event.transaction.hash
     transfer.block = event.block.number
+    transfer.logIndex = event.logIndex
+    transfer.transactionLogIndex = event.transactionLogIndex
 
     let accountFrom = getAccount(event.params.from.toHex(), eventTimestamp)
     let accountTo = getAccount(event.params.to.toHex(), eventTimestamp)

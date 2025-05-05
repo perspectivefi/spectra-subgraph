@@ -419,6 +419,8 @@ type Transfer @entity {
     address: Bytes!
     createdAtTimestamp: BigInt!
     block: BigInt!
+    logIndex: BigInt!
+    transactionLogIndex: BigInt!
 
     gasLimit: BigInt!
     gasPrice: BigInt!
