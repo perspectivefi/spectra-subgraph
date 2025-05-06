@@ -19,6 +19,7 @@ import {
     getPoolFee,
     getPoolLastPrices,
     getPoolLPToken,
+    getPoolVirtualPrice,
 } from "../../entities/CurvePool"
 import { getERC20Decimals, getERC20TotalSupply } from "../../entities/ERC20"
 import { getIBTRate } from "../../entities/ERC4626"
@@ -188,6 +189,10 @@ function addLiquidity(
             poolPTAssetAmount.amount.equals(ZERO_BI)
         ) {
             pool.feeRate = getPoolFee(Address.fromBytes(pool.address))
+        }
+
+        if (pool.initialVirtualPrice.equals(ZERO_BI)) {
+            pool.initialVirtualPrice = getPoolVirtualPrice(pool.address)
         }
 
         pool.save()

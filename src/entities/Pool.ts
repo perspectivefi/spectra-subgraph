@@ -11,7 +11,6 @@ import {
     getPoolFee,
     getPoolFutureAdminFee,
     getPoolLastPrices,
-    getPoolVirtualPrice,
 } from "./CurvePool"
 import { getCurveFactory } from "./Factory"
 
@@ -65,7 +64,7 @@ export function createPool(params: PoolDetails): Pool {
     pool.futureAdminFeeRate = getPoolFutureAdminFee(params.poolAddress)
     pool.futureAdminFeeDeadline = ZERO_BI
     pool.totalClaimedAdminFees = ZERO_BI
-    pool.initialVirtualPrice = getPoolVirtualPrice(params.poolAddress)
+    pool.initialVirtualPrice = ZERO_BI
 
     pool.transactionCount = 0
 
