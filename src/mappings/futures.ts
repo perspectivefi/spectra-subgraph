@@ -1,4 +1,4 @@
-import { Address, Bytes, ethereum, log } from "@graphprotocol/graph-ts"
+import { Address, BigInt, Bytes, ethereum, log } from "@graphprotocol/graph-ts"
 
 import {
     FeeClaim,
@@ -48,6 +48,7 @@ import {
     getUnderlying,
     getTotalAssets,
     getYT,
+    getPTRate,
 } from "../entities/FutureVault"
 import { getIBTAsset } from "../entities/IBTAsset"
 import { getNetwork } from "../entities/Network"
@@ -62,6 +63,7 @@ import { AssetType, generateFeeClaimId } from "../utils"
 import transactionType from "../utils/TransactionType"
 // import { calculateLpVaultAPY } from "../utils/calculateAPY"
 import { generateTransactionId } from "../utils/idGenerators"
+import { RAYS_PRECISION } from "../utils/toPrecision"
 
 export function handleRegistryChange(event: RegistryChange): void {
     let factory = Factory.load(event.address.toHex())
@@ -266,7 +268,9 @@ export function handleMint(event: Mint): void {
 
             amountsIn: [],
             amountsOut: [firstAmountOut.id, secondAmountOut.id],
-            valueUnderlying: ZERO_BI,
+            valueUnderlying: event.params.amount
+                .times(getPTRate(principalToken.address))
+                .div(BigInt.fromString("10").pow(RAYS_PRECISION as u8)),
 
             transaction: {
                 timestamp: event.block.timestamp,
@@ -351,7 +355,9 @@ export function handleRedeem(event: Redeem): void {
 
             amountsIn: [firstAmountIn.id, secondAmountIn.id],
             amountsOut: [],
-            valueUnderlying: ZERO_BI,
+            valueUnderlying: event.params.amount
+                .times(getPTRate(principalToken.address))
+                .div(BigInt.fromString("10").pow(RAYS_PRECISION as u8)),
 
             transaction: {
                 timestamp: event.block.timestamp,
