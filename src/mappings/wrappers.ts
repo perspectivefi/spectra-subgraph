@@ -1,12 +1,12 @@
 import { SpectraWrapper as SpectraWrapperEntity } from "../../generated/schema"
 import { ERC20 } from "../../generated/templates"
-import { Deposit as DepositEvent } from "../../generated/templates/SpectraWrapper/Spectra4626Wrapper"
+import { AuthorityUpdated as AuthorityUpdatedEvent } from "../../generated/templates/SpectraWrapper/Spectra4626Wrapper"
 import { Spectra4626Wrapper } from "../../generated/templates/SpectraWrapper/Spectra4626Wrapper"
 import { getAsset } from "../entities/Asset"
 import { getSpectraWrapper } from "../entities/SpectraWrapper"
 import { AssetType } from "../utils"
 
-export function handleWrapperDeposit(event: DepositEvent): void {
+export function handleAuthorityUpdated(event: AuthorityUpdatedEvent): void {
     let eventTimestamp = event.block.timestamp
     // identify if the transfer is from a wrapper or not
     let wrapperContract = Spectra4626Wrapper.bind(event.address)

@@ -42,9 +42,11 @@ dataSources:
       abis:
         - name: Spectra4626Wrapper
           file: ./abis/Spectra4626Wrapper.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
       eventHandlers:
-        - event: Deposit(indexed address,indexed address,uint256,uint256)
-          handler: handleWrapperDeposit
+        - event: AuthorityUpdated(address)
+          handler: handleAuthorityUpdated
 templates:
   - name: Factory
     kind: ethereum/contract
