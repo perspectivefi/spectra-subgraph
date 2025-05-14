@@ -38,8 +38,9 @@ export const generateFeeClaimId = (
 // Transfer
 export const generateTransferId = (
     transactionHash: string,
-    timestamp: string
-): string => `${timestamp}-${transactionHash}`
+    timestamp: string,
+    logIndex: string
+): string => `${timestamp}-${transactionHash}-${logIndex}`
 
 // FutureDailyStats
 export const generateFutureDailyStatsId = (

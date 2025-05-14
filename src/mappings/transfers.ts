@@ -18,13 +18,16 @@ export function handleTransfer(event: TransferEvent): void {
     let transfer = new Transfer(
         generateTransferId(
             event.transaction.hash.toHex(),
-            eventTimestamp.toString()
+            eventTimestamp.toString(),
+            event.logIndex.toString()
         )
     )
 
     transfer.createdAtTimestamp = eventTimestamp
     transfer.address = event.transaction.hash
     transfer.block = event.block.number
+    transfer.logIndex = event.transaction.index
+    transfer.transactionLogIndex = event.transactionLogIndex
 
     let accountFrom = getAccount(event.params.from.toHex(), eventTimestamp)
     let accountTo = getAccount(event.params.to.toHex(), eventTimestamp)
