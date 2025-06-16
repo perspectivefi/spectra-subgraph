@@ -192,7 +192,9 @@ function addLiquidity(
         }
 
         if (pool.initialVirtualPrice.equals(ZERO_BI)) {
-            pool.initialVirtualPrice = getPoolVirtualPrice(pool.address)
+            pool.initialVirtualPrice = getPoolVirtualPrice(
+                Address.fromBytes(pool.address)
+            )
         }
 
         pool.save()
