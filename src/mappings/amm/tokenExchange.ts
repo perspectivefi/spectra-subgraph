@@ -1,7 +1,9 @@
 import { BigInt, Address, ethereum } from "@graphprotocol/graph-ts"
 
 import { AssetAmount, Pool } from "../../../generated/schema"
+import { CurvePool } from "../../../generated/templates"
 import { TokenExchange } from "../../../generated/templates/CurvePool/CurvePool"
+import { CurvePool as CurvePoolContract } from "../../../generated/templates/CurvePool/CurvePool"
 import { TokenExchange as TokenExchangeNG } from "../../../generated/templates/CurvePool/CurvePoolNG"
 import { TokenExchange as TokenExchangeSNG } from "../../../generated/templates/CurvePool/CurvePoolSNG"
 import {
@@ -19,10 +21,17 @@ import { getAssetAmount } from "../../entities/AssetAmount"
 import { getPoolLastPrices } from "../../entities/CurvePool"
 import { getERC20Decimals } from "../../entities/ERC20"
 import { getIBTRate } from "../../entities/ERC4626"
+import { getPoolAdminBalances, createFeeClaim } from "../../entities/FeeClaim"
 import { updateFutureDailyStats } from "../../entities/FutureDailyStats"
+import {
+    getLpFeeUnderlying,
+    getPoolDynamicFee,
+    getPoolLiquidityInUnderlying,
+    updatePoolAdminBalances,
+} from "../../entities/Pool"
 import { PoolActionType, updatePoolStats } from "../../entities/PoolDailyStats"
 import { createTransaction } from "../../entities/Transaction"
-import { AssetType } from "../../utils"
+import { AssetType, PoolType } from "../../utils"
 import { updatePoolAPY } from "../../utils/calculateAPY"
 import { generateTransactionId } from "../../utils/idGenerators"
 import { toPrecision } from "../../utils/toPrecision"
@@ -120,7 +129,13 @@ function tokenExchange(
         let spotPrice = getPoolLastPrices(event.address, pool.type)
         pool.spotPrice = spotPrice
 
+        let adminFees = updatePoolAdminBalances(pool)
+        let ibtAdminFee = adminFees[0]
+        let ptAdminFee = adminFees[1]
+
         let valueUnderlying = ZERO_BI
+        let feeUnderlying = ZERO_BI
+        let feeRatio = ZERO_BI
         const isBuyPt = !bought_id.equals(ZERO_BI)
         if (pool.futureVault && spotPrice.gt(ZERO_BI)) {
             const ibtAddress = AssetAmount.load(pool.ibtAsset)!.asset
@@ -135,6 +150,25 @@ function tokenExchange(
                 .times(ibtRate)
                 .div(BigInt.fromString("10").pow(ibtDecimals as u8))
                 .div(BigInt.fromI32(2))
+            feeUnderlying = getLpFeeUnderlying(
+                pool,
+                ibtAdminFee,
+                ptAdminFee,
+                ibtRate,
+                ibtDecimals
+            )
+            const liquidityInUnderlying = getPoolLiquidityInUnderlying(
+                isBuyPt ? poolAssetInAmount.amount : poolAssetOutAmount.amount,
+                isBuyPt ? poolAssetOutAmount.amount : poolAssetInAmount.amount,
+                spotPrice,
+                ibtRate,
+                ibtDecimals
+            )
+            if (liquidityInUnderlying.gt(ZERO_BI)) {
+                feeRatio = feeUnderlying
+                    .times(CURVE_UNIT)
+                    .div(liquidityInUnderlying)
+            }
         }
 
         updatePoolStats(
@@ -142,14 +176,18 @@ function tokenExchange(
             Address.fromBytes(pool.address),
             SECONDS_PER_HOUR,
             isBuyPt ? PoolActionType.BUY_PT : PoolActionType.SELL_PT,
-            valueUnderlying
+            valueUnderlying,
+            feeUnderlying,
+            feeRatio
         )
         updatePoolStats(
             event,
             Address.fromBytes(pool.address),
             SECONDS_PER_DAY,
             isBuyPt ? PoolActionType.BUY_PT : PoolActionType.SELL_PT,
-            valueUnderlying
+            valueUnderlying,
+            feeUnderlying,
+            feeRatio
         )
 
         createTransaction({
@@ -167,6 +205,8 @@ function tokenExchange(
             amountsIn: [amountIn.id],
             amountsOut: [amountOut.id],
             valueUnderlying,
+            feeUnderlying,
+            feeRatio,
 
             transaction: {
                 timestamp: event.block.timestamp,
@@ -182,7 +222,19 @@ function tokenExchange(
         })
 
         pool.totalFees = pool.totalFees.plus(fee)
+        pool.totalFeeRatio = pool.totalFeeRatio.plus(feeRatio)
         pool.totalAdminFees = pool.totalAdminFees.plus(adminFee)
+
+        if (pool.type == PoolType.CURVE_SNG) {
+            createFeeClaim({
+                admin: ZERO_ADDRESS,
+                timestamp: event.block.timestamp,
+                poolId: pool.id,
+                amount: ZERO_BI,
+                ibtAmount: ibtAdminFee,
+                ptAmount: ptAdminFee,
+            })
+        }
 
         pool.save()
 

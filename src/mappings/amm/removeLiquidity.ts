@@ -18,10 +18,16 @@ import { getAssetAmount } from "../../entities/AssetAmount"
 import { getPoolLastPrices, getPoolLPToken } from "../../entities/CurvePool"
 import { getERC20Decimals } from "../../entities/ERC20"
 import { getIBTRate } from "../../entities/ERC4626"
+import { createFeeClaim } from "../../entities/FeeClaim"
 import { updateFutureDailyStats } from "../../entities/FutureDailyStats"
+import {
+    getLpFeeUnderlying,
+    getPoolLiquidityInUnderlying,
+    updatePoolAdminBalances,
+} from "../../entities/Pool"
 import { PoolActionType, updatePoolStats } from "../../entities/PoolDailyStats"
 import { createTransaction } from "../../entities/Transaction"
-import { AssetType } from "../../utils"
+import { AssetType, PoolType } from "../../utils"
 import { updatePoolAPY } from "../../utils/calculateAPY"
 import { generateTransactionId } from "../../utils/idGenerators"
 
@@ -104,7 +110,13 @@ export function removeLiquidity(
         const spotPrice = getPoolLastPrices(event.address, pool.type)
         pool.spotPrice = spotPrice
 
+        let adminFees = updatePoolAdminBalances(pool)
+        let ibtAdminFee = adminFees[0]
+        let ptAdminFee = adminFees[1]
+
         let valueUnderlying = ZERO_BI
+        let feeUnderlying = ZERO_BI
+        let feeRatio = ZERO_BI
         if (pool.futureVault && spotPrice.gt(ZERO_BI)) {
             const ibtAddress = AssetAmount.load(pool.ibtAsset)!.asset
             const ibtDecimals = getERC20Decimals(Address.fromString(ibtAddress))
@@ -117,6 +129,25 @@ export function removeLiquidity(
                 .plus(ptAmountInIbt)
                 .times(ibtRate)
                 .div(BigInt.fromString("10").pow(ibtDecimals as u8))
+            feeUnderlying = getLpFeeUnderlying(
+                pool,
+                ibtAdminFee,
+                ptAdminFee,
+                ibtRate,
+                ibtDecimals
+            )
+            const liquidityInUnderlying = getPoolLiquidityInUnderlying(
+                poolIBTAssetAmount.amount.minus(token_amounts[0]),
+                poolPTAssetAmount.amount.minus(token_amounts[1]),
+                spotPrice,
+                ibtRate,
+                ibtDecimals
+            )
+            if (liquidityInUnderlying.gt(ZERO_BI)) {
+                feeRatio = feeUnderlying
+                    .times(CURVE_UNIT)
+                    .div(liquidityInUnderlying)
+            }
         }
 
         updatePoolStats(
@@ -124,14 +155,18 @@ export function removeLiquidity(
             Address.fromBytes(pool.address),
             SECONDS_PER_HOUR,
             PoolActionType.REMOVE_LIQUIDITY,
-            valueUnderlying
+            valueUnderlying,
+            feeUnderlying,
+            feeRatio
         )
         updatePoolStats(
             event,
             Address.fromBytes(pool.address),
             SECONDS_PER_DAY,
             PoolActionType.REMOVE_LIQUIDITY,
-            valueUnderlying
+            valueUnderlying,
+            feeUnderlying,
+            feeRatio
         )
 
         createTransaction({
@@ -149,6 +184,8 @@ export function removeLiquidity(
             amountsIn: [lpAmountIn.id],
             amountsOut: [ibtAmountOut.id, ptAmountOut.id],
             valueUnderlying,
+            feeUnderlying,
+            feeRatio,
 
             transaction: {
                 timestamp: event.block.timestamp,
@@ -164,6 +201,18 @@ export function removeLiquidity(
         })
 
         pool.lpTotalSupply = pool.lpTotalSupply.minus(lpTokenDiff)
+        pool.totalFeeRatio = pool.totalFeeRatio.plus(feeRatio)
+
+        if (pool.type == PoolType.CURVE_SNG) {
+            createFeeClaim({
+                admin: ZERO_ADDRESS,
+                timestamp: event.block.timestamp,
+                poolId: pool.id,
+                amount: ZERO_BI,
+                ibtAmount: ibtAdminFee,
+                ptAmount: ptAdminFee,
+            })
+        }
 
         pool.save()
 

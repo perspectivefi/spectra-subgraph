@@ -256,6 +256,8 @@ type FeeClaim @entity {
     id: ID!
     createdAtTimestamp: BigInt!
     amount: BigInt!
+    ibtAmount: BigInt!
+    ptAmount: BigInt!
 
     "claimant of the fee"
     feeCollector: Account!
@@ -298,6 +300,9 @@ type PoolStats @entity {
   withdrawVolume: BigInt! # total value (in underlying) of withdrawals per data point
   buyVolume: BigInt! # total value (in underlying) of buys per data point
   sellVolume: BigInt! # total value (in underlying) of sells per data point
+  feeUnderlying: BigInt! # total fees (in underlying) collected per data point
+  feeRatio: BigInt! # total fees (in underlying) divided by total liquidity
+  createdAtTimestamp: BigInt! # timestamp of the data point creation
 }
 
 ####################
@@ -352,6 +357,8 @@ type Transaction @entity {
     amountsOut: [AssetAmount!]!
 
     valueUnderlying: BigInt!
+    feeUnderlying: BigInt!
+    feeRatio: BigInt # fee divided by total liquidity (to calculate fee APY)
 }
 
 ####################
@@ -389,6 +396,7 @@ type Pool @entity {
     "pool fees details"
     feeRate: BigInt!
     totalFees: BigInt!
+    totalFeeRatio: BigInt!
     adminFeeRate: BigInt!
     totalAdminFees: BigInt!
     totalClaimedAdminFees: BigInt!
@@ -403,6 +411,9 @@ type Pool @entity {
     liquidityToken: Asset!
     ibtAsset: AssetAmount!
     ptAsset: AssetAmount!
+
+    ibtAdminBalance: BigInt!
+    ptAdminBalance: BigInt!
 
     transactionCount: Int!
     transactions: [Transaction!] @derivedFrom(field: "poolInTransaction")

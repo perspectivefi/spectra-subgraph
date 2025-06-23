@@ -1,6 +1,6 @@
 import { Address, BigDecimal, BigInt, ethereum } from "@graphprotocol/graph-ts"
 
-import { Future, FutureDailyStats } from "../../generated/schema"
+import { FutureDailyStats } from "../../generated/schema"
 import { DAYS_PER_YEAR_BD, ZERO_BD, ZERO_BI } from "../constants"
 import { generateFutureDailyStatsId } from "../utils"
 import { getDayIdFromTimestamp, getPastDayId } from "../utils/dayId"

@@ -16,6 +16,8 @@ class CreateTransactionParams {
     amountsIn: string[]
     amountsOut: string[]
     valueUnderlying: BigInt
+    feeUnderlying: BigInt
+    feeRatio: BigInt
 
     transaction: TransactionDetails
 }
@@ -81,6 +83,9 @@ export function createTransaction(
     }
 
     transaction.valueUnderlying = params.valueUnderlying
+
+    transaction.feeUnderlying = params.feeUnderlying
+    transaction.feeRatio = params.feeRatio
 
     transaction.save()
     return transaction
