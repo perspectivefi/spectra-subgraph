@@ -69,11 +69,8 @@ typings/
 
 # Subgraph config files (generated)
 subgraph.yaml
-subgraph.polygon.yaml
-subgraph.arbitrum.yaml
-subgraph.goerli.yaml
-subgraph.sepolia.yaml
-subgraph.sonic.yaml
+subgraph.*.yaml
+!subgraph.template.yaml
 
 # Tests
 src/tests/.bin/
