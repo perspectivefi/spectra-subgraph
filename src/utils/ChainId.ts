@@ -7,6 +7,8 @@ class ChainId {
     base: i32 = 8453
     optimism: i32 = 10
     hemi: i32 = 43111
+    avalanche: i32 = 43114
+    bsc: i32 = 56
 }
 
 const chainId = new ChainId()
@@ -28,6 +30,10 @@ export function getChainId(network: string): i32 {
         return chainId.optimism
     } else if (network == "spectra-hemi") {
         return chainId.hemi
+    } else if (network == "avalanche") {
+        return chainId.avalanche
+    } else if (network == "bsc") {
+        return chainId.bsc
     }
     throw new Error(`Unsupported network: ${network}`)
 }

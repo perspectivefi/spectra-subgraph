@@ -30,6 +30,8 @@
         "generate-config:hemi": "node ./src/scripts/subgraphConfigGenerator.js hemi",
         "generate-config:optimism": "node ./src/scripts/subgraphConfigGenerator.js optimism",
         "generate-config:base": "node ./src/scripts/subgraphConfigGenerator.js base",
+        "generate-config:avalanche": "node ./src/scripts/subgraphConfigGenerator.js avalanche",
+        "generate-config:bsc": "node ./src/scripts/subgraphConfigGenerator.js bsc",
         "generate-config:testnet": "node ./src/scripts/subgraphConfigGenerator.js testnet",
         "test": "graph test",
         "prettify": "prettier --write \"./**/*.{js,jsx,json,ts,tsx,css}\""

@@ -1,4 +1,4 @@
-import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts"
+import { Address, BigDecimal, BigInt, ethereum } from "@graphprotocol/graph-ts"
 
 import { PoolStats } from "../../generated/schema"
 import { UNIT_BI, ZERO_BI } from "../constants"
@@ -19,6 +19,8 @@ export enum PoolActionType {
  * @param span the span in seconds
  * @param type the action type
  * @param valueUnderlying the value of the action in underlying
+ * @param feeUnderlying the fee value in underlying
+ * @param feeRatio the fee ratio related to the pool liquidity
  * @returns The updated PoolStats entity. This returned entity can still be updated
  * in event specific handlers to update the corresponding data
  */
@@ -27,7 +29,9 @@ export function updatePoolStats(
     poolAddress: Address,
     span: i32,
     type: PoolActionType,
-    valueUnderlying: BigInt
+    valueUnderlying: BigInt,
+    feeUnderlying: BigInt,
+    feeRatio: BigInt
 ): PoolStats {
     let statId = event.block.timestamp.toI32() / span
     const poolStatsId = generatePoolStatsId(
@@ -38,6 +42,7 @@ export function updatePoolStats(
     let poolStats = PoolStats.load(poolStatsId)
     if (poolStats === null) {
         poolStats = createPoolDailyStats(poolAddress, span, statId)
+        poolStats.createdAtTimestamp = event.block.timestamp
     }
     switch (type) {
         case PoolActionType.BUY_PT:
@@ -68,6 +73,10 @@ export function updatePoolStats(
             }
             break
     }
+    // we update the fee stats regardless of the action type
+    poolStats.feeUnderlying = poolStats.feeUnderlying.plus(feeUnderlying)
+    poolStats.feeRatio = poolStats.feeRatio.plus(feeRatio)
+    // save stats
     poolStats.save()
     return poolStats
 }
@@ -99,6 +108,9 @@ export function createPoolDailyStats(
     poolStats.sellVolume = ZERO_BI
     poolStats.depositVolume = ZERO_BI
     poolStats.withdrawVolume = ZERO_BI
+    poolStats.feeUnderlying = ZERO_BI
+    poolStats.feeRatio = ZERO_BI
+    poolStats.createdAtTimestamp = ZERO_BI
     poolStats.save()
     return poolStats
 }

@@ -23,10 +23,16 @@ import {
 } from "../../entities/CurvePool"
 import { getERC20Decimals, getERC20TotalSupply } from "../../entities/ERC20"
 import { getIBTRate } from "../../entities/ERC4626"
+import { createFeeClaim, getPoolAdminBalances } from "../../entities/FeeClaim"
 import { updateFutureDailyStats } from "../../entities/FutureDailyStats"
+import {
+    getLpFeeUnderlying,
+    getPoolLiquidityInUnderlying,
+    updatePoolAdminBalances,
+} from "../../entities/Pool"
 import { PoolActionType, updatePoolStats } from "../../entities/PoolDailyStats"
 import { createTransaction } from "../../entities/Transaction"
-import { AssetType } from "../../utils"
+import { AssetType, PoolType } from "../../utils"
 import { updatePoolAPY } from "../../utils/calculateAPY"
 import { generateTransactionId } from "../../utils/idGenerators"
 import { toPrecision } from "../../utils/toPrecision"
@@ -121,7 +127,13 @@ function addLiquidity(
         const spotPrice = getPoolLastPrices(event.address, pool.type)
         pool.spotPrice = spotPrice
 
+        let adminFees = updatePoolAdminBalances(pool)
+        let ibtAdminFee = adminFees[0]
+        let ptAdminFee = adminFees[1]
+
         let valueUnderlying = ZERO_BI
+        let feeUnderlying = ZERO_BI
+        let feeRatio = ZERO_BI
         if (pool.futureVault && spotPrice.gt(ZERO_BI)) {
             const ibtAddress = AssetAmount.load(pool.ibtAsset)!.asset
             const ibtDecimals = getERC20Decimals(Address.fromString(ibtAddress))
@@ -134,6 +146,25 @@ function addLiquidity(
                 .plus(ptAmountInIbt)
                 .times(ibtRate)
                 .div(BigInt.fromString("10").pow(ibtDecimals as u8))
+            feeUnderlying = getLpFeeUnderlying(
+                pool,
+                ibtAdminFee,
+                ptAdminFee,
+                ibtRate,
+                ibtDecimals
+            )
+            const liquidityInUnderlying = getPoolLiquidityInUnderlying(
+                poolIBTAssetAmount.amount.plus(token_amounts[0]),
+                poolPTAssetAmount.amount.plus(token_amounts[1]),
+                spotPrice,
+                ibtRate,
+                ibtDecimals
+            )
+            if (liquidityInUnderlying.gt(ZERO_BI)) {
+                feeRatio = feeUnderlying
+                    .times(CURVE_UNIT)
+                    .div(liquidityInUnderlying)
+            }
         }
 
         updatePoolStats(
@@ -141,14 +172,18 @@ function addLiquidity(
             Address.fromBytes(pool.address),
             SECONDS_PER_HOUR,
             PoolActionType.ADD_LIQUIDITY,
-            valueUnderlying
+            valueUnderlying,
+            feeUnderlying,
+            feeRatio
         )
         updatePoolStats(
             event,
             Address.fromBytes(pool.address),
             SECONDS_PER_DAY,
             PoolActionType.ADD_LIQUIDITY,
-            valueUnderlying
+            valueUnderlying,
+            feeUnderlying,
+            feeRatio
         )
 
         createTransaction({
@@ -166,6 +201,8 @@ function addLiquidity(
             amountsIn: [ibtAmountIn.id, ptAmountIn.id],
             amountsOut: [lpAmountOut.id],
             valueUnderlying,
+            feeUnderlying,
+            feeRatio,
 
             transaction: {
                 timestamp: event.block.timestamp,
@@ -181,6 +218,7 @@ function addLiquidity(
         })
 
         pool.totalFees = pool.totalFees.plus(fee)
+        pool.totalFeeRatio = pool.totalFeeRatio.plus(feeRatio)
         pool.totalAdminFees = pool.totalAdminFees.plus(adminFee)
 
         // In case of no liquidity, the fee() will revert on the "CurvePoolDeployed" event so we have to set the fee rate here
@@ -192,8 +230,27 @@ function addLiquidity(
         }
 
         if (pool.initialVirtualPrice.equals(ZERO_BI)) {
-            pool.initialVirtualPrice = getPoolVirtualPrice(pool.address)
+            pool.initialVirtualPrice = getPoolVirtualPrice(
+                Address.fromBytes(pool.address)
+            )
         }
+
+        let adminBalances = getPoolAdminBalances(
+            Address.fromBytes(pool.address),
+            pool.type
+        )
+        if (pool.type == PoolType.CURVE_SNG) {
+            createFeeClaim({
+                admin: ZERO_ADDRESS,
+                timestamp: event.block.timestamp,
+                poolId: pool.id,
+                amount: ZERO_BI,
+                ibtAmount: pool.ibtAdminBalance.minus(adminBalances[0]),
+                ptAmount: pool.ptAdminBalance.minus(adminBalances[1]),
+            })
+        }
+        pool.ibtAdminBalance = adminBalances[0]
+        pool.ptAdminBalance = adminBalances[1]
 
         pool.save()
 

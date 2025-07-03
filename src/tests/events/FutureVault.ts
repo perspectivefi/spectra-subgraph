@@ -6,7 +6,7 @@ import {
     CurveFactoryChange,
     CurvePoolDeployed,
     PTDeployed,
-} from "../../../generated/Factory/Factory"
+} from "../../../generated/templates/Factory/Factory"
 import { Mint } from "../../../generated/templates/PrincipalToken/PrincipalToken"
 import {
     handleCurveFactoryChange,

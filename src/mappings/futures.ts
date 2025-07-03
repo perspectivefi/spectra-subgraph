@@ -270,7 +270,7 @@ export function handleMint(event: Mint): void {
             amountsIn: [],
             amountsOut: [firstAmountOut.id, secondAmountOut.id],
             valueUnderlying: event.params.amount
-                .times(getPTRate(principalToken.address))
+                .times(getPTRate(Address.fromBytes(principalToken.address)))
                 .div(BigInt.fromString("10").pow(RAYS_PRECISION as u8)),
 
             transaction: {
@@ -284,6 +284,9 @@ export function handleMint(event: Mint): void {
                 fee: ZERO_BI,
                 adminFee: ZERO_BI,
             },
+
+            feeUnderlying: ZERO_BI,
+            feeRatio: ZERO_BI,
         })
 
         // Mint specific FutureDailyStats data
@@ -357,7 +360,7 @@ export function handleRedeem(event: Redeem): void {
             amountsIn: [firstAmountIn.id, secondAmountIn.id],
             amountsOut: [],
             valueUnderlying: event.params.amount
-                .times(getPTRate(principalToken.address))
+                .times(getPTRate(Address.fromBytes(principalToken.address)))
                 .div(BigInt.fromString("10").pow(RAYS_PRECISION as u8)),
 
             transaction: {
@@ -371,6 +374,9 @@ export function handleRedeem(event: Redeem): void {
                 fee: ZERO_BI,
                 adminFee: ZERO_BI,
             },
+
+            feeUnderlying: ZERO_BI,
+            feeRatio: ZERO_BI,
         })
 
         // Redeem specific FutureDailyStats data
