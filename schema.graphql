@@ -448,3 +448,24 @@ type SpectraWrapper @entity {
     assetSymbol: String!
     assetDecimals: Int!
 }
+
+####################
+# Limit Order entities
+####################
+
+type UserNonce @entity {
+    id: ID!                          # nonce-{user-address}
+    user: Bytes!                     # The address of the user
+    latestNonce: BigInt!            # The latest nonce observed from NonceIncreased
+    updatedAt: BigInt!              # Timestamp of the last NonceIncreased event
+    updatedAtBlock: BigInt!         # Block Number of the last NonceIncreased event
+}
+
+type OnChainOrderStatus @entity {
+    id: ID!                          # The order hash (bytes32 → hex string)
+    orderHash: Bytes!               # The raw order hash
+    totalFilled: BigInt!            # Accumulated actualMaking from OrderFilled
+    cancelled: Boolean!             # True if OrderCanceled was emitted
+    updatedAt: BigInt!              # Timestamp of the last update (OrderFilled or OrderCanceled)
+    updatedAtBlock: BigInt!         # Block number of the last update (OrderFilled or OrderCanceled)
+}
