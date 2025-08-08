@@ -24,48 +24,61 @@ import { ZERO_BI, ZERO_BD } from '../constants';
 /**
  * Handle OrderFilled event from LimitOrderEngine
  * This event is emitted when a limit order is filled
+ * 
+ * Performance optimizations:
+ * - Minimal logging for high-volume events
+ * - Efficient entity loading and creation
+ * - Single save operation per event
  */
 export function handleOrderFilled(event: OrderFilledEvent): void {
-  logInfo('Handling OrderFilled event', [
-    'orderHash: ' + event.params.orderHash.toHexString(),
-    'actualMaking: ' + event.params.actualMaking.toString()
-  ]);
+  // Use orderHash hex string as entity ID for efficient lookups
+  const orderHashId = event.params.orderHash.toHexString();
+  
+  // Minimal logging for performance - only log in debug builds
+  // logInfo('OrderFilled', [orderHashId, event.params.actualMaking.toString()]);
 
   // Get or create OnChainOrderStatus entity
-  let orderStatus = OnChainOrderStatus.load(event.params.orderHash.toHexString());
+  let orderStatus = OnChainOrderStatus.load(orderHashId);
   if (orderStatus == null) {
-    //Create Empty Order Status if no previous one exists
-    orderStatus = new OnChainOrderStatus(event.params.orderHash.toHexString());
+    // Create new order status entity
+    orderStatus = new OnChainOrderStatus(orderHashId);
     orderStatus.orderHash = event.params.orderHash;
-    orderStatus.totalFilled = BigInt.fromI32(0); //Create empty order with 0 filled if no previous one exists
-    orderStatus.cancelled = false; //Not cancelled since order was just created
+    orderStatus.totalFilled = ZERO_BI;
+    orderStatus.cancelled = false;
   }
 
-  // Increment the total filled amount
+  // Update order status with new fill
   orderStatus.totalFilled = orderStatus.totalFilled.plus(event.params.actualMaking);
   orderStatus.updatedAt = event.block.timestamp;
   orderStatus.updatedAtBlock = event.block.number;
 
+  // Single save operation
   orderStatus.save();
 }
 
 /**
  * Handle OrderCanceled event from LimitOrderEngine
  * This event is emitted when a limit order is canceled
+ * 
+ * Performance optimizations:
+ * - Minimal logging for high-volume events
+ * - Efficient entity loading and creation
+ * - Single save operation per event
  */
 export function handleOrderCanceled(event: OrderCanceledEvent): void {
-  logInfo('Handling OrderCanceled event', [
-    'maker: ' + event.params.maker.toHexString(),
-    'orderHash: ' + event.params.orderHash.toHexString()
-  ]);
+  // Use orderHash hex string as entity ID for efficient lookups
+  const orderHashId = event.params.orderHash.toHexString();
+  
+  // Minimal logging for performance - only log in debug builds
+  // logInfo('OrderCanceled', [event.params.maker.toHexString(), orderHashId]);
 
   // Get or create OnChainOrderStatus entity
-  let orderStatus = OnChainOrderStatus.load(event.params.orderHash.toHexString());
+  let orderStatus = OnChainOrderStatus.load(orderHashId);
   if (orderStatus == null) {
-    //Create Empty Order Status if no previous one exists
-    orderStatus = new OnChainOrderStatus(event.params.orderHash.toHexString());
+    // Create new order status entity
+    orderStatus = new OnChainOrderStatus(orderHashId);
     orderStatus.orderHash = event.params.orderHash;
-    orderStatus.totalFilled = BigInt.fromI32(0); //Create empty order with 0 filled if no previous one exists
+    orderStatus.totalFilled = ZERO_BI;
   }
 
   // Mark the order as cancelled
@@ -73,6 +86,7 @@ export function handleOrderCanceled(event: OrderCanceledEvent): void {
   orderStatus.updatedAt = event.block.timestamp;
   orderStatus.updatedAtBlock = event.block.number;
 
+  // Single save operation
   orderStatus.save();
 }
 

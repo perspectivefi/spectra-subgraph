@@ -466,6 +466,6 @@ type OnChainOrderStatus @entity {
     orderHash: Bytes!               # The raw order hash
     totalFilled: BigInt!            # Accumulated actualMaking from OrderFilled
     cancelled: Boolean!             # True if OrderCanceled was emitted
-    updatedAt: BigInt!              # Timestamp of the last update (OrderFilled or OrderCanceled)
-    updatedAtBlock: BigInt!         # Block number of the last update (OrderFilled or OrderCanceled)
+    updatedAt: BigInt! @index       # Timestamp of the last update (OrderFilled or OrderCanceled) - (TODO: check indexed for time-based queries)
+    updatedAtBlock: BigInt! @index  # Block number of the last update (OrderFilled or OrderCanceled) -(TODO: check indexed for block-based queries)
 }
