@@ -2,6 +2,5 @@
     "network": "goerli",
     "startBlock": 8849329,
 
-    "registry": "0xd06873A2ce9bF0884FDDE4ecDBA9d953468D7C86",
-    "factory": "0xe70e11661725BC297a804d22Ce96606D7dE09Af5"
+    "registry": "0xd06873A2ce9bF0884FDDE4ecDBA9d953468D7C86"
 }

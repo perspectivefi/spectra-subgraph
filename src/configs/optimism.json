@@ -2,6 +2,5 @@
     "network": "optimism",
     "startBlock": 122130500,
 
-    "registry": "0x0458c078fCf527DA293Ec9e813a0DcAF9F949EB1",
-    "factory": "0x9c594C2e2e2e5aa300be12596215188C324c3E7c"
+    "registry": "0x0458c078fCf527DA293Ec9e813a0DcAF9F949EB1"
 }

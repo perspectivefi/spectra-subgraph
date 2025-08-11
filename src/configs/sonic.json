@@ -2,6 +2,5 @@
     "network": "sonic-mainnet",
     "startBlock": 1856000,
 
-    "registry": "0xcb671f588c85E1403ecB9B4f6dA0dff0d1e9D3FB",
-    "factory": "0xC9092777bF098e74B23B66c4140064eB3FcCD0F1"
+    "registry": "0xcb671f588c85E1403ecB9B4f6dA0dff0d1e9D3FB"
 }
