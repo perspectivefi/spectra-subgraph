@@ -16,7 +16,6 @@ import {
     FIRST_USER_MOCK,
     FEE_COLLECTOR_ADDRESS_MOCK,
 } from "./FutureVault"
-import { LP_VAULT_ADDRESS_MOCK, LP_VAULT_ASSET_ADDRESS_MOCK } from "./LPVault"
 import { RECEIVER_USER_MOCK } from "./Transaction"
 
 export const ETH_ADDRESS_MOCK = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"

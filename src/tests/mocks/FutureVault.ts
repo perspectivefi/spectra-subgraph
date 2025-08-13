@@ -2,9 +2,8 @@ import { Address, BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts"
 import { createMockedFunction } from "matchstick-as/assembly"
 
 import { RAYS_PRECISION, toPrecision } from "../../utils/toPrecision"
-import { ETH_ADDRESS_MOCK, STANDARD_DECIMALS_MOCK } from "./ERC20"
+import { ETH_ADDRESS_MOCK } from "./ERC20"
 import { FACTORY_ADDRESS_MOCK } from "./Factory"
-import { PRINCIPAL_TOKEN_ADDRESS_MOCK } from "./LPVault"
 import { RECEIVER_USER_MOCK } from "./Transaction"
 
 export const FIRST_FUTURE_VAULT_ADDRESS_MOCK = Address.fromString(

@@ -1,20 +1,15 @@
 import { Address, BigInt, Bytes, ethereum, log } from "@graphprotocol/graph-ts"
 
+import { FeeClaim, Future, Factory } from "../../generated/schema"
 import {
-    FeeClaim,
-    Future,
-    Factory, // LPVault,
-    // Pool,
-} from "../../generated/schema"
-import {
-    ERC20, // LPVault as LPVaultTemplate,
+    ERC20,
     PrincipalToken as PrincipalTokenTemplate,
     IBT,
     CurvePool as CurvePoolTemplate,
 } from "../../generated/templates"
 import {
-    CurveFactoryChange, // CurveFactoryChange,
-    CurvePoolDeployed, // LPVDeployed,
+    CurveFactoryChange,
+    CurvePoolDeployed,
     PTDeployed,
     RegistryChange,
 } from "../../generated/templates/Factory/Factory"
@@ -29,7 +24,6 @@ import {
     Redeem,
 } from "../../generated/templates/PrincipalToken/PrincipalToken"
 import { ZERO_ADDRESS, UNIT_BI, ZERO_BI } from "../constants"
-// import { createAPYInTimeForLPVault } from "../entities/APYInTime"
 import { getAccount } from "../entities/Account"
 import {
     updateAccountAssetBalance,
@@ -59,9 +53,7 @@ import {
     updateYieldForAll,
 } from "../entities/Yield"
 import { AssetType, generateFeeClaimId } from "../utils"
-// import FutureState from "../utils/FutureState"
 import transactionType from "../utils/TransactionType"
-// import { calculateLpVaultAPY } from "../utils/calculateAPY"
 import { generateTransactionId } from "../utils/idGenerators"
 import { RAYS_PRECISION } from "../utils/toPrecision"
 
@@ -265,7 +257,6 @@ export function handleMint(event: Mint): void {
             futureInTransaction: Address.fromBytes(principalToken.address),
             userInTransaction: event.params.to,
             poolInTransaction: ZERO_ADDRESS,
-            lpVaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [],
             amountsOut: [firstAmountOut.id, secondAmountOut.id],
@@ -355,7 +346,6 @@ export function handleRedeem(event: Redeem): void {
             futureInTransaction: Address.fromBytes(principalToken.address),
             userInTransaction: event.params.from,
             poolInTransaction: ZERO_ADDRESS,
-            lpVaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [firstAmountIn.id, secondAmountIn.id],
             amountsOut: [],
@@ -486,75 +476,3 @@ export function handlePTTransfer(event: PTTransfer): void {
         ])
     }
 }
-
-// TODO: LPVaults
-// export function handleLPVDeployed(event: LPVDeployed): void {
-//     let lpVault = new LPVault(event.params.lpv.toHex())
-//     let future = Future.load(event.params.pt.toHex())!
-//
-//     lpVault.chainId = getNetwork().chainId
-//     lpVault.address = event.params.lpv
-//     lpVault.createdAtTimestamp = event.block.timestamp
-//     lpVault.expirationAtTimestamp = future.expirationAtTimestamp
-//
-//     let factory = Factory.load(event.address.toHex())!
-//     lpVault.factory = factory.id
-//     lpVault.future = future.id
-//
-//     lpVault.state = FutureState.ACTIVE
-//
-//     let underlyingAddress = getUnderlying(Address.fromBytes(future.address))
-//     let underlying = getAsset(
-//         underlyingAddress.toHex(),
-//         event.block.timestamp,
-//         AssetType.UNDERLYING
-//     )
-//     lpVault.underlying = underlying.address.toHex()
-//
-//     let ibtAddress = getIBT(Address.fromBytes(future.address))
-//     let ibt = getAsset(ibtAddress.toHex(), event.block.timestamp, AssetType.IBT)
-//     lpVault.ibt = ibt.address.toHex()
-//
-//     let name = getName(Address.fromBytes(lpVault.address))
-//     lpVault.name = name
-//     let symbol = getSymbol(Address.fromBytes(lpVault.address))
-//     lpVault.symbol = symbol
-//     lpVault.totalSupply = ZERO_BI
-//     lpVault.totalAssets = ZERO_BI
-//
-//     let poolAddress = event.params.curvePool
-//
-//     let pool = Pool.load(poolAddress.toHex())
-//     if (pool) {
-//         lpVault.pool = pool.id
-//     } else {
-//         lpVault.pool = createPool({
-//             poolAddress: poolAddress,
-//             ibtAddress: ibtAddress,
-//             factoryAddress: Address.fromString(future.factory!),
-//             ptAddress: Address.fromBytes(future.address),
-//             timestamp: event.block.timestamp,
-//             transactionHash: event.transaction.hash,
-//         }).id
-//     }
-//
-//     lpVault.save()
-//
-//     let lpVaultShareAsset = getAsset(
-//         lpVault.address.toHex(),
-//         event.block.timestamp,
-//         AssetType.LP_VAULT_SHARES
-//     )
-//     lpVaultShareAsset.futureVault = future.address.toHex()
-//     lpVaultShareAsset.save()
-//
-//     // Create dynamic data source for LPVault events
-//     LPVaultTemplate.create(Address.fromBytes(lpVault.address))
-//
-//     let lpVaultAPY = createAPYInTimeForLPVault(
-//         event.params.lpv,
-//         event.block.timestamp
-//     )
-//     lpVaultAPY.apy = calculateLpVaultAPY(event.params.lpv)
-//     lpVaultAPY.save()
-// }

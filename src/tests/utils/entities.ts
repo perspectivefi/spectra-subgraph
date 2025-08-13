@@ -11,11 +11,7 @@ export let ASSET_AMOUNT_ENTITY = "AssetAmount"
 export let ACCOUNT_ASSET_ENTITY = "AccountAsset"
 
 export let POOL_ENTITY = "Pool"
-export let APY_IN_TIME_ENTITY = "APYInTime"
 
 export let TRANSFER_ENTITY = "Transfer"
 
 export let NETWORK_ENTITY = "Network"
-
-export let LP_VAULT_INTEREST_ENTITY = "LPVaultInterest"
-export let LP_VAULT_ENTITY = "LPVault"

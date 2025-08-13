@@ -30,10 +30,9 @@ import {
     getPoolLiquidityInUnderlying,
     updatePoolAdminBalances,
 } from "../../entities/Pool"
-import { PoolActionType, updatePoolStats } from "../../entities/PoolDailyStats"
+import { PoolActionType, updatePoolStats } from "../../entities/PoolStats"
 import { createTransaction } from "../../entities/Transaction"
 import { AssetType, PoolType } from "../../utils"
-import { updatePoolAPY } from "../../utils/calculateAPY"
 import { generateTransactionId } from "../../utils/idGenerators"
 import { toPrecision } from "../../utils/toPrecision"
 
@@ -148,6 +147,7 @@ function addLiquidity(
                 .div(BigInt.fromString("10").pow(ibtDecimals as u8))
             feeUnderlying = getLpFeeUnderlying(
                 pool,
+                ZERO_BI, // for CURVE pools we skip this fee
                 ibtAdminFee,
                 ptAdminFee,
                 ibtRate,
@@ -169,7 +169,7 @@ function addLiquidity(
 
         updatePoolStats(
             event,
-            Address.fromBytes(pool.address),
+            pool,
             SECONDS_PER_HOUR,
             PoolActionType.ADD_LIQUIDITY,
             valueUnderlying,
@@ -178,7 +178,7 @@ function addLiquidity(
         )
         updatePoolStats(
             event,
-            Address.fromBytes(pool.address),
+            pool,
             SECONDS_PER_DAY,
             PoolActionType.ADD_LIQUIDITY,
             valueUnderlying,
@@ -196,7 +196,6 @@ function addLiquidity(
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: Address.fromBytes(account.address),
             poolInTransaction: event.address,
-            lpVaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [ibtAmountIn.id, ptAmountIn.id],
             amountsOut: [lpAmountOut.id],
@@ -274,16 +273,6 @@ function addLiquidity(
             futureDailyStats.dailyAddLiquidity =
                 futureDailyStats.dailyAddLiquidity.plus(UNIT_BI)
             futureDailyStats.save()
-        }
-
-        if (pool.futureVault) {
-            updatePoolAPY(
-                event.address,
-                pool.type,
-                Address.fromString(pool.futureVault!),
-                event.block.timestamp,
-                event.block.number
-            )
         }
     }
 }

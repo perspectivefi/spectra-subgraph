@@ -1,7 +1,13 @@
 import { Address, BigDecimal, BigInt, ethereum } from "@graphprotocol/graph-ts"
 
-import { PoolStats } from "../../generated/schema"
-import { UNIT_BI, ZERO_BI } from "../constants"
+import { Pool, PoolStats } from "../../generated/schema"
+import { UNIT_BI, ZERO_BI, SECONDS_PER_YEAR, ZERO_BD } from "../constants"
+import { getPoolLastPrices, getPoolSwapPreview } from "../entities/CurvePool"
+import {
+    getIBTRate,
+    getPTRate,
+    getExpirationTimestamp,
+} from "../entities/FutureVault"
 import { generatePoolStatsId } from "../utils/idGenerators"
 
 export enum PoolActionType {
@@ -9,6 +15,58 @@ export enum PoolActionType {
     SELL_PT,
     ADD_LIQUIDITY,
     REMOVE_LIQUIDITY,
+}
+
+export function updatePoolStatsDetails(
+    pool: Pool,
+    poolStats: PoolStats,
+    timestamp: BigInt
+): void {
+    const curveUnit = BigInt.fromI32(10).pow(18)
+    const rayUnit = BigInt.fromI32(10).pow(27)
+
+    const principalToken = Address.fromString(pool.futureVault!)
+    const expirationTimestamp = getExpirationTimestamp(principalToken)
+    const timeLeft = expirationTimestamp.minus(timestamp)
+    const spotPrice = getPoolLastPrices(
+        Address.fromBytes(pool.address),
+        pool.type
+    )
+
+    poolStats.ibtToPt = getPoolSwapPreview(
+        Address.fromBytes(pool.address),
+        pool.type,
+        BigInt.fromI32(0),
+        BigInt.fromI32(1)
+    )
+    poolStats.ptToIbt = getPoolSwapPreview(
+        Address.fromBytes(pool.address),
+        pool.type,
+        BigInt.fromI32(1),
+        BigInt.fromI32(0)
+    )
+
+    poolStats.spotPrice = spotPrice
+    const ibtRate = getIBTRate(principalToken)
+    const ptRate = getPTRate(principalToken)
+    poolStats.ptRate = ptRate
+    poolStats.ibtRate = ibtRate
+
+    if (spotPrice.gt(ZERO_BI) && timeLeft.gt(ZERO_BI) && ibtRate.gt(ZERO_BI)) {
+        const baseAPY = ptRate
+            .times(curveUnit)
+            .times(rayUnit)
+            .div(spotPrice.times(ibtRate))
+        const expAPY = SECONDS_PER_YEAR.div(
+            BigDecimal.fromString(timeLeft.toString())
+        )
+        poolStats.baseAPY = BigDecimal.fromString(baseAPY.toString()).div(
+            BigDecimal.fromString(rayUnit.toString())
+        )
+        poolStats.exponentAPY = expAPY
+    }
+
+    poolStats.save()
 }
 
 /**
@@ -26,7 +84,7 @@ export enum PoolActionType {
  */
 export function updatePoolStats(
     event: ethereum.Event,
-    poolAddress: Address,
+    pool: Pool,
     span: i32,
     type: PoolActionType,
     valueUnderlying: BigInt,
@@ -35,13 +93,17 @@ export function updatePoolStats(
 ): PoolStats {
     let statId = event.block.timestamp.toI32() / span
     const poolStatsId = generatePoolStatsId(
-        poolAddress.toHex(),
+        pool.address.toHex(),
         span.toString(),
         statId.toString()
     )
     let poolStats = PoolStats.load(poolStatsId)
     if (poolStats === null) {
-        poolStats = createPoolDailyStats(poolAddress, span, statId)
+        poolStats = createPoolStats(
+            Address.fromBytes(pool.address),
+            span,
+            statId
+        )
         poolStats.createdAtTimestamp = event.block.timestamp
     }
     switch (type) {
@@ -76,6 +138,12 @@ export function updatePoolStats(
     // we update the fee stats regardless of the action type
     poolStats.feeUnderlying = poolStats.feeUnderlying.plus(feeUnderlying)
     poolStats.feeRatio = poolStats.feeRatio.plus(feeRatio)
+    // we also update the APY & other data points
+    if (pool.futureVault) {
+        updatePoolStatsDetails(pool, poolStats, event.block.timestamp)
+    }
+    poolStats.lastUpdatedAtTimestamp = event.block.timestamp
+    poolStats.lastUpdatedAtBlock = event.block.number
     // save stats
     poolStats.save()
     return poolStats
@@ -86,7 +154,7 @@ export function updatePoolStats(
  * @param dayId The day id
  * @returns The newly created PoolStats entity
  */
-export function createPoolDailyStats(
+export function createPoolStats(
     address: Address,
     span: i32,
     statId: i32
@@ -111,6 +179,17 @@ export function createPoolDailyStats(
     poolStats.feeUnderlying = ZERO_BI
     poolStats.feeRatio = ZERO_BI
     poolStats.createdAtTimestamp = ZERO_BI
+    poolStats.lastUpdatedAtTimestamp = ZERO_BI
+    poolStats.lastUpdatedAtBlock = ZERO_BI
+
+    poolStats.spotPrice = UNIT_BI
+    poolStats.ptRate = ZERO_BI
+    poolStats.ibtRate = ZERO_BI
+    poolStats.baseAPY = ZERO_BD
+    poolStats.exponentAPY = ZERO_BD
+    poolStats.ibtToPt = ZERO_BI
+    poolStats.ptToIbt = ZERO_BI
+
     poolStats.save()
     return poolStats
 }

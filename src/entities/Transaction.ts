@@ -11,7 +11,6 @@ class CreateTransactionParams {
     futureInTransaction: Address
     userInTransaction: Address
     poolInTransaction: Address
-    lpVaultInTransaction: Address
 
     amountsIn: string[]
     amountsOut: string[]
@@ -68,10 +67,6 @@ export function createTransaction(
 
     if (params.poolInTransaction !== ZERO_ADDRESS) {
         transaction.poolInTransaction = params.poolInTransaction.toHex()
-    }
-
-    if (params.lpVaultInTransaction !== ZERO_ADDRESS) {
-        transaction.lpVaultInTransaction = params.lpVaultInTransaction.toHex()
     }
 
     if (params.transaction.fee !== ZERO_BI) {

@@ -21,18 +21,16 @@ import { getAssetAmount } from "../../entities/AssetAmount"
 import { getPoolLastPrices } from "../../entities/CurvePool"
 import { getERC20Decimals } from "../../entities/ERC20"
 import { getIBTRate } from "../../entities/ERC4626"
-import { getPoolAdminBalances, createFeeClaim } from "../../entities/FeeClaim"
+import { createFeeClaim } from "../../entities/FeeClaim"
 import { updateFutureDailyStats } from "../../entities/FutureDailyStats"
 import {
     getLpFeeUnderlying,
-    getPoolDynamicFee,
     getPoolLiquidityInUnderlying,
     updatePoolAdminBalances,
 } from "../../entities/Pool"
-import { PoolActionType, updatePoolStats } from "../../entities/PoolDailyStats"
+import { PoolActionType, updatePoolStats } from "../../entities/PoolStats"
 import { createTransaction } from "../../entities/Transaction"
 import { AssetType, PoolType } from "../../utils"
-import { updatePoolAPY } from "../../utils/calculateAPY"
 import { generateTransactionId } from "../../utils/idGenerators"
 import { toPrecision } from "../../utils/toPrecision"
 
@@ -152,6 +150,7 @@ function tokenExchange(
                 .div(BigInt.fromI32(2))
             feeUnderlying = getLpFeeUnderlying(
                 pool,
+                valueUnderlying,
                 ibtAdminFee,
                 ptAdminFee,
                 ibtRate,
@@ -173,7 +172,7 @@ function tokenExchange(
 
         updatePoolStats(
             event,
-            Address.fromBytes(pool.address),
+            pool,
             SECONDS_PER_HOUR,
             isBuyPt ? PoolActionType.BUY_PT : PoolActionType.SELL_PT,
             valueUnderlying,
@@ -182,7 +181,7 @@ function tokenExchange(
         )
         updatePoolStats(
             event,
-            Address.fromBytes(pool.address),
+            pool,
             SECONDS_PER_DAY,
             isBuyPt ? PoolActionType.BUY_PT : PoolActionType.SELL_PT,
             valueUnderlying,
@@ -200,7 +199,6 @@ function tokenExchange(
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: Address.fromBytes(account.address),
             poolInTransaction: Address.fromBytes(pool.address),
-            lpVaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [amountIn.id],
             amountsOut: [amountOut.id],
@@ -255,16 +253,6 @@ function tokenExchange(
             futureDailyStats.dailySwaps =
                 futureDailyStats.dailySwaps.plus(UNIT_BI)
             futureDailyStats.save()
-        }
-
-        if (pool.futureVault) {
-            updatePoolAPY(
-                event.address,
-                pool.type,
-                Address.fromString(pool.futureVault!),
-                event.block.timestamp,
-                event.block.number
-            )
         }
     }
 }

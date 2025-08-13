@@ -950,16 +950,6 @@ describe("handleTokenExchange()", () => {
         )
     })
 
-    // TODO: Fix pool APY
-    // test("Recalculate pool APY", () => {
-    //     assert.fieldEquals(
-    //         APY_IN_TIME_ENTITY,
-    //         `${FIRST_POOL_ADDRESS_MOCK.toHex()}-0`,
-    //         "apy",
-    //         "63113852000"
-    //     )
-    // })
-
     test("Recalculate pool APR with negative value", () => {
         emitCurvePoolDeployed(SECOND_POOL_ADDRESS_MOCK)
 
@@ -1238,17 +1228,6 @@ describe("handleRemoveLiquidityOne()", () => {
             ),
             "ibtRateMA",
             "1"
-        )
-    })
-
-    test("Recalculate pool APR", () => {
-        const apyInTimeId = `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`
-
-        assert.fieldEquals(
-            APY_IN_TIME_ENTITY,
-            apyInTimeId,
-            "spotPrice",
-            POOL_PRICE_SCALE_MOCK.toString()
         )
     })
 })

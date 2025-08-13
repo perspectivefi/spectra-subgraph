@@ -3,8 +3,7 @@ import { Address, BigInt, Bytes, log } from "@graphprotocol/graph-ts"
 import { Future, Factory, Pool } from "../../generated/schema"
 import { CurvePoolSNG } from "../../generated/templates/CurvePool/CurvePoolSNG"
 import { CURVE_UNIT, ZERO_BI } from "../constants"
-import { AssetType } from "../utils"
-import { createAPYInTimeForPool } from "./APYInTime"
+import { AssetType, PoolType } from "../utils"
 import { getAsset } from "./Asset"
 import { getAssetAmount } from "./AssetAmount"
 import {
@@ -111,15 +110,6 @@ export function createPool(params: PoolDetails): Pool {
     }
 
     let spotPrice = getPoolLastPrices(params.poolAddress, params.type)
-    if (pool.futureVault) {
-        let poolAPY = createAPYInTimeForPool(
-            params.poolAddress,
-            params.timestamp,
-            params.blockNumber
-        )
-
-        poolAPY.save()
-    }
 
     pool.spotPrice = spotPrice
 
@@ -186,18 +176,25 @@ export function updatePoolAdminBalances(pool: Pool): BigInt[] {
 
 export function getLpFeeUnderlying(
     pool: Pool,
+    valueUnderlying: BigInt,
     ibtAdminFee: BigInt,
     ptAdminFee: BigInt,
     ibtRate: BigInt,
     ibtDecimals: number
 ): BigInt {
-    let ptAdminFeeInIbt = ptAdminFee.times(CURVE_UNIT).div(pool.spotPrice)
-    let adminFeeUnderlying = ibtAdminFee
-        .plus(ptAdminFeeInIbt)
-        .times(ibtRate)
-        .div(BigInt.fromString("10").pow(ibtDecimals as u8))
-    let lpFeeUnderlying = adminFeeUnderlying
-        .times(FEES_UNIT)
-        .div(pool.adminFeeRate)
-    return lpFeeUnderlying
+    if (pool.type == PoolType.CURVE) {
+        return valueUnderlying.times(pool.feeRate).div(FEES_UNIT)
+    } else if (pool.type == PoolType.CURVE_SNG) {
+        let ptAdminFeeInIbt = ptAdminFee.times(CURVE_UNIT).div(pool.spotPrice)
+        let adminFeeUnderlying = ibtAdminFee
+            .plus(ptAdminFeeInIbt)
+            .times(ibtRate)
+            .div(BigInt.fromString("10").pow(ibtDecimals as u8))
+        let lpFeeUnderlying = adminFeeUnderlying
+            .times(FEES_UNIT)
+            .div(pool.adminFeeRate)
+        return lpFeeUnderlying
+    } else {
+        return ZERO_BI
+    }
 }
