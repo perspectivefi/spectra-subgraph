@@ -293,7 +293,6 @@ type PoolStats @entity {
     lastUpdatedAtTimestamp: BigInt! # timestamp of the last update of the data point
     lastUpdatedAtBlock: BigInt! # block of the last update of the data point
 
-    "useful data for charts"
     spotPrice: BigInt!
     ptRate: BigInt!
     ibtRate: BigInt!
