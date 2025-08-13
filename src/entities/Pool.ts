@@ -196,9 +196,8 @@ export function getLpFeeUnderlying(
         .plus(ptAdminFeeInIbt)
         .times(ibtRate)
         .div(BigInt.fromString("10").pow(ibtDecimals as u8))
-        .div(BigInt.fromI32(2))
     let lpFeeUnderlying = adminFeeUnderlying
-        .times(FEES_UNIT.minus(pool.adminFeeRate))
+        .times(FEES_UNIT)
         .div(pool.adminFeeRate)
     return lpFeeUnderlying
 }
