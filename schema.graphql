@@ -2,7 +2,7 @@
 # Init
 ####################
 
-type Network @entity {
+type Network @entity(immutable: false) {
     id: ID!
     name: String!
     chainId: Int!
@@ -63,7 +63,7 @@ enum FutureState {
 
 "Platform entity to define IBT/FutureVault platform"
 # possibility to add new platforms without subgraph update)
-type Platform @entity {
+type Platform @entity(immutable: false) {
     id: ID!
     createdAtTimestamp: BigInt!
     name: String!
@@ -71,7 +71,7 @@ type Platform @entity {
 }
 
 "FYTTokenDetails entity to define token details in case it is a FYT token"
-type FYTTokenDetails @entity {
+type FYTTokenDetails @entity(immutable: false) {
     id: ID!
     createdAtTimestamp: BigInt!
     expirationAtTimestamp: BigInt!
@@ -81,7 +81,7 @@ type FYTTokenDetails @entity {
 }
 
 "LPTokenDetails entity to define token details in case it is a LP token"
-type LPTokenDetails @entity {
+type LPTokenDetails @entity(immutable: false) {
     id: ID!
     createdAtTimestamp: BigInt!
 
@@ -91,7 +91,7 @@ type LPTokenDetails @entity {
 }
 
 "ValueInTime entity to connect a value with time for history purpose"
-type ValueInTime @entity {
+type ValueInTime @entity(immutable: false) {
     id: ID!
     timestamp: BigInt!
     value: BigInt!
@@ -101,7 +101,7 @@ type ValueInTime @entity {
 # Factory
 ####################
 
-type Factory @entity {
+type Factory @entity(immutable: false) {
     id: ID!
     address: Bytes!
     createdAtTimestamp: BigInt!
@@ -120,7 +120,7 @@ type Factory @entity {
 ####################
 
 "Asset entity to index all kind of details of an asset stored in the subgraph"
-type Asset @entity {
+type Asset @entity(immutable: false) {
     id: ID!
     chainId: Int!
     address: Bytes!
@@ -152,7 +152,7 @@ type Asset @entity {
 }
 
 "AssetPrice entity to assign a price of a token to an Asset entity and its price source"
-type AssetPrice @entity {
+type AssetPrice @entity(immutable: false) {
     id: ID!
     createdAtTimestamp: BigInt!
     value: BigDecimal!
@@ -161,7 +161,7 @@ type AssetPrice @entity {
 }
 
 "AssetAmount entity to assign an amount of token (in a transaction for instance) to its dollar value and exact asset"
-type AssetAmount @entity {
+type AssetAmount @entity(immutable: false) {
     id: ID!
     createdAtTimestamp: BigInt!
     amount: BigInt!
@@ -169,7 +169,7 @@ type AssetAmount @entity {
 }
 
 "AccountAsset entity to assign and update account's assets balances"
-type AccountAsset @entity {
+type AccountAsset @entity(immutable: false) {
     id: ID!
     createdAtTimestamp: BigInt!
     balance: BigInt!
@@ -192,7 +192,7 @@ type AccountAsset @entity {
 }
 
 "ChainlinkAggregatorProxy entity to save information about Chainlink aggregator, mapper should use to fetch the price of an asset"
-type ChainlinkAggregatorProxy @entity {
+type ChainlinkAggregatorProxy @entity(immutable: false) {
     id: ID!
     "aggregator address"
     aggregator: String!
@@ -204,7 +204,7 @@ type ChainlinkAggregatorProxy @entity {
 ####################
 
 "Future entity to index all the future's stats as well as its transactions, managers and other relations"
-type Future @entity {
+type Future @entity(immutable: false) {
     id: ID!
     chainId: Int!
     address: Bytes!
@@ -239,7 +239,7 @@ type Future @entity {
 }
 
 "FeeClaim entity to list claims triggered on an future by a account"
-type FeeClaim @entity {
+type FeeClaim @entity(immutable: false) {
     id: ID!
     createdAtTimestamp: BigInt!
     amount: BigInt!
@@ -255,7 +255,7 @@ type FeeClaim @entity {
 }
 
 "The daily data of the future vault"
-type FutureDailyStats @entity {
+type FutureDailyStats @entity(immutable: false) {
     id: ID! # future address and timestamp rounded to current day by dividing by 86400
     future: Future! # future address
     date: Int! # future address and timestamp rounded to current day by dividing by 86400
@@ -274,7 +274,7 @@ type FutureDailyStats @entity {
 }
 
 "The daily/hourly data of the pool"
-type PoolStats @entity {
+type PoolStats @entity(immutable: false) {
     id: ID! # pool address and timestamp rounded to current day or hour by dividing by 86400 or 3600
     pool: Pool! # pool address
     timestamp: Int! # future address and timestamp rounded to current day by dividing by 86400
@@ -307,7 +307,7 @@ type PoolStats @entity {
 ####################
 
 "Account entity to index all kind of data related to a user of the protocol"
-type Account @entity {
+type Account @entity(immutable: false) {
     id: ID!
     address: Bytes!
     createdAtTimestamp: BigInt!
@@ -325,7 +325,7 @@ type Account @entity {
 ####################
 
 "Transaction entity for all kind of the transactions"
-type Transaction @entity {
+type Transaction @entity(immutable: false) {
     id: ID!
     address: Bytes!
     createdAtTimestamp: BigInt!
@@ -366,7 +366,7 @@ enum PoolType {
     CURVE_SNG
 }
 
-type Pool @entity {
+type Pool @entity(immutable: false) {
     id: ID!
     address: Bytes!
     createdAtTimestamp: BigInt!
@@ -405,7 +405,7 @@ type Pool @entity {
     stats: [PoolStats!]! @derivedFrom(field: "pool")
 }
 
-type Transfer @entity {
+type Transfer @entity(immutable: false) {
     id: ID!
     address: Bytes!
     createdAtTimestamp: BigInt!
@@ -426,7 +426,7 @@ type Transfer @entity {
 # Wrapper entities
 ####################
 
-type SpectraWrapper @entity {
+type SpectraWrapper @entity(immutable: false) {
     id: ID!
     address: Bytes!
     createdAtTimestamp: BigInt!
@@ -453,7 +453,7 @@ type SpectraWrapper @entity {
 # Limit Order entities
 ####################
 
-type UserNonce @entity {
+type UserNonce @entity(immutable: false) {
     id: ID!                          # nonce-{user-address}
     user: Bytes!                     # The address of the user
     latestNonce: BigInt!            # The latest nonce observed from NonceIncreased
@@ -461,7 +461,7 @@ type UserNonce @entity {
     updatedAtBlock: BigInt!         # Block Number of the last NonceIncreased event
 }
 
-type OnChainOrderStatus @entity {
+type OnChainOrderStatus @entity(immutable: false) {
     id: ID!                          # The order hash (bytes32 → hex string)
     orderHash: Bytes!               # The raw order hash
     totalFilled: BigInt!            # Accumulated actualMaking from OrderFilled

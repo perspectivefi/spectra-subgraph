@@ -12,7 +12,8 @@ import {
 } from '../../generated/LimitOrderEngine/LimitOrderEngine';
 
 // NonceManager events are also available from the LimitOrderEngine generated types
-// since NonceManager is included as an ABI in the LimitOrderEngine data source
+// since NonceManager is included as an ABI in the LimitOrderEngine data source 
+// (LimitOrderEngine extends NonceManage hence they have the same address))
 
 // Import entities
 import { UserNonce, OnChainOrderStatus } from '../../generated/schema';
@@ -24,11 +25,6 @@ import { ZERO_BI, ZERO_BD } from '../constants';
 /**
  * Handle OrderFilled event from LimitOrderEngine
  * This event is emitted when a limit order is filled
- * 
- * Performance optimizations:
- * - Minimal logging for high-volume events
- * - Efficient entity loading and creation
- * - Single save operation per event
  */
 export function handleOrderFilled(event: OrderFilledEvent): void {
   // Use orderHash hex string as entity ID for efficient lookups
@@ -59,11 +55,6 @@ export function handleOrderFilled(event: OrderFilledEvent): void {
 /**
  * Handle OrderCanceled event from LimitOrderEngine
  * This event is emitted when a limit order is canceled
- * 
- * Performance optimizations:
- * - Minimal logging for high-volume events
- * - Efficient entity loading and creation
- * - Single save operation per event
  */
 export function handleOrderCanceled(event: OrderCanceledEvent): void {
   // Use orderHash hex string as entity ID for efficient lookups
@@ -150,71 +141,63 @@ export function handleNonceManagerNonceIncreased(event: NonceIncreasedEvent): vo
 }
 
 
-//TODO Other events from LimitOrderEngine, see if we absolutely need to add them or not later on.
+/**
+ * Handle AuthorityUpdated event from LimitOrderEngine
+ * This event is emitted when the authority is updated
+ */
+export function handleAuthorityUpdated(event: AuthorityUpdatedEvent): void {
+  logInfo('Handling AuthorityUpdated event', [
+    'authority: ' + event.params.authority.toHexString()
+  ]);
 
+  // For now, just log the event. Can be extended later to track authority changes
+}
 
-// /**
-//  * Handle AuthorityUpdated event from LimitOrderEngine
-//  * This event is emitted when the authority is updated
-//  */
-// export function handleAuthorityUpdated(event: AuthorityUpdatedEvent): void {
-//   logInfo('Handling AuthorityUpdated event', [
-//     'authority: ' + event.params.authority.toHexString()
-//   ]);
+/**
+ * Handle FeeRecipientUpdated event from LimitOrderEngine
+ * This event is emitted when the fee recipient is updated
+ */
+export function handleFeeRecipientUpdated(event: FeeRecipientUpdatedEvent): void {
+  logInfo('Handling FeeRecipientUpdated event', [
+    'newFeeRecipient: ' + event.params.newFeeRecipient.toHexString()
+  ]);
 
-//   // TODO: Implement authority update logic
-  
-// }
+  // For now, just log the event. Can be extended later to track fee recipient changes
+}
 
-// /**
-//  * Handle FeeRecipientUpdated event from LimitOrderEngine
-//  * This event is emitted when the fee recipient is updated
-//  */
-// export function handleFeeRecipientUpdated(event: FeeRecipientUpdatedEvent): void {
-//   logInfo('Handling FeeRecipientUpdated event', [
-//     'newFeeRecipient: ' + event.params.newFeeRecipient.toHexString()
-//   ]);
+/**
+ * Handle RouterUpdated event from LimitOrderEngine
+ * This event is emitted when the router is updated
+ */
+export function handleRouterUpdated(event: RouterUpdatedEvent): void {
+  logInfo('Handling RouterUpdated event', [
+    'newRouter: ' + event.params.newRouter.toHexString()
+  ]);
 
-//   // TODO: Implement fee recipient update logic
-  
-// }
+  // For now, just log the event. Can be extended later to track router changes
+}
 
-// /**
-//  * Handle RouterUpdated event from LimitOrderEngine
-//  * This event is emitted when the router is updated
-//  */
-// export function handleRouterUpdated(event: RouterUpdatedEvent): void {
-//   logInfo('Handling RouterUpdated event', [
-//     'newRouter: ' + event.params.newRouter.toHexString()
-//   ]);
+/**
+ * Handle Paused event from LimitOrderEngine
+ * This event is emitted when the contract is paused
+ */
+export function handlePaused(event: PausedEvent): void {
+  logInfo('Handling Paused event', [
+    'account: ' + event.params.account.toHexString()
+  ]);
 
-//   // TODO: Implement router update logic
-  
-// }
+  // For now, just log the event. Can be extended later to track pause state
+}
 
-// /**
-//  * Handle Paused event from LimitOrderEngine
-//  * This event is emitted when the contract is paused
-//  */
-// export function handlePaused(event: PausedEvent): void {
-//   logInfo('Handling Paused event', [
-//     'account: ' + event.params.account.toHexString()
-//   ]);
+/**
+ * Handle Unpaused event from LimitOrderEngine
+ * This event is emitted when the contract is unpaused
+ */
+export function handleUnpaused(event: UnpausedEvent): void {
+  logInfo('Handling Unpaused event', [
+    'account: ' + event.params.account.toHexString()
+  ]);
 
-//   // TODO: Implement pause logic
-  
-// }
-
-// /**
-//  * Handle Unpaused event from LimitOrderEngine
-//  * This event is emitted when the contract is unpaused
-//  */
-// export function handleUnpaused(event: UnpausedEvent): void {
-//   logInfo('Handling Unpaused event', [
-//     'account: ' + event.params.account.toHexString()
-//   ]);
-
-//   // TODO: Implement unpause logic
-  
-// }
+  // For now, just log the event. Can be extended later to track pause state
+}
 
