@@ -2,5 +2,6 @@
     "network": "katana",
     "startBlock": 4715200,
 
-    "registry": "0x09176eacaa413cc0722aa5ad716820e8f19682b7"
+    "registry": "0x09176eacaa413cc0722aa5ad716820e8f19682b7",
+    "accessManager": "0x5291af3124a7be15f4c1a3fe22548e7ba8c16653"
 }
