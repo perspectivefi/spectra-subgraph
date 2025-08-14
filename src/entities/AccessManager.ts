@@ -2,7 +2,6 @@ import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 
 import {
   RoleAttribution,
-  ActiveRole,
   RoleGranted,
   RoleRevoked,
   RoleAdminChanged,
@@ -40,55 +39,11 @@ export function getRoleAttribution(
   attribution.currentDelay = BigInt.zero()
   attribution.pendingDelay = BigInt.zero()
   attribution.effect = BigInt.zero()
-  attribution.isActive = true
-  attribution.createdAt = timestamp
+  attribution.grantedAt = timestamp
   attribution.updatedAt = timestamp
 
   attribution.save()
   return attribution
-}
-
-/**
- * Get or create ActiveRole entity for tracking current active roles
- * ID format: address-roleId
- */
-export function getActiveRole(
-  address: Address,
-  roleId: BigInt,
-  timestamp: BigInt
-): ActiveRole {
-  let id = address.toHexString() + "-" + roleId.toString()
-  let activeRole = ActiveRole.load(id)
-
-  if (activeRole) {
-    return activeRole
-  }
-
-  activeRole = new ActiveRole(id)
-  activeRole.address = address
-  activeRole.roleId = roleId
-  activeRole.since = BigInt.zero()
-  activeRole.currentDelay = BigInt.zero()
-  activeRole.grantedAt = timestamp
-  activeRole.updatedAt = timestamp
-
-  activeRole.save()
-  return activeRole
-}
-
-/**
- * Remove ActiveRole entity when role is revoked
- */
-export function removeActiveRole(
-  address: Address,
-  roleId: BigInt
-): void {
-  let id = address.toHexString() + "-" + roleId.toString()
-  let activeRole = ActiveRole.load(id)
-  
-  if (activeRole) {
-    activeRole.save() // Save before removal to ensure consistency
-  }
 }
 
 /**

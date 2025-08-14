@@ -474,7 +474,8 @@ type OnChainOrderStatus @entity(immutable: false) {
 # Access Manager entities
 ####################
 
-# RoleAttribution tracks all role grant/revoke history for each address-role pair
+# RoleAttribution tracks currently active roles for each address-role pair
+# On RoleRevoked, the attribution is removed (but the event entity is preserved)
 type RoleAttribution @entity(immutable: false) {
     id: ID!                         # Format: address-roleId
     address: Bytes!                 # The address that has the role
@@ -483,18 +484,6 @@ type RoleAttribution @entity(immutable: false) {
     currentDelay: BigInt!           # Current delay for this role
     pendingDelay: BigInt!           # Pending delay change
     effect: BigInt!                 # When pending delay takes effect
-    isActive: Boolean!              # Whether this role is currently active
-    createdAt: BigInt!              # When this attribution was first created
-    updatedAt: BigInt!              # Last update timestamp
-}
-
-# ActiveRole tracks only currently active roles for efficient querying
-type ActiveRole @entity(immutable: false) {
-    id: ID!                         # Format: address-roleId
-    address: Bytes!                 # The address that has the role
-    roleId: BigInt!                 # The role ID
-    since: BigInt!                  # When the role becomes effective
-    currentDelay: BigInt!           # Current delay for this role
     grantedAt: BigInt!              # When this role was granted
     updatedAt: BigInt!              # Last update timestamp
 }

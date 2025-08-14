@@ -17,8 +17,6 @@ import {
 
 import {
   getRoleAttribution,
-  getActiveRole,
-  removeActiveRole,
   createRoleGrantedEvent,
   createRoleRevokedEvent,
   createRoleAdminChangedEvent,
@@ -56,7 +54,7 @@ export function handleRoleGranted(event: RoleGranted): void {
     event.logIndex
   )
 
-  // Update or create RoleAttribution (historical record)
+  // Update or create RoleAttribution
   let attribution = getRoleAttribution(
     event.params.account,
     event.params.roleId,
@@ -65,21 +63,8 @@ export function handleRoleGranted(event: RoleGranted): void {
   
   attribution.since = event.params.since
   attribution.currentDelay = event.params.delay
-  attribution.isActive = true
   attribution.updatedAt = event.block.timestamp
   attribution.save()
-
-  // Create or update ActiveRole (current active roles only)
-  let activeRole = getActiveRole(
-    event.params.account,
-    event.params.roleId,
-    event.block.timestamp
-  )
-  
-  activeRole.since = event.params.since
-  activeRole.currentDelay = event.params.delay
-  activeRole.updatedAt = event.block.timestamp
-  activeRole.save()
 }
 
 /**
@@ -102,19 +87,9 @@ export function handleRoleRevoked(event: RoleRevoked): void {
     event.logIndex
   )
 
-  // Update RoleAttribution to mark as inactive (preserve history)
+  // Remove RoleAttribution (as per PR requirements)
   let attributionId = event.params.account.toHexString() + "-" + event.params.roleId.toString()
-  let attribution = RoleAttribution.load(attributionId)
-  
-  if (attribution) {
-    attribution.isActive = false
-    attribution.updatedAt = event.block.timestamp
-    attribution.save()
-  }
-
-  // Remove from ActiveRole (current active roles only)
-  let activeRoleId = event.params.account.toHexString() + "-" + event.params.roleId.toString()
-  store.remove('ActiveRole', activeRoleId)
+  store.remove('RoleAttribution', attributionId)
 }
 
 /**
