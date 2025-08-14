@@ -1,0 +1,8 @@
+{
+    "network": "sepolia",
+    "startBlock": 5609300,
+    "registry": "0xa2E793Bac100975c8cf84B2Bb72d8c9a26f03bAB",
+    "factory": "0x0F005688919916FD64052F29Cf1DcBDcBd28A0a9",
+    "limitOrderEngine": "0x0000000000000000000000000000000000000000",
+    "nonceManager": "0x0000000000000000000000000000000000000000"
+}

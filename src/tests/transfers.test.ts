@@ -177,12 +177,14 @@ describe("handleTransfer()", () => {
     test("Should assign the transfer event to a receiver and sender", () => {
         const lpTransferId = generateTransferId(
             LP_TRANSFER_TRANSACTION_HASH.toHex(),
-            "1"
+            "1",
+            "0"
         )
 
         const ptTransferId = generateTransferId(
             PT_TRANSFER_TRANSACTION_HASH.toHex(),
-            "1"
+            "1",
+            "0"
         )
 
         assert.fieldEquals(
@@ -253,7 +255,8 @@ describe("handleTransfer()", () => {
     test("Should properly set transfer details", () => {
         const lpTransferId = generateTransferId(
             LP_TRANSFER_TRANSACTION_HASH.toHex(),
-            "1"
+            "1",
+            "0"
         )
 
         assert.fieldEquals(
@@ -271,7 +274,8 @@ describe("handleTransfer()", () => {
 
         const ptTransferId = generateTransferId(
             PT_TRANSFER_TRANSACTION_HASH.toHex(),
-            "1"
+            "1",
+            "0"
         )
 
         assert.fieldEquals(

@@ -47,6 +47,45 @@ dataSources:
       eventHandlers:
         - event: AuthorityUpdated(address)
           handler: handleAuthorityUpdated
+  - name: LimitOrderEngine
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: LimitOrderEngine
+      address: '{{ limitOrderEngine }}'
+      startBlock: {{ startBlock }}
+    mapping:
+      kind: ethereum/events
+      language: wasm/assemblyscript
+      apiVersion: 0.0.6
+      entities: [ ]
+      file: ./src/mappings/limitOrders.ts
+      abis:
+        - name: LimitOrderEngine
+          file: ./abis/LimitOrderEngine.json
+        - name: NonceManager
+          file: ./abis/NonceManager.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+        - name: PrincipalToken
+          file: ./abis/PrincipalToken.json
+      eventHandlers:
+        - event: OrderFilled(bytes32,uint256)
+          handler: handleOrderFilled
+        - event: OrderCanceled(address,bytes32)
+          handler: handleOrderCanceled
+        - event: NonceIncreased(indexed address,uint256,uint256)
+          handler: handleNonceIncreased
+        - event: AuthorityUpdated(address)
+          handler: handleAuthorityUpdated
+        - event: FeeRecipientUpdated(indexed address)
+          handler: handleFeeRecipientUpdated
+        - event: RouterUpdated(indexed address)
+          handler: handleRouterUpdated
+        - event: Paused(address)
+          handler: handlePaused
+        - event: Unpaused(address)
+          handler: handleUnpaused
 templates:
   - name: Factory
     kind: ethereum/contract
@@ -246,3 +285,22 @@ templates:
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
+  - name: NonceManager
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: NonceManager
+    mapping:
+      kind: ethereum/events
+      language: wasm/assemblyscript
+      apiVersion: 0.0.6
+      entities: [ ]
+      file: ./src/mappings/limitOrders.ts
+      abis:
+        - name: NonceManager
+          file: ./abis/NonceManager.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+      eventHandlers:
+        - event: NonceIncreased(indexed address,uint256,uint256)
+          handler: handleNonceManagerNonceIncreased
