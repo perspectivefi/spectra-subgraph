@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
+import { Address, BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts"
 import {
     describe,
     test,
@@ -7,23 +7,36 @@ import {
     clearStore,
     assert,
     log,
+    newMockEvent,
 } from "matchstick-as/assembly/index"
 
 import {
     RoleAttribution,
-    RoleGranted,
-    RoleRevoked,
-    RoleAdminChanged,
+    RoleGranted as RoleGrantedEntity,
+    RoleRevoked as RoleRevokedEntity,
+    RoleAdminChanged as RoleAdminChangedEntity,
     RoleGuardianChanged,
     RoleGrantDelayChanged,
     TargetAdminDelayUpdated,
     TargetClosed,
     TargetFunctionRoleUpdated,
-    OperationScheduled,
+    OperationScheduled as OperationScheduledEntity,
     OperationExecuted,
     OperationCanceled,
     RoleLabel,
 } from "../../generated/schema"
+import {
+    RoleGranted,
+    RoleRevoked,
+    RoleAdminChanged,
+    OperationScheduled,
+} from "../../generated/AccessManager/AccessManager"
+import {
+    handleRoleGranted,
+    handleRoleRevoked,
+    handleRoleAdminChanged,
+    handleOperationScheduled,
+} from "../mappings/accessManager"
 
 // Custom performance measurement utilities
 class PerformanceTimer {
@@ -65,9 +78,6 @@ class PerformanceMetrics {
 
     static recordEntityCreation(): void {
         this.entityCreationCount++
-        log.info("📈 Entity creation #{} completed", [
-            this.entityCreationCount.toString(),
-        ])
     }
 
     static recordQuery(): void {
@@ -266,8 +276,7 @@ describe("Access Manager", () => {
                     "roleId",
                     roleId.toString()
                 )
-                // In the actual implementation, this entity would be removed via store.remove()
-                // but we can't test that directly in matchstick
+
             }
         })
     })
@@ -289,7 +298,7 @@ describe("Access Manager", () => {
             let timestamp = BigInt.fromI32(1234567890)
             let blockNumber = BigInt.fromI32(12345)
 
-            let entity = new RoleGranted(entityId)
+            let entity = new RoleGrantedEntity(entityId)
             entity.roleId = roleId
             entity.account = account
             entity.delay = delay
@@ -369,7 +378,7 @@ describe("Access Manager", () => {
             let timestamp = BigInt.fromI32(1234567890)
             let blockNumber = BigInt.fromI32(12346)
 
-            let entity = new RoleRevoked(entityId)
+            let entity = new RoleRevokedEntity(entityId)
             entity.roleId = roleId
             entity.account = account
             entity.delay = delay
@@ -443,7 +452,7 @@ describe("Access Manager", () => {
             let timestamp = BigInt.fromI32(1234567890)
             let blockNumber = BigInt.fromI32(12347)
 
-            let entity = new RoleAdminChanged(entityId)
+            let entity = new RoleAdminChangedEntity(entityId)
             entity.roleId = roleId
             entity.admin = admin
             entity.timestamp = timestamp
@@ -522,14 +531,13 @@ describe("Access Manager", () => {
             let delay = BigInt.fromI32(7200)
             let since = BigInt.fromI32(1234567890)
             let timestamp = BigInt.fromI32(1234567890)
-            let blockNumber = BigInt.fromI32(12349)
 
             let entity = new RoleGrantDelayChanged(entityId)
             entity.roleId = roleId
             entity.delay = delay
             entity.since = since
             entity.timestamp = timestamp
-            entity.blockNumber = blockNumber
+            entity.blockNumber = BigInt.fromI32(12349)
             entity.transactionHash = txHash
             entity.logIndex = logIndex
             entity.save()
@@ -568,14 +576,13 @@ describe("Access Manager", () => {
             let delay = BigInt.fromI32(86400) // 1 day
             let since = BigInt.fromI32(1234567890)
             let timestamp = BigInt.fromI32(1234567890)
-            let blockNumber = BigInt.fromI32(12350)
 
             let entity = new TargetAdminDelayUpdated(entityId)
             entity.target = target
             entity.delay = delay
             entity.since = since
             entity.timestamp = timestamp
-            entity.blockNumber = blockNumber
+            entity.blockNumber = BigInt.fromI32(12350)
             entity.transactionHash = txHash
             entity.logIndex = logIndex
             entity.save()
@@ -611,13 +618,12 @@ describe("Access Manager", () => {
             )
             let closed = true
             let timestamp = BigInt.fromI32(1234567890)
-            let blockNumber = BigInt.fromI32(12351)
 
             let entity = new TargetClosed(entityId)
             entity.target = target
             entity.closed = closed
             entity.timestamp = timestamp
-            entity.blockNumber = blockNumber
+            entity.blockNumber = BigInt.fromI32(12351)
             entity.transactionHash = txHash
             entity.logIndex = logIndex
             entity.save()
@@ -649,14 +655,13 @@ describe("Access Manager", () => {
             let selector = Bytes.fromHexString("0xa9059cbb") // transfer(address,uint256)
             let roleId = BigInt.fromI32(3)
             let timestamp = BigInt.fromI32(1234567890)
-            let blockNumber = BigInt.fromI32(12352)
 
             let entity = new TargetFunctionRoleUpdated(entityId)
             entity.target = target
             entity.selector = selector
             entity.roleId = roleId
             entity.timestamp = timestamp
-            entity.blockNumber = blockNumber
+            entity.blockNumber = BigInt.fromI32(12352)
             entity.transactionHash = txHash
             entity.logIndex = logIndex
             entity.save()
@@ -706,7 +711,7 @@ describe("Access Manager", () => {
             let timestamp = BigInt.fromI32(1234567890)
             let blockNumber = BigInt.fromI32(12353)
 
-            let entity = new OperationScheduled(entityId)
+            let entity = new OperationScheduledEntity(entityId)
             entity.operationId = operationId
             entity.nonce = nonce
             entity.schedule = schedule
@@ -875,6 +880,298 @@ describe("Access Manager", () => {
                 entityId,
                 "timestamp",
                 timestamp.toString()
+            )
+        })
+    })
+
+    describe("Event Handler Integration Tests", () => {
+        test("Should create RoleAttribution and RoleGranted entities when RoleGranted event is emitted", () => {
+            clearStore()
+            let roleGrantedEvent = changetype<RoleGranted>(newMockEvent())
+            roleGrantedEvent.address = Address.fromString(
+                "0x1234567890123456789012345678901234567890" //Some random string to test events emmited
+            )
+            roleGrantedEvent.transaction.hash = Bytes.fromHexString(
+                "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" //Some random string to test events emmited
+            )
+            roleGrantedEvent.logIndex = BigInt.fromI32(0)
+            roleGrantedEvent.block.timestamp = BigInt.fromI32(1234567890)
+            roleGrantedEvent.block.number = BigInt.fromI32(12345)
+
+            let roleIdParam = new ethereum.EventParam(
+                "roleId",
+                ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1))
+            )
+            let accountParam = new ethereum.EventParam(
+                "account",
+                ethereum.Value.fromAddress(
+                    Address.fromString("0x4234567890123456789012345678901234567890")
+                )
+            )
+            let delayParam = new ethereum.EventParam(
+                "delay",
+                ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(3600))
+            )
+            let sinceParam = new ethereum.EventParam(
+                "since",
+                ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1234567890))
+            )
+            let newMemberParam = new ethereum.EventParam(
+                "newMember",
+                ethereum.Value.fromBoolean(true)
+            )
+
+            roleGrantedEvent.parameters = [
+                roleIdParam,
+                accountParam,
+                delayParam,
+                sinceParam,
+                newMemberParam,
+            ]
+
+            // Import and call the actual event handler
+            handleRoleGranted(roleGrantedEvent)
+
+            // Verify RoleGranted event entity was created
+            let eventEntityId = roleGrantedEvent.transaction.hash.toHexString() + "-" + roleGrantedEvent.logIndex.toString()
+            assert.entityCount("RoleGranted", 1)
+            assert.fieldEquals(
+                "RoleGranted",
+                eventEntityId,
+                "roleId",
+                "1"
+            )
+            assert.fieldEquals(
+                "RoleGranted",
+                eventEntityId,
+                "account",
+                "0x4234567890123456789012345678901234567890"
+            )
+            assert.fieldEquals(
+                "RoleGranted",
+                eventEntityId,
+                "newMember",
+                "true"
+            )
+
+            // Verify RoleAttribution entity was created
+            let attributionEntityId = "0x4234567890123456789012345678901234567890-1"
+            assert.entityCount("RoleAttribution", 1)
+            assert.fieldEquals(
+                "RoleAttribution",
+                attributionEntityId,
+                "address",
+                "0x4234567890123456789012345678901234567890"
+            )
+            assert.fieldEquals(
+                "RoleAttribution",
+                attributionEntityId,
+                "roleId",
+                "1"
+            )
+        })
+
+        test("Should remove RoleAttribution entity when RoleRevoked event is emitted", () => {
+            clearStore()
+            // First grant a role to create the attribution
+            let roleGrantedEvent = changetype<RoleGranted>(newMockEvent())
+            roleGrantedEvent.address = Address.fromString(
+                "0x1234567890123456789012345678901234567890"
+            )
+            roleGrantedEvent.transaction.hash = Bytes.fromHexString(
+                "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+            )
+            roleGrantedEvent.logIndex = BigInt.fromI32(0)
+            roleGrantedEvent.block.timestamp = BigInt.fromI32(1234567890)
+            roleGrantedEvent.block.number = BigInt.fromI32(12345)
+
+            let roleIdParam = new ethereum.EventParam(
+                "roleId",
+                ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(2))
+            )
+            let accountParam = new ethereum.EventParam(
+                "account",
+                ethereum.Value.fromAddress(
+                    Address.fromString("0x5234567890123456789012345678901234567890")
+                )
+            )
+            let delayParam = new ethereum.EventParam(
+                "delay",
+                ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(3600))
+            )
+            let sinceParam = new ethereum.EventParam(
+                "since",
+                ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1234567890))
+            )
+            let newMemberParam = new ethereum.EventParam(
+                "newMember",
+                ethereum.Value.fromBoolean(true)
+            )
+
+            roleGrantedEvent.parameters = [
+                roleIdParam,
+                accountParam,
+                delayParam,
+                sinceParam,
+                newMemberParam,
+            ]
+
+            handleRoleGranted(roleGrantedEvent)
+
+            // Now revoke the role
+            let roleRevokedEvent = changetype<RoleRevoked>(newMockEvent())
+            roleRevokedEvent.address = Address.fromString(
+                "0x1234567890123456789012345678901234567890"
+            )
+            roleRevokedEvent.transaction.hash = Bytes.fromHexString(
+                "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+            )
+            roleRevokedEvent.logIndex = BigInt.fromI32(0)
+            roleRevokedEvent.block.timestamp = BigInt.fromI32(1234567900)
+            roleRevokedEvent.block.number = BigInt.fromI32(12346)
+
+            let revokeRoleIdParam = new ethereum.EventParam(
+                "roleId",
+                ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(2))
+            )
+            let revokeAccountParam = new ethereum.EventParam(
+                "account",
+                ethereum.Value.fromAddress(
+                    Address.fromString("0x5234567890123456789012345678901234567890")
+                )
+            )
+
+            roleRevokedEvent.parameters = [revokeRoleIdParam, revokeAccountParam]
+
+            handleRoleRevoked(roleRevokedEvent)
+
+            // Verify RoleRevoked event entity was created
+            let revokedEventEntityId = roleRevokedEvent.transaction.hash.toHexString() + "-" + roleRevokedEvent.logIndex.toString()
+            assert.entityCount("RoleRevoked", 1)
+            assert.fieldEquals(
+                "RoleRevoked",
+                revokedEventEntityId,
+                "roleId",
+                "2"
+            )
+            assert.fieldEquals(
+                "RoleRevoked",
+                revokedEventEntityId,
+                "account",
+                "0x5234567890123456789012345678901234567890"
+            )
+
+            // Verify RoleAttribution entity was removed
+            assert.entityCount("RoleAttribution", 0)
+        })
+
+        test("Should create RoleAdminChanged event entity when RoleAdminChanged event is emitted", () => {
+            clearStore()
+            let roleAdminChangedEvent = changetype<RoleAdminChanged>(newMockEvent())
+            roleAdminChangedEvent.address = Address.fromString(
+                "0x1234567890123456789012345678901234567890"
+            )
+            roleAdminChangedEvent.transaction.hash = Bytes.fromHexString(
+                "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+            )
+            roleAdminChangedEvent.logIndex = BigInt.fromI32(0)
+            roleAdminChangedEvent.block.timestamp = BigInt.fromI32(1234567890)
+            roleAdminChangedEvent.block.number = BigInt.fromI32(12345)
+
+            let roleIdParam = new ethereum.EventParam(
+                "roleId",
+                ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(3))
+            )
+            let adminParam = new ethereum.EventParam(
+                "admin",
+                ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(0))
+            )
+
+            roleAdminChangedEvent.parameters = [roleIdParam, adminParam]
+
+            handleRoleAdminChanged(roleAdminChangedEvent)
+
+            // Verify RoleAdminChanged event entity was created
+            let eventEntityId = roleAdminChangedEvent.transaction.hash.toHexString() + "-" + roleAdminChangedEvent.logIndex.toString()
+            assert.entityCount("RoleAdminChanged", 1)
+            assert.fieldEquals(
+                "RoleAdminChanged",
+                eventEntityId,
+                "roleId",
+                "3"
+            )
+            assert.fieldEquals(
+                "RoleAdminChanged",
+                eventEntityId,
+                "admin",
+                "0"
+            )
+        })
+
+        test("Should create OperationScheduled event entity when OperationScheduled event is emitted", () => {
+            clearStore()
+            let operationScheduledEvent = changetype<OperationScheduled>(newMockEvent())
+            operationScheduledEvent.address = Address.fromString(
+                "0x1234567890123456789012345678901234567890"
+            )
+            operationScheduledEvent.transaction.hash = Bytes.fromHexString(
+                "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+            )
+            operationScheduledEvent.logIndex = BigInt.fromI32(0)
+            operationScheduledEvent.block.timestamp = BigInt.fromI32(1234567890)
+            operationScheduledEvent.block.number = BigInt.fromI32(12345)
+
+            let operationIdParam = new ethereum.EventParam(
+                "operationId",
+                ethereum.Value.fromBytes(
+                    Bytes.fromHexString("0x1111111111111111111111111111111111111111111111111111111111111111")
+                )
+            )
+            let nonceParam = new ethereum.EventParam(
+                "nonce",
+                ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1))
+            )
+            let scheduleParam = new ethereum.EventParam(
+                "schedule",
+                ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1234567890))
+            )
+            let callerParam = new ethereum.EventParam(
+                "caller",
+                ethereum.Value.fromAddress(
+                    Address.fromString("0x1234567890123456789012345678901234567890")
+                )
+            )
+            let targetParam = new ethereum.EventParam(
+                "target",
+                ethereum.Value.fromAddress(
+                    Address.fromString("0x5678901234567890123456789012345678901234")
+                )
+            )
+            let dataParam = new ethereum.EventParam(
+                "data",
+                ethereum.Value.fromBytes(
+                    Bytes.fromHexString("0x1234")
+                )
+            )
+
+            operationScheduledEvent.parameters = [operationIdParam, nonceParam, scheduleParam, callerParam, targetParam, dataParam]
+
+            handleOperationScheduled(operationScheduledEvent)
+
+            // Verify OperationScheduled event entity was created
+            let eventEntityId = operationScheduledEvent.transaction.hash.toHexString() + "-" + operationScheduledEvent.logIndex.toString()
+            assert.entityCount("OperationScheduled", 1)
+            assert.fieldEquals(
+                "OperationScheduled",
+                eventEntityId,
+                "operationId",
+                "0x1111111111111111111111111111111111111111111111111111111111111111"
+            )
+            assert.fieldEquals(
+                "OperationScheduled",
+                eventEntityId,
+                "nonce",
+                "1"
             )
         })
     })
@@ -1076,12 +1373,6 @@ describe("Access Manager", () => {
 
                 PerformanceMetrics.recordEntityCreation()
 
-                if (i % 25 === 0) {
-                    log.info(
-                        "📊 Created {} RoleAttribution entities so far...",
-                        [i.toString()]
-                    )
-                }
             }
 
             const totalOperations = timer.end()
@@ -1117,10 +1408,10 @@ describe("Access Manager", () => {
                 let roleId = BigInt.fromI32((i % 5) + 1)
                 let account = Address.fromString(
                     "0x3000000000000000000000000000000000000" +
-                        i.toString().padStart(3, "0")
+                    i.toString().padStart(3, "0")
                 )
 
-                let entity = new RoleGranted(entityId)
+                let entity = new RoleGrantedEntity(entityId)
                 entity.roleId = roleId
                 entity.account = account
                 entity.delay = BigInt.fromI32(3600)
@@ -1146,10 +1437,10 @@ describe("Access Manager", () => {
                 let roleId = BigInt.fromI32((i % 5) + 1)
                 let account = Address.fromString(
                     "0x3000000000000000000000000000000000000" +
-                        i.toString().padStart(3, "0")
+                    i.toString().padStart(3, "0")
                 )
 
-                let entity = new RoleRevoked(entityId)
+                let entity = new RoleRevokedEntity(entityId)
                 entity.roleId = roleId
                 entity.account = account
                 entity.delay = BigInt.zero()
@@ -1193,12 +1484,10 @@ describe("Access Manager", () => {
 
                 let userAddress = Address.fromString(
                     "0x4000000000000000000000000000000000000" +
-                        i.toString().padStart(3, "0")
+                    i.toString().padStart(3, "0")
                 )
                 let roleId = BigInt.fromI32((i % 3) + 1)
                 let attributionId =
-                    userAddress.toHexString() + "-" + roleId.toString()
-                let activeRoleId =
                     userAddress.toHexString() + "-" + roleId.toString()
                 let timestamp = BigInt.fromI32(1234567890 + i)
 
@@ -1219,11 +1508,11 @@ describe("Access Manager", () => {
                 // Create RoleGranted event
                 let txHash = Bytes.fromHexString(
                     "0x4000000000000000000000000000000000000000000000000000000000000" +
-                        i.toString().padStart(3, "0")
+                    i.toString().padStart(3, "0")
                 )
                 let eventId = txHash.toHexString() + "-0"
 
-                let grantedEvent = new RoleGranted(eventId)
+                let grantedEvent = new RoleGrantedEntity(eventId)
                 grantedEvent.roleId = roleId
                 grantedEvent.account = userAddress
                 grantedEvent.delay = BigInt.fromI32(3600)
@@ -1244,7 +1533,7 @@ describe("Access Manager", () => {
 
                 let userAddress = Address.fromString(
                     "0x4000000000000000000000000000000000000" +
-                        i.toString().padStart(3, "0")
+                    i.toString().padStart(3, "0")
                 )
                 let roleId = BigInt.fromI32((i % 3) + 1)
                 let attributionId =
@@ -1268,7 +1557,7 @@ describe("Access Manager", () => {
                     // Revoke every 3rd role
                     let userAddress = Address.fromString(
                         "0x4000000000000000000000000000000000000" +
-                            i.toString().padStart(3, "0")
+                        i.toString().padStart(3, "0")
                     )
                     let roleId = BigInt.fromI32((i % 3) + 1)
                     let attributionId =

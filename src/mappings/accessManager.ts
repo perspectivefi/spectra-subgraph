@@ -87,7 +87,6 @@ export function handleRoleRevoked(event: RoleRevoked): void {
         event.logIndex
     )
 
-    // Remove RoleAttribution (as per PR requirements)
     let attributionId =
         event.params.account.toHexString() +
         "-" +
