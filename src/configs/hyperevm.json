@@ -1,6 +1,8 @@
 {
     "network": "hyperevm",
+    "accessManager": "0x071350a9ee4d153c272fc75ea9557372eb6ce0a0",
+    "limitOrderEngine": "0x0000000000000000000000000000000000000000",
+    "nonceManager": "0x0000000000000000000000000000000000000000",
     "startBlock": 6375000,
-
     "registry": "0xba4f8ef69d6d5cb48efb9149bf33ea43d6b66ccd"
 }

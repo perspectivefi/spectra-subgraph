@@ -469,3 +469,154 @@ type OnChainOrderStatus @entity(immutable: false) {
     updatedAt: BigInt! @index       # Timestamp of the last update (OrderFilled or OrderCanceled) - (TODO: check indexed for time-based queries)
     updatedAtBlock: BigInt! @index  # Block number of the last update (OrderFilled or OrderCanceled) -(TODO: check indexed for block-based queries)
 }
+
+####################
+# Access Manager entities
+####################
+
+# RoleAttribution tracks currently active roles for each address-role pair
+# On RoleRevoked, the attribution is removed (but the event entity is preserved)
+type RoleAttribution @entity(immutable: false) {
+    id: ID!                         # Format: address-roleId
+    address: Bytes!                 # The address that has the role
+    roleId: BigInt!                 # The role ID
+    since: BigInt!                  # When the role becomes effective
+    currentDelay: BigInt!           # Current delay for this role
+    pendingDelay: BigInt!           # Pending delay change
+    effect: BigInt!                 # When pending delay takes effect
+    grantedAt: BigInt!              # When this role was granted
+    updatedAt: BigInt!              # Last update timestamp
+}
+
+# Event entities for Access Manager events
+type RoleGranted @entity(immutable: true) {
+    id: ID!                         # Format: txHash-logIndex
+    roleId: BigInt!                 # The role that was granted
+    account: Bytes!                 # The account that received the role
+    delay: BigInt!                  # The delay for this role grant
+    since: BigInt!                  # When the role becomes effective
+    newMember: Boolean!             # Whether this is a new member for this role
+    timestamp: BigInt!              # Block timestamp
+    blockNumber: BigInt!            # Block number
+    transactionHash: Bytes!         # Transaction hash
+    logIndex: BigInt!               # Log index within the transaction
+}
+
+type RoleRevoked @entity(immutable: true) {
+    id: ID!                         # Format: txHash-logIndex
+    roleId: BigInt!                 # The role that was revoked
+    account: Bytes!                 # The account that lost the role
+    delay: BigInt!                  # The delay for this role revocation
+    since: BigInt!                  # When the revocation becomes effective
+    timestamp: BigInt!              # Block timestamp
+    blockNumber: BigInt!            # Block number
+    transactionHash: Bytes!         # Transaction hash
+    logIndex: BigInt!               # Log index within the transaction
+}
+
+type RoleAdminChanged @entity(immutable: true) {
+    id: ID!                         # Format: txHash-logIndex
+    roleId: BigInt!                 # The role whose admin changed
+    admin: BigInt!                  # The new admin role ID
+    timestamp: BigInt!              # Block timestamp
+    blockNumber: BigInt!            # Block number
+    transactionHash: Bytes!         # Transaction hash
+    logIndex: BigInt!               # Log index within the transaction
+}
+
+type RoleGuardianChanged @entity(immutable: true) {
+    id: ID!                         # Format: txHash-logIndex
+    roleId: BigInt!                 # The role whose guardian changed
+    guardian: BigInt!               # The new guardian role ID
+    timestamp: BigInt!              # Block timestamp
+    blockNumber: BigInt!            # Block number
+    transactionHash: Bytes!         # Transaction hash
+    logIndex: BigInt!               # Log index within the transaction
+}
+
+type RoleGrantDelayChanged @entity(immutable: true) {
+    id: ID!                         # Format: txHash-logIndex
+    roleId: BigInt!                 # The role whose grant delay changed
+    delay: BigInt!                  # The new delay value
+    since: BigInt!                  # When the delay change becomes effective
+    timestamp: BigInt!              # Block timestamp
+    blockNumber: BigInt!            # Block number
+    transactionHash: Bytes!         # Transaction hash
+    logIndex: BigInt!               # Log index within the transaction
+}
+
+type TargetAdminDelayUpdated @entity(immutable: true) {
+    id: ID!                         # Format: txHash-logIndex
+    target: Bytes!                  # The target contract address
+    delay: BigInt!                  # The new admin delay
+    since: BigInt!                  # When the delay change becomes effective
+    timestamp: BigInt!              # Block timestamp
+    blockNumber: BigInt!            # Block number
+    transactionHash: Bytes!         # Transaction hash
+    logIndex: BigInt!               # Log index within the transaction
+}
+
+type TargetClosed @entity(immutable: true) {
+    id: ID!                         # Format: txHash-logIndex
+    target: Bytes!                  # The target contract address
+    closed: Boolean!                # Whether the target is closed
+    timestamp: BigInt!              # Block timestamp
+    blockNumber: BigInt!            # Block number
+    transactionHash: Bytes!         # Transaction hash
+    logIndex: BigInt!               # Log index within the transaction
+}
+
+type TargetFunctionRoleUpdated @entity(immutable: true) {
+    id: ID!                         # Format: txHash-logIndex
+    target: Bytes!                  # The target contract address
+    selector: Bytes!                # The function selector
+    roleId: BigInt!                 # The role ID required for this function
+    timestamp: BigInt!              # Block timestamp
+    blockNumber: BigInt!            # Block number
+    transactionHash: Bytes!         # Transaction hash
+    logIndex: BigInt!               # Log index within the transaction
+}
+
+type OperationScheduled @entity(immutable: true) {
+    id: ID!                         # Format: txHash-logIndex
+    operationId: Bytes!             # The operation ID
+    nonce: BigInt!                  # The nonce for this operation
+    schedule: BigInt!               # When the operation is scheduled to execute
+    caller: Bytes!                  # The address that scheduled the operation
+    target: Bytes!                  # The target contract address
+    data: Bytes!                    # The call data
+    timestamp: BigInt!              # Block timestamp
+    blockNumber: BigInt!            # Block number
+    transactionHash: Bytes!         # Transaction hash
+    logIndex: BigInt!               # Log index within the transaction
+}
+
+type OperationExecuted @entity(immutable: true) {
+    id: ID!                         # Format: txHash-logIndex
+    operationId: Bytes!             # The operation ID
+    nonce: BigInt!                  # The nonce for this operation
+    timestamp: BigInt!              # Block timestamp
+    blockNumber: BigInt!            # Block number
+    transactionHash: Bytes!         # Transaction hash
+    logIndex: BigInt!               # Log index within the transaction
+}
+
+type OperationCanceled @entity(immutable: true) {
+    id: ID!                         # Format: txHash-logIndex
+    operationId: Bytes!             # The operation ID
+    nonce: BigInt!                  # The nonce for this operation
+    timestamp: BigInt!              # Block timestamp
+    blockNumber: BigInt!            # Block number
+    transactionHash: Bytes!         # Transaction hash
+    logIndex: BigInt!               # Log index within the transaction
+}
+
+type RoleLabel @entity(immutable: true) {
+    id: ID!                         # Format: txHash-logIndex
+    roleId: BigInt!                 # The role ID
+    label: String!                  # The human-readable label for the role
+    timestamp: BigInt!              # Block timestamp
+    blockNumber: BigInt!            # Block number
+    transactionHash: Bytes!         # Transaction hash
+    logIndex: BigInt!               # Log index within the transaction
+}
