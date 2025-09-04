@@ -46,7 +46,7 @@ function tokenExchange(
 ): void {
     let eventTimestamp = event.block.timestamp
 
-    let account = getAccount(buyer.toHex(), eventTimestamp)
+    let account = getAccount(event.transaction.from.toHex(), eventTimestamp)
     let pool = Pool.load(event.address.toHex())
 
     if (pool) {
