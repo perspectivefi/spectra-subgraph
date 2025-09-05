@@ -140,7 +140,7 @@ function tokenExchange(
         const ibtDecimals = getERC20Decimals(Address.fromString(ibtAddress))
         const ibtRate = getIBTRate(Address.fromString(ibtAddress))
         const ptRate = pool.futureVault
-            ? getPTRate(Address.fromString(pool.futureVault))
+            ? getPTRate(Address.fromString(pool.futureVault!))
             : ZERO_BI
         if (pool.futureVault && spotPrice.gt(ZERO_BI)) {
             const ibt = isBuyPt ? tokens_sold : tokens_bought

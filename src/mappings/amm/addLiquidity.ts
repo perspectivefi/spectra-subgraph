@@ -136,7 +136,7 @@ function addLiquidity(
         let feeRatio = ZERO_BI
         const ibtRate = getIBTRate(Address.fromString(ibtAddress))
         const ptRate = pool.futureVault
-            ? getPTRate(Address.fromString(pool.futureVault))
+            ? getPTRate(Address.fromString(pool.futureVault!))
             : ZERO_BI
         if (pool.futureVault && spotPrice.gt(ZERO_BI)) {
             const ibtAmount = token_amounts[0]
