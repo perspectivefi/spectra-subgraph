@@ -278,6 +278,8 @@ export function handleMint(event: Mint): void {
 
             feeUnderlying: ZERO_BI,
             feeRatio: ZERO_BI,
+            ibtRate: ZERO_BI,
+            ptRate: ZERO_BI,
         })
 
         // Mint specific FutureDailyStats data
@@ -367,6 +369,9 @@ export function handleRedeem(event: Redeem): void {
 
             feeUnderlying: ZERO_BI,
             feeRatio: ZERO_BI,
+
+            ibtRate: ZERO_BI,
+            ptRate: ZERO_BI,
         })
 
         // Redeem specific FutureDailyStats data
