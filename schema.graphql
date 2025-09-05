@@ -354,6 +354,8 @@ type Transaction @entity(immutable: false) {
     valueUnderlying: BigInt!
     feeUnderlying: BigInt!
     feeRatio: BigInt # fee divided by total liquidity (to calculate fee APY)
+    ibtRate: BigInt # IBT rate at the time of the transaction
+    ptRate: BigInt # PT rate at the time of the transaction
 }
 
 ####################

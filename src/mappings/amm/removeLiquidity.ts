@@ -20,6 +20,7 @@ import { getERC20Decimals } from "../../entities/ERC20"
 import { getIBTRate } from "../../entities/ERC4626"
 import { createFeeClaim } from "../../entities/FeeClaim"
 import { updateFutureDailyStats } from "../../entities/FutureDailyStats"
+import { getPTRate } from "../../entities/FutureVault"
 import {
     getLpFeeUnderlying,
     getPoolLiquidityInUnderlying,
@@ -116,10 +117,12 @@ export function removeLiquidity(
         let valueUnderlying = ZERO_BI
         let feeUnderlying = ZERO_BI
         let feeRatio = ZERO_BI
+        const ibtRate = getIBTRate(Address.fromString(ibtAddress))
+        const ptRate = pool.futureVault
+            ? getPTRate(Address.fromString(pool.futureVault))
+            : ZERO_BI
         if (pool.futureVault && spotPrice.gt(ZERO_BI)) {
-            const ibtAddress = AssetAmount.load(pool.ibtAsset)!.asset
             const ibtDecimals = getERC20Decimals(Address.fromString(ibtAddress))
-            const ibtRate = getIBTRate(Address.fromString(ibtAddress))
             const ibtAmount = token_amounts[0]
             const ptAmountInIbt = token_amounts[1]
                 .times(CURVE_UNIT)
@@ -197,6 +200,9 @@ export function removeLiquidity(
                 fee: ZERO_BI,
                 adminFee: ZERO_BI,
             },
+
+            ibtRate,
+            ptRate,
         })
 
         pool.lpTotalSupply = pool.lpTotalSupply.minus(lpTokenDiff)

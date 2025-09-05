@@ -19,6 +19,9 @@ class CreateTransactionParams {
     feeRatio: BigInt
 
     transaction: TransactionDetails
+
+    ibtRate: BigInt
+    ptRate: BigInt
 }
 
 class TransactionDetails {
