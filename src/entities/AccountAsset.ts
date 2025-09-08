@@ -194,16 +194,42 @@ export function updateAccountMetavaultRequestRedeemBalance(
     accountId: string,
     assetId: string,
     timestamp: BigInt,
-    assetType: string
+    amount: BigInt,
+    isIncrease: boolean
 ): AccountAsset {
-    throw new Error("Not implemented");
+    let accountAsset = getAccountAsset(
+        Address.fromString(accountId),
+        Address.fromString(assetId),
+        timestamp,
+        AssetType.MV_REQUEST_REDEEM
+    )
+    if (isIncrease) {
+        accountAsset.balance = accountAsset.balance.plus(amount)
+    } else {
+        accountAsset.balance = accountAsset.balance.minus(amount)
+    }
+    accountAsset.save()
+    return accountAsset
 }
 
 export function updateAccountMetavaultRequestDepositBalance(
     accountId: string,
     assetId: string,
     timestamp: BigInt,
-    assetType: string
+    amount: BigInt,
+    isIncrease: boolean
 ): AccountAsset {
-    throw new Error("Not implemented");
+    let accountAsset = getAccountAsset(
+        Address.fromString(accountId),
+        Address.fromString(assetId),
+        timestamp,
+        AssetType.MV_REQUEST_DEPOSIT
+    )
+    if (isIncrease) {
+        accountAsset.balance = accountAsset.balance.plus(amount)
+    } else {
+        accountAsset.balance = accountAsset.balance.minus(amount)
+    }
+    accountAsset.save()
+    return accountAsset
 }

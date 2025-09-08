@@ -4,21 +4,26 @@ import { Metavault} from "../../../generated/schema"
 import { ERC20 } from "../../../generated/templates"
 import { updateAccountMetavaultRequestRedeemBalance, updateAccountMetavaultRequestDepositBalance } from "../../entities/AccountAsset"
 import { getMetavault } from "../../entities/Metavault"
+import { getAsset } from "../../entities/Asset"
+import { AssetType } from "../../utils"
 
 export function handleMetaVaultWrapperInitialized(event: MetaVaultWrapperInitialized): void {
     let metavaultWrapper = getMetavault(event.address, event.block.timestamp, event.block.number, "MetavaultWrapper")
-
+    
     MetavaultWrapper.create(event.address)
     ERC20.create(event.address)
 }
 
 
 export function handleDepositRequest(event: DepositRequest): void {
+  let asset = getAsset(event.address.toHex(), event.block.timestamp, AssetType.MV_REQUEST_DEPOSIT)
+  updateAccountMetavaultRequestDepositBalance(event.params.owner.toHex(), asset.id, event.block.timestamp, event.params.assets, true)
   throw new Error("Not implemented");
 }
 
 export function handleDecreaseDepositRequest(event: DecreaseDepositRequest): void {
-//    should call updateAccountMetavaultRequestDepositBalance() to update the balance of the deposit request asset according to the amount decreased in the event
+  let asset = getAsset(event.address.toHex(), event.block.timestamp, AssetType.MV_REQUEST_DEPOSIT)
+  updateAccountMetavaultRequestDepositBalance(event.params.owner.toHex(), asset.id, event.block.timestamp, event.params.previousRequestedAssets.minus(event.params.newRequestedAssets), false)
   throw new Error("Not implemented");
 }
 
