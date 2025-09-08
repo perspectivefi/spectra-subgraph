@@ -19,7 +19,9 @@ enum AssetType {
     YT
     FYT
     LP
-    LP_VAULT_SHARES
+    MV_SHARES
+    MV_REQUEST_DEPOSIT
+    MV_REQUEST_REDEEM
     YIELD
     CLAIMED_YIELD
     WRAPPER
@@ -187,7 +189,7 @@ type AccountAsset @entity(immutable: false) {
     principalToken: Future
     "if YT position generating yield or current yield > 0"
     generatedYield: Boolean
-
+    epochID: BigInt!
     #    fytTokenDetails: FYTTokenDetails
 }
 
@@ -621,4 +623,37 @@ type RoleLabel @entity(immutable: true) {
     blockNumber: BigInt!            # Block number
     transactionHash: Bytes!         # Transaction hash
     logIndex: BigInt!               # Log index within the transaction
+}
+
+####################
+# Metavault Entitites
+####################
+
+type RemoteMetavault @entity(immutable: false) {
+    id: ID!
+    chainId: Int!
+    remoteMetavaultAddress: Bytes!
+}
+
+type MetavaultWrapperSharesRate @entity(immutable: false) {
+    id: ID!
+    timestamp: BigInt!
+    blockNumber: BigInt!
+    metavaultWrapper: Metavault!
+    rate: BigInt!
+}
+
+type Metavault @entity(immutable: false) {
+    id: ID!
+    createdAtBlock: BigInt!
+    createdAtTimestamp: BigInt!
+    safeAddress: Bytes! # The owner of the wrapper
+    wrapperAddress: Bytes! # The wrapper address
+    infraVaultAddress: Bytes! # The infra vault address underneath the wrapper
+    markets: [Bytes!]! # The markets registered to the metavault
+    chains: [RemoteMetavault!]! # The chains registered to the metavault
+    isMetavaultRegistered: Boolean! # Is the metavault registered to the metavault registry
+    name: String!
+    symbol: String!
+    underlying: Bytes! # The underlying asset address
 }

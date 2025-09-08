@@ -189,3 +189,21 @@ export function updateAccountAssetYTBalance(
     }
     return accountAsset
 }
+
+export function updateAccountMetavaultRequestRedeemBalance(
+    accountId: string,
+    assetId: string,
+    timestamp: BigInt,
+    assetType: string
+): AccountAsset {
+    throw new Error("Not implemented");
+}
+
+export function updateAccountMetavaultRequestDepositBalance(
+    accountId: string,
+    assetId: string,
+    timestamp: BigInt,
+    assetType: string
+): AccountAsset {
+    throw new Error("Not implemented");
+}
