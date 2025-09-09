@@ -8,20 +8,25 @@ export function getAsset(
     address: string,
     timestamp: BigInt,
     type: string,
-    id?: string
+    id: string | null = null
 ): Asset {
-    let asset = Asset.load(id || address)
+    let asset = Asset.load(id !== null ? id : address)
     if (asset) {
         return asset
     }
 
-    asset = createAsset(address, timestamp, type)
+    asset = createAsset(address, timestamp, type, id)
 
     return asset as Asset
 }
 
-function createAsset(address: string, timestamp: BigInt, type: string, id?: string): Asset {
-    let asset = new Asset(id || address)
+function createAsset(
+    address: string,
+    timestamp: BigInt,
+    type: string,
+    id: string | null = null
+): Asset {
+    let asset = new Asset(id !== null ? id : address)
     asset.chainId = getNetwork().chainId
     asset.address = Address.fromString(address)
     asset.createdAtTimestamp = timestamp
@@ -35,8 +40,6 @@ function createAsset(address: string, timestamp: BigInt, type: string, id?: stri
     return asset
 }
 
-
-export function getAssetID(address:string, suffix: string): string {
-    return address + "_" + suffix
+export function getAssetId(address: Address, suffix: string): string {
+    return address.toHex() + "_" + suffix
 }
-

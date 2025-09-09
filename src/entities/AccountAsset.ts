@@ -4,7 +4,7 @@ import { AccountAsset, Future } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
 import { AssetType, generateAccountAssetId } from "../utils"
 import { getAccount } from "./Account"
-import { getAsset } from "./Asset"
+import { getAsset, getAssetId } from "./Asset"
 import { getERC20Balance } from "./ERC20"
 import { getERC4626Balance } from "./ERC4626"
 import { getAccountYieldAsset } from "./Yield"
@@ -15,11 +15,12 @@ export function createAccountAsset(
     accountAddress: Address,
     assetAddress: Address,
     type: string,
-    timestamp: BigInt
+    timestamp: BigInt,
+    assetId: string | null = null // used to override the assetId for special assets like MV request/redeem
 ): AccountAsset {
     let id = generateAccountAssetId(
         accountAddress.toHex(),
-        assetAddress.toHex()
+        assetId !== null ? assetId : assetAddress.toHex()
     )
 
     let accountAsset = new AccountAsset(id)
@@ -27,7 +28,7 @@ export function createAccountAsset(
     accountAsset.createdAtTimestamp = timestamp
     accountAsset.balance = ZERO_BI
 
-    let asset = getAsset(assetAddress.toHex(), timestamp, type)
+    let asset = getAsset(assetAddress.toHex(), timestamp, type, assetId)
     let account = getAccount(accountAddress.toHex(), timestamp)
 
     accountAsset.asset = asset.id
@@ -41,11 +42,12 @@ export function getAccountAsset(
     accountAddress: Address,
     assetAddress: Address,
     timestamp: BigInt,
-    type: string
+    type: string,
+    assetId: string | null = null // used to override the assetId for special assets like MV request/redeem
 ): AccountAsset {
     let id = generateAccountAssetId(
         accountAddress.toHex(),
-        assetAddress.toHex()
+        assetId !== null ? assetId : assetAddress.toHex()
     )
 
     let accountAsset = AccountAsset.load(id)
@@ -190,45 +192,30 @@ export function updateAccountAssetYTBalance(
     return accountAsset
 }
 
-export function updateAccountMetavaultRequestRedeemBalance(
-    accountId: string,
-    assetId: string,
+export function updateAccountMetavaultRequest(
+    accountAddress: Address,
+    metavaultAddress: Address,
     timestamp: BigInt,
-    amount: BigInt,
-    isIncrease: boolean
+    requestType: string,
+    operation: string,
+    amount: BigInt
 ): AccountAsset {
     let accountAsset = getAccountAsset(
-        Address.fromString(accountId),
-        Address.fromString(assetId),
+        accountAddress,
+        metavaultAddress,
         timestamp,
-        AssetType.MV_REQUEST_REDEEM
+        requestType,
+        getAssetId(metavaultAddress, requestType)
     )
-    if (isIncrease) {
+    // AssemblyScript does not handle switch well
+    if (operation == "add") {
         accountAsset.balance = accountAsset.balance.plus(amount)
-    } else {
+    } else if (operation == "sub") {
         accountAsset.balance = accountAsset.balance.minus(amount)
-    }
-    accountAsset.save()
-    return accountAsset
-}
-
-export function updateAccountMetavaultRequestDepositBalance(
-    accountId: string,
-    assetId: string,
-    timestamp: BigInt,
-    amount: BigInt,
-    isIncrease: boolean
-): AccountAsset {
-    let accountAsset = getAccountAsset(
-        Address.fromString(accountId),
-        Address.fromString(assetId),
-        timestamp,
-        AssetType.MV_REQUEST_DEPOSIT
-    )
-    if (isIncrease) {
-        accountAsset.balance = accountAsset.balance.plus(amount)
+    } else if (operation == "set") {
+        accountAsset.balance = amount
     } else {
-        accountAsset.balance = accountAsset.balance.minus(amount)
+        throw new Error("Invalid operation: " + operation)
     }
     accountAsset.save()
     return accountAsset

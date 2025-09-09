@@ -1,55 +1,124 @@
-import { MetaVaultWrapperInitialized, DepositRequest, DecreaseDepositRequest, RedeemRequest, DecreaseRedeemRequest, Deposit, Withdraw, ClaimPendingDeposit, ClaimPendingRedeem } from "../../../generated/Metavault/MetavaultWrapper"
+import {
+    MetaVaultWrapperInitialized,
+    DepositRequest,
+    DecreaseDepositRequest,
+    RedeemRequest,
+    DecreaseRedeemRequest,
+    Deposit,
+    Withdraw,
+    ClaimPendingDeposit,
+    ClaimPendingRedeem,
+} from "../../../generated/Metavault/MetavaultWrapper"
 import { MetavaultWrapper } from "../../../generated/templates"
-import { Metavault } from "../../../generated/schema"
 import { ERC20 } from "../../../generated/templates"
-import { updateAccountMetavaultRequestRedeemBalance, updateAccountMetavaultRequestDepositBalance } from "../../entities/AccountAsset"
+import { ZERO_BI } from "../../constants"
+import { updateAccountMetavaultRequest } from "../../entities/AccountAsset"
 import { getMetavault } from "../../entities/Metavault"
-import { getAsset, getAssetID } from "../../entities/Asset"
 import { AssetType } from "../../utils"
 
-export function handleMetaVaultWrapperInitialized(event: MetaVaultWrapperInitialized): void {
-    let metavaultWrapper = getMetavault(event.address, event.block.timestamp, event.block.number, "MetavaultWrapper")
+export function handleMetaVaultWrapperInitialized(
+    event: MetaVaultWrapperInitialized
+): void {
+    let metavaultWrapper = getMetavault(
+        event.address,
+        event.block.timestamp,
+        event.block.number,
+        "MetavaultWrapper"
+    )
 
     MetavaultWrapper.create(event.address)
     ERC20.create(event.address)
 }
 
-
 export function handleDepositRequest(event: DepositRequest): void {
-    let asset = getAsset(event.address.toHex(), event.block.timestamp, AssetType.MV_REQUEST_DEPOSIT, getAssetID(event.address.toHex(), AssetType.MV_REQUEST_DEPOSIT))
-    updateAccountMetavaultRequestDepositBalance(event.params.owner.toHex(), asset.id, event.block.timestamp, event.params.assets, true)
-    throw new Error("Not implemented");
+    updateAccountMetavaultRequest(
+        event.params.owner,
+        event.address,
+        event.block.timestamp,
+        AssetType.MV_REQUEST_DEPOSIT,
+        "add",
+        event.params.assets
+    )
+    // TODO: anything else to do?
 }
 
-export function handleDecreaseDepositRequest(event: DecreaseDepositRequest): void {
-    let asset = getAsset(event.address.toHex(), event.block.timestamp, AssetType.MV_REQUEST_DEPOSIT, getAssetID(event.address.toHex(), AssetType.MV_REQUEST_DEPOSIT))
-    updateAccountMetavaultRequestDepositBalance(event.params.owner.toHex(), asset.id, event.block.timestamp, event.params.previousRequestedAssets.minus(event.params.newRequestedAssets), false)
-    throw new Error("Not implemented");
+export function handleDecreaseDepositRequest(
+    event: DecreaseDepositRequest
+): void {
+    updateAccountMetavaultRequest(
+        event.params.owner,
+        event.address,
+        event.block.timestamp,
+        AssetType.MV_REQUEST_DEPOSIT,
+        "set",
+        event.params.newRequestedAssets
+    )
+    // TODO: anything else to do?
 }
 
 export function handleRedeemRequest(event: RedeemRequest): void {
-    throw new Error("Not implemented");
+    updateAccountMetavaultRequest(
+        event.params.owner,
+        event.address,
+        event.block.timestamp,
+        AssetType.MV_REQUEST_REDEEM,
+        "add",
+        event.params.shares
+    )
+    // TODO: anything else to do?
 }
 
-export function handleDecreaseRedeemRequest(event: DecreaseRedeemRequest): void {
-    //    should call updateAccountMetavaultRequestRedeemBalance() to update the balance of the redeem request asset according to the amount decreased in the event
-    throw new Error("Not implemented");
+export function handleDecreaseRedeemRequest(
+    event: DecreaseRedeemRequest
+): void {
+    updateAccountMetavaultRequest(
+        event.params.owner,
+        event.address,
+        event.block.timestamp,
+        AssetType.MV_REQUEST_REDEEM,
+        "set",
+        event.params.newRequestedShares
+    )
+    // TODO: anything else to do?
+
+    // what happens if:
+    // 1. user requests deposit
+    // 2. curator settles
+    // 3. user requests new deposit
 }
 
 export function handleDeposit(event: Deposit): void {
-    // should delete the deposit request entity as the shares are now minted or set them to 0
-    throw new Error("Not implemented");
+    // all deposit requests are cleared
+    updateAccountMetavaultRequest(
+        event.params.owner,
+        event.address,
+        event.block.timestamp,
+        AssetType.MV_REQUEST_DEPOSIT,
+        "set",
+        ZERO_BI
+    )
+    // shares are already tracked with the ERC20 template
+    // TODO: anything else to do?
 }
 
 export function handleWithdraw(event: Withdraw): void {
-    // should not delete the redeem request entity as the shares are still held by the user or set them to 0
-    throw new Error("Not implemented");
+    // all redeem requests are cleared
+    updateAccountMetavaultRequest(
+        event.params.owner,
+        event.address,
+        event.block.timestamp,
+        AssetType.MV_REQUEST_REDEEM,
+        "set",
+        ZERO_BI
+    )
+    // shares are already tracked with the ERC20 template
+    // TODO: anything else to do?
 }
 
 export function handleClaimPendingDeposit(event: ClaimPendingDeposit): void {
-    throw new Error("Not implemented");
+    throw new Error("Not implemented")
 }
 
 export function handleClaimPendingRedeem(event: ClaimPendingRedeem): void {
-    throw new Error("Not implemented");
+    throw new Error("Not implemented")
 }
