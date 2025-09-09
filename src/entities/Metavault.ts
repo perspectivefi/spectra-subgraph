@@ -1,5 +1,5 @@
 import { MetavaultWrapper } from "../../generated/Metavault/MetavaultWrapper"
-import { Metavault } from "../../generated/schema"
+import { Metavault, MetavaultWrapperSharesRate } from "../../generated/schema"
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { getAsset } from "./Asset"
 import { AssetType } from "../utils"
@@ -43,4 +43,24 @@ function createMetavault(metavaultWrapperAddress: Address, timestamp: BigInt, bl
     metavault.chains = []
     metavault.save()
     return metavault
+}
+
+export function createMetavaultWrapperSharesRate(
+    metavaultWrapperAddress: Address,
+    epochId: BigInt,
+    rate: BigInt,
+    timestamp: BigInt,
+    blockNumber: BigInt
+): MetavaultWrapperSharesRate {
+    let safeAddress = MetavaultWrapper.bind(metavaultWrapperAddress).try_owner().value
+    let id = safeAddress.toHex() + "-" + epochId.toString() + "-" + timestamp.toString()
+    let rateEntity = new MetavaultWrapperSharesRate(id)
+    
+    rateEntity.timestamp = timestamp
+    rateEntity.blockNumber = blockNumber
+    rateEntity.rate = rate
+    rateEntity.metavault = safeAddress.toHex()
+    
+    rateEntity.save()
+    return rateEntity
 }
