@@ -20,7 +20,7 @@ enum AssetType {
     FYT
     LP
     MV_SHARES
-    MV_REQUEST_DEPOSIT
+    MV_REQUEST_DEPOSIT  
     MV_REQUEST_REDEEM
     YIELD
     CLAIMED_YIELD
@@ -170,6 +170,8 @@ type AssetAmount @entity(immutable: false) {
     asset: Asset!
 }
 
+
+
 "AccountAsset entity to assign and update account's assets balances"
 type AccountAsset @entity(immutable: false) {
     id: ID!
@@ -309,17 +311,13 @@ type PoolStats @entity(immutable: false) {
 ####################
 
 "Account entity to index all kind of data related to a user of the protocol"
-type Account @entity(immutable: false) {
+type Account  @entity(immutable: false) {
     id: ID!
     address: Bytes!
     createdAtTimestamp: BigInt!
 
-    collectedFees: [FeeClaim!]! @derivedFrom(field: "feeCollector")
     transactions: [Transaction!]! @derivedFrom(field: "userInTransaction")
     portfolio: [AccountAsset!]! @derivedFrom(field: "account")
-
-    transfersOut: [Transfer!]! @derivedFrom(field: "from")
-    transfersIn: [Transfer!]! @derivedFrom(field: "to")
 }
 
 ####################
@@ -639,20 +637,29 @@ type MetavaultWrapperSharesRate @entity(immutable: false) {
     id: ID!
     timestamp: BigInt!
     blockNumber: BigInt!
-    metavaultWrapper: Metavault!
     rate: BigInt!
+    metavault: Metavault!
 }
 
-type Metavault @entity(immutable: false) {
+type Metavault implements Account @entity(immutable: false) {
+    # Metavault Static details
     id: ID!
     createdAtBlock: BigInt!
     createdAtTimestamp: BigInt!
-    safeAddress: Bytes! # The owner of the wrapper
     wrapperAddress: Bytes! # The wrapper address
+    address: Bytes! # The SAFE owner of the wrapper
+    safeAddress: Bytes! # The SAFE owner of the wrapper
+
+    # Metavault State
     infraVaultAddress: Bytes! # The infra vault address underneath the wrapper
-    markets: [Bytes!]! # The markets registered to the metavault
-    chains: [RemoteMetavault!]! # The chains registered to the metavault
+    markets: [Pool!]! # The markets registered to the metavault
     isMetavaultRegistered: Boolean! # Is the metavault registered to the metavault registry
+    chains: [RemoteMetavault!]! # The chains registered to the metavault
+    transactions: [Transaction!]! @derivedFrom(field: "userInTransaction")
+    portfolio: [AccountAsset!]! @derivedFrom(field: "account")
+    rates: [MetavaultWrapperSharesRate!]! @derivedFrom(field: "metavault")
+
+    # Metavault Underlying details
     name: String!
     symbol: String!
     underlying: Bytes! # The underlying asset address
