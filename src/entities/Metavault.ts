@@ -32,8 +32,9 @@ function createMetavault(metavaultWrapperAddress: Address, timestamp: BigInt, bl
     let metavault = new Metavault(safeAddress.toHex())
     metavault.createdAtTimestamp = timestamp
     metavault.createdAtBlock = blockNumber
-    metavault.isMetavaultRegistered = false // we should call the metavault registry to check if the metavault is registered
-    metavault.safeAddress = safeAddress // we should call the owner of the mv wrapper
+    metavault.isMetavaultRegistered = false
+    metavault.safeAddress = safeAddress
+    metavault.address = safeAddress  
     metavault.wrapperAddress = metavaultWrapperAddress
     metavault.infraVaultAddress = MetavaultWrapper.bind(metavaultWrapperAddress).try_getInfraVault().value
     metavault.name = MetavaultWrapper.bind(metavaultWrapperAddress).try_name().value

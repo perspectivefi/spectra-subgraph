@@ -39,7 +39,7 @@ dataSources:
       language: wasm/assemblyscript
       apiVersion: 0.0.6
       entities: [ ]
-      file: ./src/mappings/registry.ts
+      file: ./src/mappings/metavaults/metavaultRegistry.ts
       abis:
         - name: MetavaultsRegistry
           file: ./abis/MetavaultsRegistry.json
@@ -91,6 +91,8 @@ dataSources:
       abis:
         - name: MetavaultWrapper
           file: ./abis/MetavaultWrapper.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
       eventHandlers:
         - event: MetaVaultWrapperInitialized(indexed address,indexed address,indexed address)
           handler: handleMetaVaultWrapperInitialized
