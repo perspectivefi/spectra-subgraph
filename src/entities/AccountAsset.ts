@@ -27,6 +27,7 @@ export function createAccountAsset(
 
     accountAsset.createdAtTimestamp = timestamp
     accountAsset.balance = ZERO_BI
+    accountAsset.epochID = ZERO_BI
 
     let asset = getAsset(assetAddress.toHex(), timestamp, type, assetId)
     let account = getAccount(accountAddress.toHex(), timestamp)

@@ -49,10 +49,14 @@ export function handleChainUnregistered(event: ChainUnregistered): void {
 
 export function handleMarketRegistered(event: MarketRegistered): void {
     let poolAddress = event.params.market
-    let pool = Pool.load(poolAddress.toHex())!
-    let metavault = Metavault.load(event.params.metavault.toHex())!
-    metavault.markets.push(pool.id)
-    metavault.save()
+    let pool = Pool.load(poolAddress.toHex())
+    let metavault = Metavault.load(event.params.metavault.toHex())
+    
+    //Need a non null assesrtion otherwise subgraph crashes for some reason
+    if (pool && metavault) {
+        metavault.markets.push(pool.id)
+        metavault.save()
+    }
 }
 
 export function handleMarketUnregistered(event: MarketUnregistered): void {

@@ -182,7 +182,7 @@ type AccountAsset @entity(immutable: false) {
     asset: Asset!
 
     "relation to the account details"
-    account: Account!
+    account: IAccount!
 
     "if lp position"
     pool: Pool
@@ -311,13 +311,22 @@ type PoolStats @entity(immutable: false) {
 ####################
 
 "Account entity to index all kind of data related to a user of the protocol"
-type Account  @entity(immutable: false) {
-    id: ID!
-    address: Bytes!
-    createdAtTimestamp: BigInt!
+interface IAccount {
+  id: ID!
+  address: Bytes!
+  createdAtTimestamp: BigInt!
 
-    transactions: [Transaction!]! @derivedFrom(field: "userInTransaction")
-    portfolio: [AccountAsset!]! @derivedFrom(field: "account")
+  transactions: [Transaction!]! @derivedFrom(field: "userInTransaction")
+  portfolio: [AccountAsset!]! @derivedFrom(field: "account")
+}
+
+type Account implements IAccount @entity(immutable: false) {
+  id: ID!
+  address: Bytes!
+  createdAtTimestamp: BigInt!
+
+  transactions: [Transaction!]! @derivedFrom(field: "userInTransaction")
+  portfolio: [AccountAsset!]! @derivedFrom(field: "account")
 }
 
 ####################
@@ -342,7 +351,7 @@ type Transaction @entity(immutable: false) {
     "if there is any future on any side of the transaction to be able to list this future's transactions"
     futureInTransaction: Future
     "if there is any user on any side of the transaction to be able to list this user's transactions"
-    userInTransaction: Account
+    userInTransaction: IAccount
     "if there is any pool on any side of the transaction to be able to list this pool's transactions"
     poolInTransaction: Pool
 
@@ -641,7 +650,7 @@ type MetavaultWrapperSharesRate @entity(immutable: false) {
     metavault: Metavault!
 }
 
-type Metavault implements Account @entity(immutable: false) {
+type Metavault implements IAccount @entity(immutable: false) {
     # Metavault Static details
     id: ID!
     createdAtBlock: BigInt!
