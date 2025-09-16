@@ -671,5 +671,5 @@ type Metavault implements IAccount @entity(immutable: false) {
     # Metavault Underlying details
     name: String!
     symbol: String!
-    underlying: Bytes! # The underlying asset address
+    underlying: Asset! # The underlying asset address
 }

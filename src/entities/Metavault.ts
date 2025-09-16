@@ -39,7 +39,17 @@ function createMetavault(metavaultWrapperAddress: Address, timestamp: BigInt, bl
     metavault.infraVaultAddress = MetavaultWrapper.bind(metavaultWrapperAddress).try_getInfraVault().value
     metavault.name = MetavaultWrapper.bind(metavaultWrapperAddress).try_name().value
     metavault.symbol = MetavaultWrapper.bind(metavaultWrapperAddress).try_symbol().value
-    metavault.underlying = MetavaultWrapper.bind(metavaultWrapperAddress).try_asset().value
+
+
+    let underlyingAddress = MetavaultWrapper.bind(metavaultWrapperAddress).try_asset().value
+    let underlyingAsset = getAsset(
+        underlyingAddress.toHex(),
+        timestamp,
+        AssetType.UNDERLYING
+    )
+    underlyingAsset.save()
+    
+    metavault.underlying = underlyingAsset.address.toHex()
     metavault.markets = []
     metavault.chains = []
     metavault.save()
