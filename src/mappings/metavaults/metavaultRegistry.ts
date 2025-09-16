@@ -28,7 +28,9 @@ export function handleChainRegistered(event: ChainRegistered): void {
         remoteMetavault.save()
         
         // Add to metavault chains array
-        metavault.chains.push(remoteMetavault.id)
+        let chains = metavault.chains
+        chains.push(remoteMetavault.id)
+        metavault.chains = chains
         metavault.save()
     }
 }
@@ -51,10 +53,12 @@ export function handleMarketRegistered(event: MarketRegistered): void {
     let poolAddress = event.params.market
     let pool = Pool.load(poolAddress.toHex())
     let metavault = Metavault.load(event.params.metavault.toHex())
-    
     //Need a non null assesrtion otherwise subgraph crashes for some reason
     if (pool && metavault) {
-        metavault.markets.push(pool.id)
+        // metavault.markets.push(pool.id) does not work for some reason
+        let markets = metavault.markets
+        markets.push(pool.id)
+        metavault.markets = markets
         metavault.save()
     }
 }
@@ -66,7 +70,10 @@ export function handleMarketUnregistered(event: MarketUnregistered): void {
     if (metavault) {
         let index = metavault.markets.indexOf(poolAddress.toHex())
         if (index > -1) {
-            metavault.markets.splice(index, 1)
+            // metavault.markets.splice(index, 1) does not work for some reason
+            let markets = metavault.markets
+            markets.splice(index, 1)
+            metavault.markets = markets
             metavault.save()
         }
     }
