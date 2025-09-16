@@ -32,6 +32,7 @@ export function handleMetaVaultWrapperInitialized(
         "MetavaultWrapper"
     )
 
+    metavaultWrapper.wrapperAddress = event.address // if Metavault was created with a different wrapper previously, update it to the new one
     MetavaultWrapper.create(event.address)
     ERC20.create(event.address)
 }
