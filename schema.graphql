@@ -191,7 +191,7 @@ type AccountAsset @entity(immutable: false) {
     principalToken: Future
     "if YT position generating yield or current yield > 0"
     generatedYield: Boolean
-    epochID: BigInt!
+    epochID: BigInt
     #    fytTokenDetails: FYTTokenDetails
 }
 
