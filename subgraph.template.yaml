@@ -427,5 +427,3 @@ templates:
           handler: handleWithdraw
         - event: ClaimPendingDeposit(indexed uint256,indexed uint256,indexed uint256)
           handler: handleClaimPendingDeposit
-        - event: ClaimPendingRedeem(indexed uint256,indexed uint256,indexed uint256)
-          handler: handleClaimPendingRedeem

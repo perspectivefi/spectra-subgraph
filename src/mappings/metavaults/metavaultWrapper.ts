@@ -141,6 +141,11 @@ export function handleClaimPendingDeposit(event: ClaimPendingDeposit): void {
     )
 }
 
+/**
+ * Not used in the subgraph as this would create a rate taking into account performance fees that we don't want to track, 
+ * but kept for reference
+ * @param event ClaimPendingRedeem event
+ */
 export function handleClaimPendingRedeem(event: ClaimPendingRedeem): void {
     // Calculate conversion rate: assets / wrapper shares
     // TODO: check if division is safe from overflow or underflow (can wrapperSharesClaimed be 0 ?)
