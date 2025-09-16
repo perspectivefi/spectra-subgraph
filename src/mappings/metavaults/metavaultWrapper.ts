@@ -33,6 +33,7 @@ export function handleMetaVaultWrapperInitialized(
     )
 
     metavaultWrapper.wrapperAddress = event.address // if Metavault was created with a different wrapper previously, update it to the new one
+    metavaultWrapper.save()
     MetavaultWrapper.create(event.address)
     ERC20.create(event.address)
 }
@@ -142,7 +143,7 @@ export function handleClaimPendingDeposit(event: ClaimPendingDeposit): void {
 }
 
 /**
- * Not used in the subgraph as this would create a rate taking into account performance fees that we don't want to track, 
+ * Not used in the subgraph as this would create a rate taking into account performance fees that we don't want to track,
  * but kept for reference
  * @param event ClaimPendingRedeem event
  */
