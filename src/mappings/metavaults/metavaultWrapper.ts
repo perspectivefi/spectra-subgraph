@@ -1,3 +1,5 @@
+import { BigInt } from "@graphprotocol/graph-ts"
+
 import {
     MetaVaultWrapperInitialized,
     DepositRequest,
@@ -9,13 +11,16 @@ import {
     ClaimPendingDeposit,
     ClaimPendingRedeem,
 } from "../../../generated/Metavault/MetavaultWrapper"
+import { MetavaultWrapper as MetavaultWrapperAbi } from "../../../generated/Metavault/MetavaultWrapper"
 import { MetavaultWrapper } from "../../../generated/templates"
 import { ERC20 } from "../../../generated/templates"
 import { ZERO_BI } from "../../constants"
 import { updateAccountMetavaultRequest } from "../../entities/AccountAsset"
-import { getMetavault, createMetavaultWrapperSharesRate } from "../../entities/Metavault"
+import {
+    getMetavault,
+    createMetavaultWrapperSharesRate,
+} from "../../entities/Metavault"
 import { AssetType } from "../../utils"
-import { BigInt } from "@graphprotocol/graph-ts"
 
 export function handleMetaVaultWrapperInitialized(
     event: MetaVaultWrapperInitialized
@@ -119,12 +124,17 @@ export function handleWithdraw(event: Withdraw): void {
 export function handleClaimPendingDeposit(event: ClaimPendingDeposit): void {
     // Calculate conversion rate: assets / wrapper shares
     // TODO: check if division is safe from overflow or underflow (can wrapperSharesClaimed be 0 ?)
-    
+
+    const wrapperDecimals = MetavaultWrapperAbi.bind(
+        event.address
+    ).try_decimals().value
     // Create MetavaultWrapperSharesRate entity
     createMetavaultWrapperSharesRate(
         event.address,
         event.params.epochId,
-        event.params.assetsClaimed.div(event.params.wrapperSharesReceived),
+        event.params.assetsClaimed
+            .times(BigInt.fromString("10").pow(wrapperDecimals as u8))
+            .div(event.params.wrapperSharesReceived),
         event.block.timestamp,
         event.block.number
     )
@@ -134,11 +144,16 @@ export function handleClaimPendingRedeem(event: ClaimPendingRedeem): void {
     // Calculate conversion rate: assets / wrapper shares
     // TODO: check if division is safe from overflow or underflow (can wrapperSharesClaimed be 0 ?)
 
+    const wrapperDecimals = MetavaultWrapperAbi.bind(
+        event.address
+    ).try_decimals().value
     // Create MetavaultWrapperSharesRate entity
     createMetavaultWrapperSharesRate(
         event.address,
         event.params.epochId,
-        event.params.assetsReceived.div(event.params.wrapperSharesClaimed),
+        event.params.assetsReceived
+            .times(BigInt.fromString("10").pow(wrapperDecimals as u8))
+            .div(event.params.wrapperSharesClaimed),
         event.block.timestamp,
         event.block.number
     )
