@@ -58,7 +58,8 @@ export function getAccountAsset(
             accountAddress,
             assetAddress,
             type,
-            timestamp
+            timestamp,
+            assetId
         )
     }
 

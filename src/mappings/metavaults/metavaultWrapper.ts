@@ -9,17 +9,14 @@ import {
     Deposit,
     Withdraw,
     ClaimPendingDeposit,
-    ClaimPendingRedeem,
 } from "../../../generated/Metavault/MetavaultWrapper"
 import { MetavaultWrapper as MetavaultWrapperAbi } from "../../../generated/Metavault/MetavaultWrapper"
 import { MetavaultWrapper } from "../../../generated/templates"
 import { ERC20 } from "../../../generated/templates"
+import { AmphorAsyncVault } from "../../../generated/templates/MetavaultWrapper/AmphorAsyncVault"
 import { ZERO_BI } from "../../constants"
 import { updateAccountMetavaultRequest } from "../../entities/AccountAsset"
-import {
-    getMetavault,
-    createMetavaultWrapperSharesRate,
-} from "../../entities/Metavault"
+import { getMetavault, createMetavaultEpoch } from "../../entities/Metavault"
 import { AssetType } from "../../utils"
 
 export function handleMetaVaultWrapperInitialized(
@@ -130,13 +127,17 @@ export function handleClaimPendingDeposit(event: ClaimPendingDeposit): void {
     const wrapperDecimals = MetavaultWrapperAbi.bind(
         event.address
     ).try_decimals().value
-    // Create MetavaultWrapperSharesRate entity
-    createMetavaultWrapperSharesRate(
+    const lastSavedBalance = AmphorAsyncVault.bind(
+        MetavaultWrapperAbi.bind(event.address).try_getInfraVault().value
+    ).try_lastSavedBalance().value
+    // Create MetavaultEpoch entity
+    createMetavaultEpoch(
         event.address,
         event.params.epochId,
         event.params.assetsClaimed
             .times(BigInt.fromString("10").pow(wrapperDecimals as u8))
             .div(event.params.wrapperSharesReceived),
+        lastSavedBalance,
         event.block.timestamp,
         event.block.number
     )
@@ -147,6 +148,7 @@ export function handleClaimPendingDeposit(event: ClaimPendingDeposit): void {
  * but kept for reference
  * @param event ClaimPendingRedeem event
  */
+/*
 export function handleClaimPendingRedeem(event: ClaimPendingRedeem): void {
     // Calculate conversion rate: assets / wrapper shares
     // TODO: check if division is safe from overflow or underflow (can wrapperSharesClaimed be 0 ?)
@@ -154,8 +156,8 @@ export function handleClaimPendingRedeem(event: ClaimPendingRedeem): void {
     const wrapperDecimals = MetavaultWrapperAbi.bind(
         event.address
     ).try_decimals().value
-    // Create MetavaultWrapperSharesRate entity
-    createMetavaultWrapperSharesRate(
+    // Create MetavaultEpoch entity
+    createMetavaultEpoch(
         event.address,
         event.params.epochId,
         event.params.assetsReceived
@@ -165,3 +167,4 @@ export function handleClaimPendingRedeem(event: ClaimPendingRedeem): void {
         event.block.number
     )
 }
+*/

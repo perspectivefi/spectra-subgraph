@@ -412,6 +412,8 @@ templates:
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
         - name: MetavaultWrapper
           file: ./abis/MetavaultWrapper.json
+        - name: AmphorAsyncVault
+          file: ./abis/AmphorAsyncVault.json
       eventHandlers:
         - event: DepositRequest(indexed address,indexed address,indexed uint256,address,uint256)
           handler: handleDepositRequest

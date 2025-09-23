@@ -1,7 +1,7 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 
 import { MetavaultWrapper } from "../../generated/Metavault/MetavaultWrapper"
-import { Metavault, MetavaultWrapperSharesRate } from "../../generated/schema"
+import { Account, Metavault, MetavaultEpoch } from "../../generated/schema"
 import { AssetType } from "../utils"
 import { getAsset } from "./Asset"
 
@@ -74,17 +74,22 @@ function createMetavault(
     metavault.underlying = underlyingAsset.address.toHex()
     metavault.markets = []
     metavault.chains = []
+
+    let account = new Account(safeAddress.toHex())
+    metavault.account = account.id
+
     metavault.save()
     return metavault
 }
 
-export function createMetavaultWrapperSharesRate(
+export function createMetavaultEpoch(
     metavaultWrapperAddress: Address,
     epochId: BigInt,
     rate: BigInt,
+    assets: BigInt,
     timestamp: BigInt,
     blockNumber: BigInt
-): MetavaultWrapperSharesRate {
+): MetavaultEpoch {
     let safeAddress = MetavaultWrapper.bind(metavaultWrapperAddress).try_owner()
         .value
     let id =
@@ -93,13 +98,14 @@ export function createMetavaultWrapperSharesRate(
         epochId.toString() +
         "-" +
         timestamp.toString()
-    let rateEntity = new MetavaultWrapperSharesRate(id)
+    let epochEntity = new MetavaultEpoch(id)
 
-    rateEntity.timestamp = timestamp
-    rateEntity.blockNumber = blockNumber
-    rateEntity.rate = rate
-    rateEntity.metavault = safeAddress.toHex()
+    epochEntity.timestamp = timestamp
+    epochEntity.blockNumber = blockNumber
+    epochEntity.rate = rate
+    epochEntity.assets = assets
+    epochEntity.metavault = safeAddress.toHex()
 
-    rateEntity.save()
-    return rateEntity
+    epochEntity.save()
+    return epochEntity
 }

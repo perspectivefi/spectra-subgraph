@@ -182,7 +182,7 @@ type AccountAsset @entity(immutable: false) {
     asset: Asset!
 
     "relation to the account details"
-    account: IAccount!
+    account: Account!
 
     "if lp position"
     pool: Pool
@@ -310,17 +310,7 @@ type PoolStats @entity(immutable: false) {
 # Account
 ####################
 
-"Account entity to index all kind of data related to a user of the protocol"
-interface IAccount {
-  id: ID!
-  address: Bytes!
-  createdAtTimestamp: BigInt!
-
-  transactions: [Transaction!]! @derivedFrom(field: "userInTransaction")
-  portfolio: [AccountAsset!]! @derivedFrom(field: "account")
-}
-
-type Account implements IAccount @entity(immutable: false) {
+type Account @entity(immutable: false) {
   id: ID!
   address: Bytes!
   createdAtTimestamp: BigInt!
@@ -351,7 +341,7 @@ type Transaction @entity(immutable: false) {
     "if there is any future on any side of the transaction to be able to list this future's transactions"
     futureInTransaction: Future
     "if there is any user on any side of the transaction to be able to list this user's transactions"
-    userInTransaction: IAccount
+    userInTransaction: Account
     "if there is any pool on any side of the transaction to be able to list this pool's transactions"
     poolInTransaction: Pool
 
@@ -642,15 +632,16 @@ type RemoteMetavault @entity(immutable: false) {
     remoteMetavaultAddress: Bytes!
 }
 
-type MetavaultWrapperSharesRate @entity(immutable: false) {
+type MetavaultEpoch @entity(immutable: false) {
     id: ID!
     timestamp: BigInt!
     blockNumber: BigInt!
     rate: BigInt!
+    assets: BigInt!
     metavault: Metavault!
 }
 
-type Metavault implements IAccount @entity(immutable: false) {
+type Metavault @entity(immutable: false) {
     # Metavault Static details
     id: ID!
     createdAtBlock: BigInt!
@@ -664,9 +655,8 @@ type Metavault implements IAccount @entity(immutable: false) {
     markets: [Pool!]! # The markets registered to the metavault
     isMetavaultRegistered: Boolean! # Is the metavault registered to the metavault registry
     chains: [RemoteMetavault!]! # The chains registered to the metavault
-    transactions: [Transaction!]! @derivedFrom(field: "userInTransaction")
-    portfolio: [AccountAsset!]! @derivedFrom(field: "account")
-    rates: [MetavaultWrapperSharesRate!]! @derivedFrom(field: "metavault")
+    epochs: [MetavaultEpoch!]! @derivedFrom(field: "metavault")
+    account: Account!
 
     # Metavault Underlying details
     name: String!
