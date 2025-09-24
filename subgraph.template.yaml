@@ -27,6 +27,35 @@ dataSources:
       eventHandlers:
         - event: FactoryChange(indexed address,indexed address)
           handler: handleFactoryChange
+  - name: MetavaultsRegistry
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: MetavaultsRegistry
+      address: '{{ metavaultsRegistry }}'
+      startBlock: {{ startBlock }}
+    mapping:
+      kind: ethereum/events
+      language: wasm/assemblyscript
+      apiVersion: 0.0.6
+      entities: [ ]
+      file: ./src/mappings/metavaults/metavaultRegistry.ts
+      abis:
+        - name: MetavaultsRegistry
+          file: ./abis/MetavaultsRegistry.json
+      eventHandlers:
+        - event: MetavaultRegistered(indexed address)
+          handler: handleMetavaultRegistered
+        - event: MetavaultUnregistered(indexed address)
+          handler: handleMetavaultUnregistered
+        - event: ChainRegistered(indexed address,indexed uint256,indexed address)
+          handler: handleChainRegistered
+        - event: ChainUnregistered(indexed address,indexed uint256,indexed address)
+          handler: handleChainUnregistered
+        - event: MarketRegistered(indexed address,indexed address)
+          handler: handleMarketRegistered
+        - event: MarketUnregistered(indexed address,indexed address)
+          handler: handleMarketUnregistered
   - name: SpectraWrapper
     kind: ethereum/contract
     network: {{network}}
@@ -47,6 +76,26 @@ dataSources:
       eventHandlers:
         - event: AuthorityUpdated(address)
           handler: handleAuthorityUpdated
+  - name: Metavault
+    kind: ethereum/contract
+    network: {{network}}
+    source:
+      abi: MetavaultWrapper
+      startBlock: {{ startBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities: [ ]
+      file: ./src/mappings/metavaults/metavaultWrapper.ts
+      abis:
+        - name: MetavaultWrapper
+          file: ./abis/MetavaultWrapper.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+      eventHandlers:
+        - event: MetaVaultWrapperInitialized(indexed address,indexed address,indexed address)
+          handler: handleMetaVaultWrapperInitialized
   - name: LimitOrderEngine
     kind: ethereum/contract
     network: {{ network }}
@@ -345,3 +394,38 @@ templates:
       eventHandlers:
         - event: NonceIncreased(indexed address,uint256,uint256)
           handler: handleNonceManagerNonceIncreased
+  - name: MetavaultWrapper
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: MetavaultWrapper
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities: [ ]
+      file: ./src/mappings/metavaults/metavaultWrapper.ts
+      abis:
+        - name: ERC4626
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+        - name: MetavaultWrapper
+          file: ./abis/MetavaultWrapper.json
+        - name: AmphorAsyncVault
+          file: ./abis/AmphorAsyncVault.json
+      eventHandlers:
+        - event: DepositRequest(indexed address,indexed address,indexed uint256,address,uint256)
+          handler: handleDepositRequest
+        - event: DecreaseDepositRequest(indexed uint256,indexed address,indexed uint256,uint256)
+          handler: handleDecreaseDepositRequest
+        - event: RedeemRequest(indexed address,indexed address,indexed uint256,address,uint256)
+          handler: handleRedeemRequest
+        - event: DecreaseRedeemRequest(indexed uint256,indexed address,indexed uint256,uint256)
+          handler: handleDecreaseRedeemRequest
+        - event: Deposit(indexed address,indexed address,uint256,uint256)
+          handler: handleDeposit
+        - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleWithdraw
+        - event: ClaimPendingDeposit(indexed uint256,indexed uint256,indexed uint256)
+          handler: handleClaimPendingDeposit

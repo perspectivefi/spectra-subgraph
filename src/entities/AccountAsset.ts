@@ -4,7 +4,7 @@ import { AccountAsset, Future } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
 import { AssetType, generateAccountAssetId } from "../utils"
 import { getAccount } from "./Account"
-import { getAsset } from "./Asset"
+import { getAsset, getAssetId } from "./Asset"
 import { getERC20Balance } from "./ERC20"
 import { getERC4626Balance } from "./ERC4626"
 import { getAccountYieldAsset } from "./Yield"
@@ -15,19 +15,21 @@ export function createAccountAsset(
     accountAddress: Address,
     assetAddress: Address,
     type: string,
-    timestamp: BigInt
+    timestamp: BigInt,
+    assetId: string | null = null // used to override the assetId for special assets like MV request/redeem
 ): AccountAsset {
     let id = generateAccountAssetId(
         accountAddress.toHex(),
-        assetAddress.toHex()
+        assetId !== null ? assetId : assetAddress.toHex()
     )
 
     let accountAsset = new AccountAsset(id)
 
     accountAsset.createdAtTimestamp = timestamp
     accountAsset.balance = ZERO_BI
+    accountAsset.epochID = ZERO_BI
 
-    let asset = getAsset(assetAddress.toHex(), timestamp, type)
+    let asset = getAsset(assetAddress.toHex(), timestamp, type, assetId)
     let account = getAccount(accountAddress.toHex(), timestamp)
 
     accountAsset.asset = asset.id
@@ -41,11 +43,12 @@ export function getAccountAsset(
     accountAddress: Address,
     assetAddress: Address,
     timestamp: BigInt,
-    type: string
+    type: string,
+    assetId: string | null = null // used to override the assetId for special assets like MV request/redeem
 ): AccountAsset {
     let id = generateAccountAssetId(
         accountAddress.toHex(),
-        assetAddress.toHex()
+        assetId !== null ? assetId : assetAddress.toHex()
     )
 
     let accountAsset = AccountAsset.load(id)
@@ -55,7 +58,8 @@ export function getAccountAsset(
             accountAddress,
             assetAddress,
             type,
-            timestamp
+            timestamp,
+            assetId
         )
     }
 
@@ -187,5 +191,34 @@ export function updateAccountAssetYTBalance(
             asset.type,
         ])
     }
+    return accountAsset
+}
+
+export function updateAccountMetavaultRequest(
+    accountAddress: Address,
+    metavaultAddress: Address,
+    timestamp: BigInt,
+    requestType: string,
+    operation: string,
+    amount: BigInt
+): AccountAsset {
+    let accountAsset = getAccountAsset(
+        accountAddress,
+        metavaultAddress,
+        timestamp,
+        requestType,
+        getAssetId(metavaultAddress, requestType)
+    )
+    // AssemblyScript does not handle switch well
+    if (operation == "add") {
+        accountAsset.balance = accountAsset.balance.plus(amount)
+    } else if (operation == "sub") {
+        accountAsset.balance = accountAsset.balance.minus(amount)
+    } else if (operation == "set") {
+        accountAsset.balance = amount
+    } else {
+        throw new Error("Invalid operation: " + operation)
+    }
+    accountAsset.save()
     return accountAsset
 }

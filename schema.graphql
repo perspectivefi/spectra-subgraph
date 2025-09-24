@@ -19,7 +19,9 @@ enum AssetType {
     YT
     FYT
     LP
-    LP_VAULT_SHARES
+    MV_SHARES
+    MV_REQUEST_DEPOSIT  
+    MV_REQUEST_REDEEM
     YIELD
     CLAIMED_YIELD
     WRAPPER
@@ -168,6 +170,8 @@ type AssetAmount @entity(immutable: false) {
     asset: Asset!
 }
 
+
+
 "AccountAsset entity to assign and update account's assets balances"
 type AccountAsset @entity(immutable: false) {
     id: ID!
@@ -187,7 +191,7 @@ type AccountAsset @entity(immutable: false) {
     principalToken: Future
     "if YT position generating yield or current yield > 0"
     generatedYield: Boolean
-
+    epochID: BigInt
     #    fytTokenDetails: FYTTokenDetails
 }
 
@@ -306,18 +310,13 @@ type PoolStats @entity(immutable: false) {
 # Account
 ####################
 
-"Account entity to index all kind of data related to a user of the protocol"
 type Account @entity(immutable: false) {
-    id: ID!
-    address: Bytes!
-    createdAtTimestamp: BigInt!
+  id: ID!
+  address: Bytes!
+  createdAtTimestamp: BigInt!
 
-    collectedFees: [FeeClaim!]! @derivedFrom(field: "feeCollector")
-    transactions: [Transaction!]! @derivedFrom(field: "userInTransaction")
-    portfolio: [AccountAsset!]! @derivedFrom(field: "account")
-
-    transfersOut: [Transfer!]! @derivedFrom(field: "from")
-    transfersIn: [Transfer!]! @derivedFrom(field: "to")
+  transactions: [Transaction!]! @derivedFrom(field: "userInTransaction")
+  portfolio: [AccountAsset!]! @derivedFrom(field: "account")
 }
 
 ####################
@@ -621,4 +620,47 @@ type RoleLabel @entity(immutable: true) {
     blockNumber: BigInt!            # Block number
     transactionHash: Bytes!         # Transaction hash
     logIndex: BigInt!               # Log index within the transaction
+}
+
+####################
+# Metavault Entitites
+####################
+
+type RemoteMetavault @entity(immutable: false) {
+    id: ID!
+    chainId: Int!
+    remoteMetavaultAddress: Bytes!
+}
+
+type MetavaultEpoch @entity(immutable: false) {
+    id: ID!
+    timestamp: BigInt!
+    blockNumber: BigInt!
+    rate: BigInt!
+    assets: BigInt!
+    metavault: Metavault!
+}
+
+type Metavault @entity(immutable: false) {
+    # Metavault Static details
+    id: ID!
+    createdAtBlock: BigInt!
+    createdAtTimestamp: BigInt!
+    wrapperAddress: Bytes! # The wrapper address
+    address: Bytes! # The SAFE owner of the wrapper
+    safeAddress: Bytes! # The SAFE owner of the wrapper
+
+    # Metavault State
+    infraVaultAddress: Bytes! # The infra vault address underneath the wrapper
+    markets: [Pool!]! # The markets registered to the metavault
+    isMetavaultRegistered: Boolean! # Is the metavault registered to the metavault registry
+    chains: [RemoteMetavault!]! # The chains registered to the metavault
+    epochs: [MetavaultEpoch!]! @derivedFrom(field: "metavault")
+    account: Account!
+
+    # Metavault Underlying details
+    name: String!
+    symbol: String!
+    decimals: Int!
+    underlying: Asset! # The underlying asset address
 }

@@ -174,41 +174,6 @@ describe("handleTransfer()", () => {
         assert.entityCount(TRANSFER_ENTITY, 2)
     })
 
-    test("Should assign the transfer event to a receiver and sender", () => {
-        const lpTransferId = generateTransferId(
-            LP_TRANSFER_TRANSACTION_HASH.toHex(),
-            "1",
-            "0"
-        )
-
-        const ptTransferId = generateTransferId(
-            PT_TRANSFER_TRANSACTION_HASH.toHex(),
-            "1",
-            "0"
-        )
-
-        assert.fieldEquals(
-            TRANSFER_ENTITY,
-            lpTransferId,
-            "from",
-            SENDER_USER_MOCK.toHex()
-        )
-        assert.fieldEquals(
-            TRANSFER_ENTITY,
-            lpTransferId,
-            "to",
-            RECEIVER_USER_MOCK.toHex()
-        )
-
-        let senderAccountEntity = Account.load(SENDER_USER_MOCK.toHex())!
-        const transfersOut = senderAccountEntity.transfersOut.load()
-
-        let receiverAccountEntity = Account.load(RECEIVER_USER_MOCK.toHex())!
-        const transfersIn = receiverAccountEntity.transfersIn.load()
-
-        assert.i32Equals(transfersOut.length, 2)
-        assert.i32Equals(transfersIn.length, 2)
-    })
 
     test("Should reflect asset transfers in the account portfolio", () => {
         assert.fieldEquals(
