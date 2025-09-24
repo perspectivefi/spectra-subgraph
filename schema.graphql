@@ -240,6 +240,7 @@ type Future @entity(immutable: false) {
 
     "YT asset with balance > 0 or current yield > 0"
     yieldGenerators: [AccountAsset!]!
+    ytAsset: Asset!
 }
 
 "FeeClaim entity to list claims triggered on an future by a account"
