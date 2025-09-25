@@ -1,5 +1,6 @@
 import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
+import { MetavaultWrapper as MetavaultWrapperAbi } from "../../generated/Metavault/MetavaultWrapper"
 import { AccountAsset, Future } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
 import { AssetType, generateAccountAssetId } from "../utils"
@@ -200,8 +201,7 @@ export function updateAccountMetavaultRequest(
     timestamp: BigInt,
     requestType: string,
     operation: string,
-    amount: BigInt,
-    epochId: BigInt
+    amount: BigInt
 ): AccountAsset {
     let accountAsset = getAccountAsset(
         accountAddress,
@@ -213,16 +213,16 @@ export function updateAccountMetavaultRequest(
     // AssemblyScript does not handle switch well
     if (operation == "add") {
         accountAsset.balance = accountAsset.balance.plus(amount)
-        accountAsset.epochId = epochId
     } else if (operation == "sub") {
         accountAsset.balance = accountAsset.balance.minus(amount)
-        accountAsset.epochId = epochId
     } else if (operation == "set") {
         accountAsset.balance = amount
-        accountAsset.epochId = epochId
     } else {
         throw new Error("Invalid operation: " + operation)
     }
+    const epochId =
+        MetavaultWrapperAbi.bind(metavaultAddress).try_epochId().value
+    accountAsset.epochId = epochId
     accountAsset.save()
     return accountAsset
 }
