@@ -27,7 +27,7 @@ export function createAccountAsset(
 
     accountAsset.createdAtTimestamp = timestamp
     accountAsset.balance = ZERO_BI
-    accountAsset.epochID = ZERO_BI
+    accountAsset.epochId = ZERO_BI
 
     let asset = getAsset(assetAddress.toHex(), timestamp, type, assetId)
     let account = getAccount(accountAddress.toHex(), timestamp)
@@ -200,7 +200,8 @@ export function updateAccountMetavaultRequest(
     timestamp: BigInt,
     requestType: string,
     operation: string,
-    amount: BigInt
+    amount: BigInt,
+    epochId: BigInt
 ): AccountAsset {
     let accountAsset = getAccountAsset(
         accountAddress,
@@ -212,10 +213,13 @@ export function updateAccountMetavaultRequest(
     // AssemblyScript does not handle switch well
     if (operation == "add") {
         accountAsset.balance = accountAsset.balance.plus(amount)
+        accountAsset.epochId = epochId
     } else if (operation == "sub") {
         accountAsset.balance = accountAsset.balance.minus(amount)
+        accountAsset.epochId = epochId
     } else if (operation == "set") {
         accountAsset.balance = amount
+        accountAsset.epochId = epochId
     } else {
         throw new Error("Invalid operation: " + operation)
     }
