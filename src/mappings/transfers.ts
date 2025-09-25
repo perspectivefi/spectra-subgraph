@@ -6,6 +6,7 @@ import {
     updateAccountAssetBalance,
     updateAccountAssetYTBalance,
 } from "../entities/AccountAsset"
+import { getAsset } from "../entities/Asset"
 import { getAssetAmount } from "../entities/AssetAmount"
 import { updateIBTRates } from "../entities/IBTAsset"
 import { updateYieldForAll } from "../entities/Yield"
@@ -38,7 +39,7 @@ export function handleTransfer(event: TransferEvent): void {
     transfer.gasLimit = event.transaction.gasLimit
     transfer.gasPrice = event.transaction.gasPrice
 
-    let asset = Asset.load(event.address.toHex())
+    const asset = getAsset(event.address.toHex(), eventTimestamp, AssetType.UNKNOWN)
 
     if (asset) {
         let amountOut = getAssetAmount(

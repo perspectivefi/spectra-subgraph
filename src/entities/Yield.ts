@@ -83,7 +83,7 @@ export function getAccountYieldAsset(
 
     accountAsset.createdAtTimestamp = timestamp
     accountAsset.balance = ZERO_BI
-    accountAsset.epochID = ZERO_BI
+    accountAsset.epochId = ZERO_BI
 
     accountAsset.asset = asset.id
     accountAsset.account = accountAddress.toHex()
@@ -162,7 +162,7 @@ export function getAccountClaimedYieldAsset(
 
     accountAsset.createdAtTimestamp = timestamp
     accountAsset.balance = ZERO_BI
-    accountAsset.epochID = ZERO_BI
+    accountAsset.epochId = ZERO_BI
 
     accountAsset.asset = claimedYieldAsset.id
     accountAsset.account = accountAddress.toHex()

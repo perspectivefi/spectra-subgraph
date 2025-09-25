@@ -1,9 +1,40 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 
 import { MetavaultWrapper } from "../../generated/Metavault/MetavaultWrapper"
-import { Account, Metavault, MetavaultEpoch } from "../../generated/schema"
+import { Account, Metavault, MetavaultEpoch, Infravault } from "../../generated/schema"
+import { InfraVaultType } from "../utils"
 import { AssetType } from "../utils"
 import { getAsset } from "./Asset"
+import { AmphorAsyncVault } from "../../generated/templates/AmphorAsyncVault/AmphorAsyncVault"
+
+export function createInfravault(
+    infravaultAddress: Address,
+    metavaultAddress: Address
+): Infravault {
+    let infravault = new Infravault(infravaultAddress.toHex())
+    infravault.address = infravaultAddress
+
+    infravault.type = inferInfravaultType(infravaultAddress)
+    infravault.metavault = metavaultAddress.toHex()
+    infravault.save()
+    return infravault
+}
+
+export function inferInfravaultType(
+    infravaultAddress: Address
+): string {
+    const infravault = AmphorAsyncVault.bind(infravaultAddress)
+
+    let pendingSiloCall = infravault.try_pendingSilo()
+    let claimableSilo = infravault.try_claimableSilo()
+    let epochId = infravault.try_epochId()
+
+    if (!pendingSiloCall.reverted && !claimableSilo.reverted && !epochId.reverted) {
+        return InfraVaultType.AMPHOR_ASYNC_VAULT
+    }
+
+    return InfraVaultType.UNKNOWN
+}
 
 export function getMetavault(
     metavaultWrapperAddress: Address,
@@ -48,9 +79,18 @@ function createMetavault(
     metavault.safeAddress = safeAddress
     metavault.address = safeAddress
     metavault.wrapperAddress = metavaultWrapperAddress
-    metavault.infraVaultAddress = MetavaultWrapper.bind(
+
+    const infravaultAddress = MetavaultWrapper.bind(
         metavaultWrapperAddress
     ).try_getInfraVault().value
+    const infravault = createInfravault(infravaultAddress, safeAddress)
+    metavault.infravault = infravault.id
+
+    MetavaultWrapper.bind(
+        metavaultWrapperAddress
+    ).try_getInfraVault().value
+
+    
     metavault.name = MetavaultWrapper.bind(
         metavaultWrapperAddress
     ).try_name().value

@@ -1,5 +1,6 @@
 import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
+import { MetavaultWrapper as MetavaultWrapperAbi } from "../../generated/Metavault/MetavaultWrapper"
 import { AccountAsset, Future } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
 import { AssetType, generateAccountAssetId } from "../utils"
@@ -27,7 +28,7 @@ export function createAccountAsset(
 
     accountAsset.createdAtTimestamp = timestamp
     accountAsset.balance = ZERO_BI
-    accountAsset.epochID = ZERO_BI
+    accountAsset.epochId = ZERO_BI
 
     let asset = getAsset(assetAddress.toHex(), timestamp, type, assetId)
     let account = getAccount(accountAddress.toHex(), timestamp)
@@ -219,6 +220,9 @@ export function updateAccountMetavaultRequest(
     } else {
         throw new Error("Invalid operation: " + operation)
     }
+    const epochId =
+        MetavaultWrapperAbi.bind(metavaultAddress).try_epochId().value
+    accountAsset.epochId = epochId
     accountAsset.save()
     return accountAsset
 }

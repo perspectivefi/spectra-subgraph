@@ -27,6 +27,25 @@ dataSources:
       eventHandlers:
         - event: FactoryChange(indexed address,indexed address)
           handler: handleFactoryChange
+  - name: SpectraToken
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: ERC20
+      address: '{{ spectra }}'
+      startBlock: {{ startBlock }}
+    mapping:
+      kind: ethereum/events
+      language: wasm/assemblyscript
+      apiVersion: 0.0.6
+      entities: [ ]
+      file: ./src/mappings/transfers.ts
+      abis:
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
   - name: MetavaultsRegistry
     kind: ethereum/contract
     network: {{ network }}
@@ -427,5 +446,24 @@ templates:
           handler: handleDeposit
         - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleWithdraw
-        - event: ClaimPendingDeposit(indexed uint256,indexed uint256,indexed uint256)
-          handler: handleClaimPendingDeposit
+  - name: AmphorAsyncVault
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: AmphorAsyncVault
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities: [ ]
+      file: ./src/mappings/metavaults/amphorAsyncVault.ts
+      abis:
+        - name: ERC4626
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+        - name: AmphorAsyncVault
+          file: ./abis/AmphorAsyncVault.json
+      eventHandlers:
+        - event: EpochStart(indexed uint256,uint256,uint256)
+          handler: handleEpochStart

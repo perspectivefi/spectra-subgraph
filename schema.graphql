@@ -191,7 +191,7 @@ type AccountAsset @entity(immutable: false) {
     principalToken: Future
     "if YT position generating yield or current yield > 0"
     generatedYield: Boolean
-    epochID: BigInt
+    epochId: BigInt
     #    fytTokenDetails: FYTTokenDetails
 }
 
@@ -240,6 +240,7 @@ type Future @entity(immutable: false) {
 
     "YT asset with balance > 0 or current yield > 0"
     yieldGenerators: [AccountAsset!]!
+    ytAsset: Asset!
 }
 
 "FeeClaim entity to list claims triggered on an future by a account"
@@ -641,6 +642,18 @@ type MetavaultEpoch @entity(immutable: false) {
     metavault: Metavault!
 }
 
+enum InfravaultType {
+    AMPHOR_ASYNC_VAULT
+    UNKNOWN
+}
+
+type Infravault @entity(immutable: false) {
+    id: ID!
+    address: Bytes!
+    metavault: Metavault!
+    type: InfravaultType!
+}
+
 type Metavault @entity(immutable: false) {
     # Metavault Static details
     id: ID!
@@ -651,7 +664,7 @@ type Metavault @entity(immutable: false) {
     safeAddress: Bytes! # The SAFE owner of the wrapper
 
     # Metavault State
-    infraVaultAddress: Bytes! # The infra vault address underneath the wrapper
+    infravault: Infravault! # The infra vault address underneath the wrapper
     markets: [Pool!]! # The markets registered to the metavault
     isMetavaultRegistered: Boolean! # Is the metavault registered to the metavault registry
     chains: [RemoteMetavault!]! # The chains registered to the metavault
