@@ -223,6 +223,7 @@ export function updateAccountMetavaultRequest(
     const epochId =
         MetavaultWrapperAbi.bind(metavaultAddress).try_epochId().value
     accountAsset.epochId = epochId
+    accountAsset.createdAtTimestamp = timestamp
     accountAsset.save()
     return accountAsset
 }
