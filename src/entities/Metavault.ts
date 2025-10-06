@@ -7,6 +7,7 @@ import {
     MetavaultEpoch,
     Infravault,
 } from "../../generated/schema"
+import { AmphorAsyncVault as AmphorAsyncVaultTemplate } from "../../generated/templates"
 import { AmphorAsyncVault } from "../../generated/templates/AmphorAsyncVault/AmphorAsyncVault"
 import { InfraVaultType } from "../utils"
 import { AssetType } from "../utils"
@@ -22,6 +23,11 @@ export function createInfravault(
     infravault.type = inferInfravaultType(infravaultAddress)
     infravault.metavault = metavaultAddress.toHex()
     infravault.save()
+
+    if (infravault.type == InfraVaultType.AMPHOR_ASYNC_VAULT) {
+        AmphorAsyncVaultTemplate.create(infravaultAddress)
+    }
+
     return infravault
 }
 

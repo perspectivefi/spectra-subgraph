@@ -447,6 +447,8 @@ templates:
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
         - name: ERC20
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+        - name: MetavaultWrapper
+          file: ./abis/MetavaultWrapper.json
         - name: AmphorAsyncVault
           file: ./abis/AmphorAsyncVault.json
       eventHandlers:
