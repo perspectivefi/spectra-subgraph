@@ -39,7 +39,11 @@ export function handleTransfer(event: TransferEvent): void {
     transfer.gasLimit = event.transaction.gasLimit
     transfer.gasPrice = event.transaction.gasPrice
 
-    const asset = getAsset(event.address.toHex(), eventTimestamp, AssetType.UNKNOWN)
+    const asset = getAsset(
+        event.address.toHex(),
+        eventTimestamp,
+        AssetType.UNKNOWN
+    )
 
     if (asset) {
         let amountOut = getAssetAmount(

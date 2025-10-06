@@ -1,11 +1,16 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts"
 
 import { MetavaultWrapper } from "../../generated/Metavault/MetavaultWrapper"
-import { Account, Metavault, MetavaultEpoch, Infravault } from "../../generated/schema"
+import {
+    Account,
+    Metavault,
+    MetavaultEpoch,
+    Infravault,
+} from "../../generated/schema"
+import { AmphorAsyncVault } from "../../generated/templates/AmphorAsyncVault/AmphorAsyncVault"
 import { InfraVaultType } from "../utils"
 import { AssetType } from "../utils"
 import { getAsset } from "./Asset"
-import { AmphorAsyncVault } from "../../generated/templates/AmphorAsyncVault/AmphorAsyncVault"
 
 export function createInfravault(
     infravaultAddress: Address,
@@ -20,16 +25,18 @@ export function createInfravault(
     return infravault
 }
 
-export function inferInfravaultType(
-    infravaultAddress: Address
-): string {
+export function inferInfravaultType(infravaultAddress: Address): string {
     const infravault = AmphorAsyncVault.bind(infravaultAddress)
 
     let pendingSiloCall = infravault.try_pendingSilo()
     let claimableSilo = infravault.try_claimableSilo()
     let epochId = infravault.try_epochId()
 
-    if (!pendingSiloCall.reverted && !claimableSilo.reverted && !epochId.reverted) {
+    if (
+        !pendingSiloCall.reverted &&
+        !claimableSilo.reverted &&
+        !epochId.reverted
+    ) {
         return InfraVaultType.AMPHOR_ASYNC_VAULT
     }
 
@@ -86,11 +93,8 @@ function createMetavault(
     const infravault = createInfravault(infravaultAddress, safeAddress)
     metavault.infravault = infravault.id
 
-    MetavaultWrapper.bind(
-        metavaultWrapperAddress
-    ).try_getInfraVault().value
+    MetavaultWrapper.bind(metavaultWrapperAddress).try_getInfraVault().value
 
-    
     metavault.name = MetavaultWrapper.bind(
         metavaultWrapperAddress
     ).try_name().value

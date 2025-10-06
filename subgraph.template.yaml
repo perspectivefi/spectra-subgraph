@@ -27,25 +27,6 @@ dataSources:
       eventHandlers:
         - event: FactoryChange(indexed address,indexed address)
           handler: handleFactoryChange
-  - name: SpectraToken
-    kind: ethereum/contract
-    network: {{ network }}
-    source:
-      abi: ERC20
-      address: '{{ spectra }}'
-      startBlock: {{ startBlock }}
-    mapping:
-      kind: ethereum/events
-      language: wasm/assemblyscript
-      apiVersion: 0.0.6
-      entities: [ ]
-      file: ./src/mappings/transfers.ts
-      abis:
-        - name: ERC20
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
-      eventHandlers:
-        - event: Transfer(indexed address,indexed address,uint256)
-          handler: handleTransfer
   - name: MetavaultsRegistry
     kind: ethereum/contract
     network: {{ network }}
@@ -112,6 +93,10 @@ dataSources:
           file: ./abis/MetavaultWrapper.json
         - name: ERC20
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+        - name: MetavaultWrapper
+          file: ./abis/MetavaultWrapper.json
+        - name: AmphorAsyncVault
+          file: ./abis/AmphorAsyncVault.json
       eventHandlers:
         - event: MetaVaultWrapperInitialized(indexed address,indexed address,indexed address)
           handler: handleMetaVaultWrapperInitialized
