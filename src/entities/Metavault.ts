@@ -11,6 +11,7 @@ import { AmphorAsyncVault as AmphorAsyncVaultTemplate } from "../../generated/te
 import { AmphorAsyncVault } from "../../generated/templates/AmphorAsyncVault/AmphorAsyncVault"
 import { InfraVaultType } from "../utils"
 import { AssetType } from "../utils"
+import { getAccount } from "./Account"
 import { getAsset } from "./Asset"
 
 export function createInfravault(
@@ -49,83 +50,88 @@ export function inferInfravaultType(infravaultAddress: Address): string {
     return InfraVaultType.UNKNOWN
 }
 
-export function getMetavault(
+export function getMetavaultFromWrapper(
     metavaultWrapperAddress: Address,
     timestamp: BigInt,
-    blockNumber: BigInt,
-    type: string
+    blockNumber: BigInt
 ): Metavault {
     let safeAddress = MetavaultWrapper.bind(metavaultWrapperAddress).try_owner()
         .value
-    let metavault = Metavault.load(safeAddress.toHex())
+    let metavault = getMetavault(safeAddress, timestamp, blockNumber)
+    if (metavault.wrapperAddress) {
+        // metavault already exists and has a wrapper assigned
+        return metavault
+    }
+
+    // metavault does not have a wrapper assigned yet, fill remaining fields
+    {
+        metavault.wrapperAddress = metavaultWrapperAddress
+        const infravaultAddress = MetavaultWrapper.bind(
+            metavaultWrapperAddress
+        ).try_getInfraVault().value
+        const infravault = createInfravault(infravaultAddress, safeAddress)
+        metavault.infravault = infravault.id
+        metavault.name = MetavaultWrapper.bind(
+            metavaultWrapperAddress
+        ).try_name().value
+        metavault.symbol = MetavaultWrapper.bind(
+            metavaultWrapperAddress
+        ).try_symbol().value
+        metavault.decimals = MetavaultWrapper.bind(
+            metavaultWrapperAddress
+        ).try_decimals().value
+        let underlyingAddress = MetavaultWrapper.bind(
+            metavaultWrapperAddress
+        ).try_asset().value
+        let underlyingAsset = getAsset(
+            underlyingAddress.toHex(),
+            timestamp,
+            AssetType.UNDERLYING
+        )
+        underlyingAsset.save()
+        metavault.underlying = underlyingAsset.address.toHex()
+        // create the wrapper token asset type
+        getAsset(
+            metavaultWrapperAddress.toHex(),
+            timestamp,
+            AssetType.MV_SHARES
+        )
+        metavault.save()
+    }
+
+    return metavault as Metavault
+}
+
+export function getMetavault(
+    metavaultAddress: Address,
+    timestamp: BigInt,
+    blockNumber: BigInt
+): Metavault {
+    let metavault = Metavault.load(metavaultAddress.toHex())
     if (metavault) {
         return metavault
     }
 
-    metavault = createMetavault(
-        metavaultWrapperAddress,
-        timestamp,
-        blockNumber,
-        type
-    )
-    // create the wrapper token asset type
-    let wrapperToken = getAsset(
-        metavaultWrapperAddress.toHex(),
-        timestamp,
-        AssetType.MV_SHARES
-    )
+    metavault = createMetavault(metavaultAddress, timestamp, blockNumber)
     return metavault as Metavault
 }
 
 function createMetavault(
-    metavaultWrapperAddress: Address,
+    metavaultAddress: Address,
     timestamp: BigInt,
-    blockNumber: BigInt,
-    type: string
+    blockNumber: BigInt
 ): Metavault {
-    let safeAddress = MetavaultWrapper.bind(metavaultWrapperAddress).try_owner()
-        .value
-    let metavault = new Metavault(safeAddress.toHex())
+    let metavault = new Metavault(metavaultAddress.toHex())
     metavault.createdAtTimestamp = timestamp
     metavault.createdAtBlock = blockNumber
     metavault.isMetavaultRegistered = false
-    metavault.safeAddress = safeAddress
-    metavault.address = safeAddress
-    metavault.wrapperAddress = metavaultWrapperAddress
+    metavault.safeAddress = metavaultAddress
+    metavault.address = metavaultAddress
 
-    const infravaultAddress = MetavaultWrapper.bind(
-        metavaultWrapperAddress
-    ).try_getInfraVault().value
-    const infravault = createInfravault(infravaultAddress, safeAddress)
-    metavault.infravault = infravault.id
-
-    MetavaultWrapper.bind(metavaultWrapperAddress).try_getInfraVault().value
-
-    metavault.name = MetavaultWrapper.bind(
-        metavaultWrapperAddress
-    ).try_name().value
-    metavault.symbol = MetavaultWrapper.bind(
-        metavaultWrapperAddress
-    ).try_symbol().value
-    metavault.decimals = MetavaultWrapper.bind(
-        metavaultWrapperAddress
-    ).try_decimals().value
-
-    let underlyingAddress = MetavaultWrapper.bind(
-        metavaultWrapperAddress
-    ).try_asset().value
-    let underlyingAsset = getAsset(
-        underlyingAddress.toHex(),
-        timestamp,
-        AssetType.UNDERLYING
-    )
-    underlyingAsset.save()
-
-    metavault.underlying = underlyingAsset.address.toHex()
     metavault.markets = []
     metavault.chains = []
 
-    let account = new Account(safeAddress.toHex())
+    let account = getAccount(metavaultAddress.toHex(), timestamp)
     metavault.account = account.id
 
     metavault.save()

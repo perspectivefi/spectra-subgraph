@@ -9,26 +9,24 @@ import {
     Deposit,
     Withdraw,
 } from "../../../generated/Metavault/MetavaultWrapper"
-import { MetavaultWrapper as MetavaultWrapperAbi } from "../../../generated/Metavault/MetavaultWrapper"
 import { MetavaultWrapper } from "../../../generated/templates"
 import { ERC20 } from "../../../generated/templates"
 import { ZERO_BI } from "../../constants"
 import { updateAccountMetavaultRequest } from "../../entities/AccountAsset"
-import { getMetavault } from "../../entities/Metavault"
+import { getMetavaultFromWrapper } from "../../entities/Metavault"
 import { AssetType } from "../../utils"
 
 export function handleMetaVaultWrapperInitialized(
     event: MetaVaultWrapperInitialized
 ): void {
-    let metavaultWrapper = getMetavault(
+    let metavault = getMetavaultFromWrapper(
         event.address,
         event.block.timestamp,
-        event.block.number,
-        "MetavaultWrapper"
+        event.block.number
     )
 
-    metavaultWrapper.wrapperAddress = event.address // if Metavault was created with a different wrapper previously, update it to the new one
-    metavaultWrapper.save()
+    metavault.wrapperAddress = event.address // if Metavault was created with a different wrapper previously, update it to the new one
+    metavault.save()
     MetavaultWrapper.create(event.address)
     ERC20.create(event.address)
 }

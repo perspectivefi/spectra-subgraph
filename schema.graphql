@@ -654,26 +654,27 @@ type Infravault @entity(immutable: false) {
     type: InfravaultType!
 }
 
+# Metavault Entity - Some fields can be null depending on the metavault type, e.g. remote metavaults do not hold vault state, only positions
 type Metavault @entity(immutable: false) {
     # Metavault Static details
     id: ID!
     createdAtBlock: BigInt!
     createdAtTimestamp: BigInt!
-    wrapperAddress: Bytes! # The wrapper address
+    wrapperAddress: Bytes # The wrapper address [empty if remote]
     address: Bytes! # The SAFE owner of the wrapper
     safeAddress: Bytes! # The SAFE owner of the wrapper
 
     # Metavault State
-    infravault: Infravault! # The infra vault address underneath the wrapper
+    infravault: Infravault! # The infra vault address underneath the wrapper [empty if remote]
     markets: [Pool!]! # The markets registered to the metavault
     isMetavaultRegistered: Boolean! # Is the metavault registered to the metavault registry
     chains: [RemoteMetavault!]! # The chains registered to the metavault
-    epochs: [MetavaultEpoch!]! @derivedFrom(field: "metavault")
-    account: Account!
+    epochs: [MetavaultEpoch!] @derivedFrom(field: "metavault") # [empty if remote]
+    account: Account # [empty if remote]
 
     # Metavault Underlying details
-    name: String!
-    symbol: String!
-    decimals: Int!
-    underlying: Asset! # The underlying asset address
+    name: String # [empty if remote]
+    symbol: String # [empty if remote]
+    decimals: Int # [empty if remote]
+    underlying: Asset # The underlying asset address [empty if remote]
 }
