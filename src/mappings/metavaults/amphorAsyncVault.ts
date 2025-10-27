@@ -1,13 +1,9 @@
 import { BigInt, Address } from "@graphprotocol/graph-ts"
 
-import {
-    EpochStart,
-} from "../../../generated/templates/AmphorAsyncVault/AmphorAsyncVault"
-
+import { Infravault, Metavault } from "../../../generated/schema"
+import { EpochStart } from "../../../generated/templates/AmphorAsyncVault/AmphorAsyncVault"
 import { AmphorAsyncVault } from "../../../generated/templates/AmphorAsyncVault/AmphorAsyncVault"
 import { createMetavaultEpoch } from "../../entities/Metavault"
-import { Infravault, Metavault } from "../../../generated/schema"
-
 
 export function handleEpochStart(event: EpochStart): void {
     const infravault = Infravault.load(event.address.toHex())
@@ -15,7 +11,8 @@ export function handleEpochStart(event: EpochStart): void {
         return
     }
     const metavault = Metavault.load(infravault.metavault)
-    if (!metavault) {
+    if (!metavault || !metavault.wrapperAddress) {
+        // a valid infravault without a metavault wrapper should not happen
         return
     }
     const lastSavedBalance = event.params.lastSavedBalance
@@ -24,7 +21,7 @@ export function handleEpochStart(event: EpochStart): void {
     const epochId = asyncVault.try_epochId().value
     const amphorSharesDecimals = asyncVault.try_decimals().value
     createMetavaultEpoch(
-        Address.fromBytes(metavault.wrapperAddress),
+        Address.fromBytes(metavault.wrapperAddress!),
         epochId,
         lastSavedBalance
             .times(BigInt.fromString("10").pow(amphorSharesDecimals as u8))

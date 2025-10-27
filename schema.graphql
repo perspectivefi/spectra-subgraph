@@ -665,7 +665,7 @@ type Metavault @entity(immutable: false) {
     safeAddress: Bytes! # The SAFE owner of the wrapper
 
     # Metavault State
-    infravault: Infravault! # The infra vault address underneath the wrapper [empty if remote]
+    infravault: Infravault # The infra vault address underneath the wrapper [empty if remote]
     markets: [Pool!]! # The markets registered to the metavault
     isMetavaultRegistered: Boolean! # Is the metavault registered to the metavault registry
     chains: [RemoteMetavault!]! # The chains registered to the metavault
