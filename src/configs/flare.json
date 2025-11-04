@@ -1,0 +1,10 @@
+{
+    "network": "flare",
+    "accessManager": "0xe644cfe77df63d08d4fb52c2508c9784e8baa3d7",
+    "limitOrderEngine": "0x0000000000000000000000000000000000000000",
+    "nonceManager": "0x0000000000000000000000000000000000000000",
+    "metavaultsRegistry": "0x0000000000000000000000000000000000000000",
+    "startBlock": 46466732,
+    "registry": "0x3da466f5be8024405a366538ed7949b4ce9f015d",
+    "spectra": "0x5390d7c6b8139ae9d255ed9e7ae6274e18032abe"
+}

@@ -14,6 +14,7 @@
         "codegen:hemi": "graph codegen subgraph.hemi.yaml",
         "codegen:hyperevm": "graph codegen subgraph.hyperevm.yaml",
         "codegen:katana": "graph codegen subgraph.katana.yaml",
+        "codegen:flare": "graph codegen subgraph.flare.yaml",
         "authorize": "graph auth https://api.thegraph.com/deploy/",
         "build": "graph build",
         "deploy": "graph deploy --studio spectra-mainnet subgraph.yaml",
@@ -35,6 +36,7 @@
         "generate-config:bsc": "node ./src/scripts/subgraphConfigGenerator.js bsc",
         "generate-config:hyperevm": "node ./src/scripts/subgraphConfigGenerator.js hyperevm",
         "generate-config:katana": "node ./src/scripts/subgraphConfigGenerator.js katana",
+        "generate-config:flare": "node ./src/scripts/subgraphConfigGenerator.js flare",
         "test": "graph test",
         "prettify": "prettier --write \"./**/*.{js,jsx,json,ts,tsx,css}\""
     },
