@@ -5,6 +5,7 @@ export function handleBridgeInitiated(event: BridgeInitiated): void {
     const metavaultBridgeInitiated = new MetavaultBridgeInitiated(
         event.transaction.hash.concatI32(event.logIndex.toI32())
     )
+    metavaultBridgeInitiated.operator = event.transaction.from
     metavaultBridgeInitiated.safe = event.params.safe
     metavaultBridgeInitiated.tokenIn = event.params.tokenIn
     metavaultBridgeInitiated.amount = event.params.amount

@@ -691,6 +691,7 @@ type Metavault @entity(immutable: false) {
 
 type MetavaultBridgeInitiated @entity(immutable: true) {
     id: Bytes!
+    operator: Bytes! # The operator that added the timelocked transaction
     safe: Bytes! # The safe address
     tokenIn: Bytes! # The token in address
     amount: BigInt! # The amount of tokens to bridge
