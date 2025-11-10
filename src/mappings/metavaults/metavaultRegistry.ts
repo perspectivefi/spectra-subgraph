@@ -1,3 +1,5 @@
+import { store } from "@graphprotocol/graph-ts"
+
 import {
     MetavaultRegistered,
     MetavaultUnregistered,
@@ -5,9 +7,20 @@ import {
     ChainUnregistered,
     MarketRegistered,
     MarketUnregistered,
+    BridgePathAllowed,
 } from "../../../generated/MetavaultsRegistry/MetavaultsRegistry"
-import { Metavault, Pool, RemoteMetavault } from "../../../generated/schema"
-import { getMetavault } from "../../entities/Metavault"
+import {
+    MetavaultBridgePath,
+    Pool,
+    RemoteMetavault,
+} from "../../../generated/schema"
+import { getAsset } from "../../entities/Asset"
+import {
+    createMetavaultBridgePath,
+    getMetavault,
+    getMetavaultBridgePathId,
+} from "../../entities/Metavault"
+import AssetType from "../../utils/AssetType"
 
 export function handleMetavaultRegistered(event: MetavaultRegistered): void {
     let metavault = getMetavault(
@@ -95,15 +108,52 @@ export function handleMarketUnregistered(event: MarketUnregistered): void {
         event.block.timestamp,
         event.block.number
     )
+    let index = metavault.markets.indexOf(poolAddress.toHex())
+    if (index > -1) {
+        // metavault.markets.splice(index, 1) does not work for some reason
+        let markets = metavault.markets
+        markets.splice(index, 1)
+        metavault.markets = markets
+        metavault.save()
+    }
+}
 
-    if (metavault) {
-        let index = metavault.markets.indexOf(poolAddress.toHex())
-        if (index > -1) {
-            // metavault.markets.splice(index, 1) does not work for some reason
-            let markets = metavault.markets
-            markets.splice(index, 1)
-            metavault.markets = markets
-            metavault.save()
-        }
+export function handleBridgePathAllowed(event: BridgePathAllowed): void {
+    getMetavault(
+        event.params.metavault,
+        event.block.timestamp,
+        event.block.number
+    )
+    getAsset(
+        event.params.tokenIn.toHex(),
+        event.block.timestamp,
+        AssetType.UNDERLYING
+    )
+    getAsset(
+        event.params.tokenOut.toHex(),
+        event.block.timestamp,
+        AssetType.UNDERLYING
+    )
+    createMetavaultBridgePath(
+        event.params.metavault,
+        event.params.tokenIn,
+        event.params.tokenOut,
+        event.params.dstChainId,
+        event.params.bridge
+    )
+}
+
+export function handleBridgePathRemoved(event: BridgePathAllowed): void {
+    let bridgePath = MetavaultBridgePath.load(
+        getMetavaultBridgePathId(
+            event.params.metavault,
+            event.params.tokenIn,
+            event.params.tokenOut,
+            event.params.dstChainId,
+            event.params.bridge
+        )
+    )
+    if (bridgePath) {
+        store.remove("MetavaultBridgePath", bridgePath.id)
     }
 }

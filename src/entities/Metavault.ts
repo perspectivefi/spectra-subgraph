@@ -6,6 +6,7 @@ import {
     Metavault,
     MetavaultEpoch,
     Infravault,
+    MetavaultBridgePath,
 } from "../../generated/schema"
 import { AmphorAsyncVault as AmphorAsyncVaultTemplate } from "../../generated/templates"
 import { AmphorAsyncVault } from "../../generated/templates/AmphorAsyncVault/AmphorAsyncVault"
@@ -164,4 +165,49 @@ export function createMetavaultEpoch(
 
     epochEntity.save()
     return epochEntity
+}
+
+export function getMetavaultBridgePathId(
+    metavaultAddress: Address,
+    tokenIn: Address,
+    tokenOut: Address,
+    dstChainId: BigInt,
+    bridgeAddress: Address
+): string {
+    return (
+        metavaultAddress.toHex() +
+        "-" +
+        tokenIn.toHex() +
+        "-" +
+        tokenOut.toHex() +
+        "-" +
+        dstChainId.toString() +
+        "-" +
+        bridgeAddress.toHex()
+    )
+}
+
+export function createMetavaultBridgePath(
+    metavaultAddress: Address,
+    tokenIn: Address,
+    tokenOut: Address,
+    dstChainId: BigInt,
+    bridgeAddress: Address
+): MetavaultBridgePath {
+    let bridgePathEntity = new MetavaultBridgePath(
+        getMetavaultBridgePathId(
+            metavaultAddress,
+            tokenIn,
+            tokenOut,
+            dstChainId,
+            bridgeAddress
+        )
+    )
+    bridgePathEntity.metavault = metavaultAddress.toHex()
+    bridgePathEntity.tokenIn = tokenIn.toHex()
+    bridgePathEntity.tokenOut = tokenOut.toHex()
+    bridgePathEntity.dstChainId = dstChainId.toI32()
+    bridgePathEntity.bridgeAddress = bridgeAddress
+    bridgePathEntity.save()
+    return bridgePathEntity
 }

@@ -633,6 +633,15 @@ type RemoteMetavault @entity(immutable: false) {
     remoteMetavaultAddress: Bytes!
 }
 
+type MetavaultBridgePath @entity(immutable: false) {
+    id: ID!
+    metavault: Metavault!
+    tokenIn: Asset!
+    tokenOut: Asset!
+    dstChainId: Int!
+    bridgeAddress: Bytes!
+}
+
 type MetavaultEpoch @entity(immutable: false) {
     id: ID!
     timestamp: BigInt!
@@ -669,6 +678,7 @@ type Metavault @entity(immutable: false) {
     markets: [Pool!]! # The markets registered to the metavault
     isMetavaultRegistered: Boolean! # Is the metavault registered to the metavault registry
     chains: [RemoteMetavault!]! # The chains registered to the metavault
+    bridgePaths: [MetavaultBridgePath!] @derivedFrom(field: "metavault")
     epochs: [MetavaultEpoch!] @derivedFrom(field: "metavault") # [empty if remote]
     account: Account # [empty if remote]
 

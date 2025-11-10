@@ -43,6 +43,8 @@ dataSources:
       abis:
         - name: MetavaultsRegistry
           file: ./abis/MetavaultsRegistry.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
       eventHandlers:
         - event: MetavaultRegistered(indexed address)
           handler: handleMetavaultRegistered
@@ -56,6 +58,10 @@ dataSources:
           handler: handleMarketRegistered
         - event: MarketUnregistered(indexed address,indexed address)
           handler: handleMarketUnregistered
+        - event: BridgePathAllowed(indexed address,indexed address,address,indexed uint32,address)
+          handler: handleBridgePathAllowed
+        - event: BridgePathRemoved(indexed address,indexed address,address,indexed uint32,address)
+          handler: handleBridgePathRemoved
   - name: SpectraWrapper
     kind: ethereum/contract
     network: {{network}}
