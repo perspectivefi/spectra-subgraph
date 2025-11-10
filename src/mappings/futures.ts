@@ -113,7 +113,6 @@ export function handlePTDeployed(event: PTDeployed): void {
     newFuture.ibtAsset = ibtAddress.toHex()
     newFuture.yieldGenerators = []
 
-    
     // PT Asset - Future relation
     let ptToken = getAsset(
         event.params.pt.toHex(),
@@ -122,7 +121,7 @@ export function handlePTDeployed(event: PTDeployed): void {
     )
     ptToken.futureVault = event.params.pt.toHex()
     ptToken.save()
-    
+
     // YT Asset - Future relation
     let ytToken = getAsset(
         getYT(event.params.pt).toHex(),

@@ -695,9 +695,13 @@ type MetavaultBridgeInitiated @entity(immutable: true) {
     safe: Bytes! # The safe address
     tokenIn: Bytes! # The token in address
     amount: BigInt! # The amount of tokens to bridge
+    tokenInDecimals: Int! # The decimals of the token in
+    tokenInSymbol: String! # The symbol of the token in
+    tokenInName: String! # The name of the token in
     dstChainId: Int! # The destination chain id
     dstSafe: Bytes! # The destination safe address
-    bridge: String! # The bridge name
+    bridge: Bytes! # The bridge name
+    bridgeType: String! # The bridge type
     tokenOut: Bytes! # The token out address
     metavault: Metavault! # The metavault that initiated the bridge
     timestamp: BigInt! # The timestamp of the event
