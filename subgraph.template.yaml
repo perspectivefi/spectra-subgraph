@@ -202,6 +202,8 @@ dataSources:
       abis:
         - name: BridgeInterfaceCCTP
           file: ./abis/BridgeInterfaceCCTP.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
       eventHandlers:
         - event: BridgeInitiated(indexed address,indexed address,uint256,indexed uint32,address,string,address)
           handler: handleBridgeInitiated
@@ -494,6 +496,8 @@ templates:
         - name: GnosisSAFE
           file: ./abis/GnosisSAFE.json
       eventHandlers:
+        - event: EnabledModule(indexed address)
+          handler: handleEnabledModule
         - event: EnabledModule(address)
           handler: handleEnabledModule
   - name: GnosisSafeModule
