@@ -688,3 +688,49 @@ type Metavault @entity(immutable: false) {
     decimals: Int # [empty if remote]
     underlying: Asset # The underlying asset address [empty if remote]
 }
+
+type MetavaultBridgeInitiated @entity(immutable: true) {
+    id: Bytes!
+    operator: Bytes! # The operator that added the timelocked transaction
+    safe: Bytes! # The safe address
+    tokenIn: Bytes! # The token in address
+    amount: BigInt! # The amount of tokens to bridge
+    tokenInDecimals: Int! # The decimals of the token in
+    tokenInSymbol: String! # The symbol of the token in
+    tokenInName: String! # The name of the token in
+    dstChainId: Int! # The destination chain id
+    dstSafe: Bytes! # The destination safe address
+    bridge: Bytes! # The bridge name
+    bridgeType: String! # The bridge type
+    tokenOut: Bytes! # The token out address
+    metavault: Metavault! # The metavault that initiated the bridge
+    timestamp: BigInt! # The timestamp of the event
+    blockNumber: BigInt! # The block number of the event
+    transactionHash: Bytes! # The transaction hash of the event
+    logIndex: BigInt! # The log index of the event
+}
+
+type MetavaultModule @entity(immutable: true) {
+    id: Bytes! 
+    address: Bytes! # the address of the module
+    metavault: Metavault! # The metavault the module is binded to
+}
+
+
+type TimelockedTransactionAdded @entity(immutable: true) {
+    id: Bytes!
+    operator: Bytes! # The operator that added the timelocked transaction
+    metavault: Metavault! # The metavault that initiated the bridge
+    queueNonce: BigInt! # The nonce for the queue
+    timelockedTransactionHash: Bytes! # The hash of the timelocked transaction
+    to: Bytes! # The address to call
+    value: BigInt! # The value to send
+    data: Bytes! # The data to send
+    operation: Int! # The operation type
+    nonce: BigInt! # The nonce for this operation
+    timestamp: BigInt! # The timestamp of the event
+    blockNumber: BigInt! # The block number of the event
+    transactionHash: Bytes! # The transaction hash of the event
+    logIndex: BigInt! # The log index of the event
+    delayModule: Bytes! # Address of the delay module
+}

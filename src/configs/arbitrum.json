@@ -6,5 +6,6 @@
     "metavaultsRegistry": "0x2154A519D08Bfd3F6E0303Fd3AC0511c58424bbE",
     "startBlock": 204418891,
     "registry": "0x786Da12e9836a9ff9b7d92e8bac1C849e2ACe378",
-    "spectra": "0x64fcc3a02eeeba05ef701b7eed066c6ebd5d4e51"
+    "spectra": "0x64fcc3a02eeeba05ef701b7eed066c6ebd5d4e51",
+    "bridgeCCTP": "0x0C95de2C03A4Bd4eFaeAE697d7Ff897A1bb3992f"
 }

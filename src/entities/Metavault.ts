@@ -8,7 +8,10 @@ import {
     Infravault,
     MetavaultBridgePath,
 } from "../../generated/schema"
-import { AmphorAsyncVault as AmphorAsyncVaultTemplate } from "../../generated/templates"
+import {
+    AmphorAsyncVault as AmphorAsyncVaultTemplate,
+    GnosisSafe,
+} from "../../generated/templates"
 import { AmphorAsyncVault } from "../../generated/templates/AmphorAsyncVault/AmphorAsyncVault"
 import { InfraVaultType } from "../utils"
 import { AssetType } from "../utils"
@@ -136,6 +139,7 @@ function createMetavault(
     metavault.account = account.id
 
     metavault.save()
+    GnosisSafe.create(Address.fromBytes(metavault.safeAddress))
     return metavault
 }
 
