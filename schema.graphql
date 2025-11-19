@@ -716,7 +716,6 @@ type MetavaultModule @entity(immutable: true) {
     metavault: Metavault! # The metavault the module is binded to
 }
 
-
 type TimelockedTransactionAdded @entity(immutable: true) {
     id: Bytes!
     operator: Bytes! # The operator that added the timelocked transaction
@@ -733,4 +732,18 @@ type TimelockedTransactionAdded @entity(immutable: true) {
     transactionHash: Bytes! # The transaction hash of the event
     logIndex: BigInt! # The log index of the event
     delayModule: Bytes! # Address of the delay module
+}
+
+type MetavaultTransaction @entity(immutable: true) {
+    id: Bytes!
+    metavault: Metavault! # The metavault that initiated the transaction
+    to: Bytes! # The address to call
+    value: BigInt! # The value to send
+    data: Bytes! # The data to send
+    operation: Int! # The operation type
+    module: MetavaultModule # The module that initiated the transaction
+    timestamp: BigInt! # The timestamp of the event
+    blockNumber: BigInt! # The block number of the event
+    transactionHash: Bytes! # The transaction hash of the event
+    logIndex: BigInt! # The log index of the event
 }

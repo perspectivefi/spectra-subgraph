@@ -500,6 +500,10 @@ templates:
           handler: handleEnabledModule
         - event: EnabledModule(address)
           handler: handleEnabledModule
+        - event: SafeModuleTransaction(address,address,uint256,bytes,uint8)
+          handler: handleSafeModuleTransaction
+        - event: SafeMultiSigTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes,bytes)
+          handler: handleSafeMultiSigTransaction
   - name: GnosisSafeModule
     kind: ethereum/contract
     network: {{ network }}
