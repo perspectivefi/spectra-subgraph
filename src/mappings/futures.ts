@@ -4,7 +4,6 @@ import { FeeClaim, Future, Factory } from "../../generated/schema"
 import {
     ERC20,
     PrincipalToken as PrincipalTokenTemplate,
-    IBT,
     CurvePool as CurvePoolTemplate,
 } from "../../generated/templates"
 import {

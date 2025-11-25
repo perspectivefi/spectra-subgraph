@@ -4,8 +4,7 @@
     "limitOrderEngine": "0x0000000000000000000000000000000000000000",
     "nonceManager": "0x0000000000000000000000000000000000000000",
     "metavaultsRegistry": "0x07766e55057e34A35b32Ce8425e0395eA2dBbf39",
-    "startBlock": 12000000,
-    "deploymentBlock": 16537641,
+    "startBlock": 16537641,
     "registry": "0x786Da12e9836a9ff9b7d92e8bac1C849e2ACe378",
     "spectra": "0x64fcc3a02eeeba05ef701b7eed066c6ebd5d4e51",
     "bridgeCCTP": "0x220b826343e37c8d7146a0b347e0e22436770c75"

@@ -6,31 +6,13 @@ schema:
 features:
   - nonFatalErrors
 dataSources:
-  - name: BlockIndexer
-    kind: ethereum/contract
-    network: {{ network }}
-    source:
-      abi: Registry
-      address: '{{ registry }}'
-      startBlock: {{ startBlock }}
-    mapping:
-      kind: ethereum/events
-      language: wasm/assemblyscript
-      apiVersion: 0.0.6
-      entities: [ ]
-      file: ./src/mappings/blocks.ts
-      abis:
-        - name: Registry
-          file: ./abis/Registry.json
-      blockHandlers:
-        - handler: handleBlock
   - name: Registry
     kind: ethereum/contract
     network: {{ network }}
     source:
       abi: Registry
       address: '{{ registry }}'
-      startBlock: {{ deploymentBlock }}
+      startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
@@ -51,7 +33,7 @@ dataSources:
     source:
       abi: MetavaultsRegistry
       address: '{{ metavaultsRegistry }}'
-      startBlock: {{ deploymentBlock }}
+      startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
@@ -85,7 +67,7 @@ dataSources:
     network: {{network}}
     source:
       abi: Spectra4626Wrapper
-      startBlock: {{ deploymentBlock }}
+      startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -105,7 +87,7 @@ dataSources:
     network: {{network}}
     source:
       abi: MetavaultWrapper
-      startBlock: {{ deploymentBlock }}
+      startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -130,7 +112,7 @@ dataSources:
     source:
       abi: LimitOrderEngine
       address: '{{ limitOrderEngine }}'
-      startBlock: {{ deploymentBlock }}
+      startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
@@ -169,7 +151,7 @@ dataSources:
     source:
       abi: AccessManager
       address: '{{ accessManager }}'
-      startBlock: {{ deploymentBlock }}
+      startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
@@ -210,7 +192,7 @@ dataSources:
     source:
       abi: BridgeInterfaceCCTP
       address: '{{ bridgeCCTP }}'
-      startBlock: {{ deploymentBlock }}
+      startBlock: {{ startBlock }}
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript

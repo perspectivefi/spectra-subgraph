@@ -39,7 +39,7 @@ This script will generate files like `subgraph.mainnet.yaml`, `subgraph.arbitrum
 To add support for a new network:
 
 1. Create a new configuration file in `src/configs/<network-name>.json`.
-2. Populate it with the required contract addresses and start blocks. You can copy an existing config (e.g., `src/configs/mainnet.json`) as a template. `deploymentBlock` is the block where the first Spectra-related contract was deployed on the target network, and `startBlock` is when blocks should start being indexed (should be around 90 days before deploymentBlock to give a good margin for historical data).
+2. Populate it with the required contract addresses and start blocks. You can copy an existing config (e.g., `src/configs/mainnet.json`) as a template. `startBlock` is the block where the first Spectra-related contract was deployed on the target network.
 3. Add the network to `src/utils/ChainIds.ts` if it is not already present.
 4. Run `yarn gen:config` to generate the new `subgraph.<network-name>.yaml` file.
 
@@ -83,7 +83,6 @@ graph deploy --product hosted-service <GITHUB_USER>/<SUBGRAPH_NAME> <subgraph-fi
 -   **LimitOrder**: Tracks limit orders via the LimitOrderEngine.
 -   **Account**: User accounts and their portfolios.
 -   **Asset**: Tokens and assets indexed by the subgraph.
--   **Block**: Indexes blocks to track timestamps and numbers, enabling time-travel queries.
 
 ## Testing
 
