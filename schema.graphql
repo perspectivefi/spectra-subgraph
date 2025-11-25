@@ -63,6 +63,13 @@ enum FutureState {
 # High level detail entities
 ####################
 
+"Block entity to store block details"
+type Block @entity(immutable: false) {
+  id: ID!
+  number: BigInt!
+  timestamp: BigInt!
+}
+
 "Platform entity to define IBT/FutureVault platform"
 # possibility to add new platforms without subgraph update)
 type Platform @entity(immutable: false) {

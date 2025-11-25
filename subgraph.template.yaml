@@ -6,13 +6,31 @@ schema:
 features:
   - nonFatalErrors
 dataSources:
-  - name: Registry
+  - name: BlockIndexer
     kind: ethereum/contract
     network: {{ network }}
     source:
       abi: Registry
       address: '{{ registry }}'
       startBlock: {{ startBlock }}
+    mapping:
+      kind: ethereum/events
+      language: wasm/assemblyscript
+      apiVersion: 0.0.6
+      entities: [ ]
+      file: ./src/mappings/blocks.ts
+      abis:
+        - name: Registry
+          file: ./abis/Registry.json
+      blockHandlers:
+        - handler: handleBlock
+  - name: Registry
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: Registry
+      address: '{{ registry }}'
+      startBlock: {{ deploymentBlock }}
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
@@ -33,7 +51,7 @@ dataSources:
     source:
       abi: MetavaultsRegistry
       address: '{{ metavaultsRegistry }}'
-      startBlock: {{ startBlock }}
+      startBlock: {{ deploymentBlock }}
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
@@ -67,7 +85,7 @@ dataSources:
     network: {{network}}
     source:
       abi: Spectra4626Wrapper
-      startBlock: {{ startBlock }}
+      startBlock: {{ deploymentBlock }}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -87,7 +105,7 @@ dataSources:
     network: {{network}}
     source:
       abi: MetavaultWrapper
-      startBlock: {{ startBlock }}
+      startBlock: {{ deploymentBlock }}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -112,7 +130,7 @@ dataSources:
     source:
       abi: LimitOrderEngine
       address: '{{ limitOrderEngine }}'
-      startBlock: {{ startBlock }}
+      startBlock: {{ deploymentBlock }}
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
@@ -151,7 +169,7 @@ dataSources:
     source:
       abi: AccessManager
       address: '{{ accessManager }}'
-      startBlock: {{ startBlock }}
+      startBlock: {{ deploymentBlock }}
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
@@ -192,7 +210,7 @@ dataSources:
     source:
       abi: BridgeInterfaceCCTP
       address: '{{ bridgeCCTP }}'
-      startBlock: {{ startBlock }}
+      startBlock: {{ deploymentBlock }}
     mapping:
       kind: ethereum/events
       language: wasm/assemblyscript
@@ -266,27 +284,6 @@ templates:
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-  - name: IBT
-    kind: ethereum/contract
-    network: {{ network }}
-    source:
-      abi: ERC4626
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      entities: [ ]
-      file: ./src/mappings/transfers.ts
-      abis:
-        - name: ERC20
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
-        - name: ERC4626
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
-        - name: PrincipalToken
-          file: ./abis/PrincipalToken.json
-      eventHandlers:
-        - event: Transfer(indexed address,indexed address,uint256)
-          handler: handleIBTTransfer
   - name: PrincipalToken
     kind: ethereum/contract
     network: {{ network }}
@@ -398,7 +395,7 @@ templates:
       kind: ethereum/events
       apiVersion: 0.0.6
       language: wasm/assemblyscript
-      entities: []
+      entities: [ ]
       file: ./src/mappings/wrappers.ts
       abis:
         - name: Spectra4626Wrapper

@@ -136,9 +136,6 @@ export function handlePTDeployed(event: PTDeployed): void {
     // Create dynamic data source for PT token events
     ERC20.create(event.params.pt)
 
-    // Create dynamic data source for IBT token events
-    IBT.create(ibtAddress)
-
     // Create dynamic data source for YT token events
     ERC20.create(Address.fromBytes(ytToken.address))
 

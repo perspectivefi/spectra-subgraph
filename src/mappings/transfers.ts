@@ -98,12 +98,3 @@ export function handleTransfer(event: TransferEvent): void {
         ])
     }
 }
-
-/** @dev Handles the Transfer event for IBT tokens.
- * @param event The Transfer event.
- * @notice We use a separate function for IBT tokens because to limit the number of entities stored we won't store all IBT transfer entities. We will simply update the IBT entity to update its IBTRate.
- * @returns void
- */
-export function handleIBTTransfer(event: TransferEvent): void {
-    updateIBTRates(event.address, event.block.timestamp)
-}
