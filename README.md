@@ -1,193 +1,93 @@
 # Spectra Subgraph
 
-[Spectra](https://www.spectra.finance/) is the ultimate marketplace for yield derivatives and the first protocol for future yield tokenisation.
-
-## Networks and Performance
-
-This subgraph can be found on The Graph Hosted Service for the following networks:
-
--   [Mainnet](https://api.studio.thegraph.com/query/75970/spectra-mainnet/version/latest)
--   [Arbitrum](https://api.studio.thegraph.com/query/75970/spectra-arbitrum/version/latest)
--   [Sepolia](https://api.studio.thegraph.com/query/75970/spectra-sepolia/version/latest)
-
-You can also run this subgraph locally, if you wish. Instructions for that can be found in [The Graph Documentation](https://thegraph.com/docs/en/cookbook/quick-start/).
+This repository contains the source code for the Spectra Protocol Subgraph. It indexes data from the Spectra Protocol smart contracts, including Futures, Pools (AMMs), Metavaults, Limit Orders, Access Management, and Blocks.
 
 ## Prerequisites
 
--   [Foundry](https://getfoundry.sh/), along with `anvil` (included)
--   The [IPFS CLI](https://docs.ipfs.tech/install/command-line/)
--   A running instance of [Postgres](https://www.postgresql.org/docs/current/server-start.html)
-    -   The quickest way to get this up and running is through the official [Docker image](https://hub.docker.com/_/postgres) (`docker run -it --rm --network some-network postgres psql -h some-postgres -U postgres`).
--   The [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) Rust package manager
--   The [Graph CLI](https://thegraph.com/docs/en/cookbook/quick-start/)
+-   [Node.js](https://nodejs.org/)
+-   [Yarn](https://yarnpkg.com/)
+-   [Graph CLI](https://github.com/graphprotocol/graph-cli)
 
-## Setup
+## Installation
 
-### 1. Install subgraph dependencies
+1. Clone the repository:
 
-```properties
-yarn
+    ```bash
+    git clone https://github.com/perspectivefi/spectra-subgraph.git
+    cd spectra-subgraph
+    ```
+
+2. Install dependencies:
+    ```bash
+    yarn install
+    ```
+
+## Configuration & Generation
+
+This project uses a template-based approach to generate `subgraph.yaml` files for different networks.
+
+To generate configurations for all supported networks (found in `src/configs/*.json`):
+
+```bash
+yarn gen:config
 ```
 
-### 2. Generate subgraph config per network
+This script will generate files like `subgraph.mainnet.yaml`, `subgraph.arbitrum.yaml`, etc., in the root directory.
 
--   Mainnet
+## Adding a New Network
 
-```properties
-yarn generate-config
+To add support for a new network:
+
+1. Create a new configuration file in `src/configs/<network-name>.json`.
+2. Populate it with the required contract addresses and start blocks. You can copy an existing config (e.g., `src/configs/mainnet.json`) as a template. `startBlock` is the block where the first Spectra-related contract was deployed on the target network.
+3. Add the network to `src/utils/ChainIds.ts` if it is not already present.
+4. Run `yarn gen:config` to generate the new `subgraph.<network-name>.yaml` file.
+
+## Code Generation
+
+After generating the configuration file for your target network, generate the AssemblyScript types (identical for all networks):
+
+```bash
+yarn codegen subgraph.mainnet.yaml
 ```
 
--   other supported networks
+## Building and Deploying
 
-```properties
-yarn generate-config:<NETWORK>
+To build the subgraph:
+
+```bash
+graph build <subgraph-file.yaml>
 ```
 
-### 3. Generate contract and schema dependencies
+To deploy to a Graph Node (hosted service or decentralized network), use the standard `graph deploy` command, or e.g. `goldsky subgraph deploy`. You will need an access token.
 
-This step will load all contract ABIs used by our subgraph and generate the corresponding TypeScript interfaces.
-
-```properties
-yarn codegen
+```bash
+graph deploy --product hosted-service <GITHUB_USER>/<SUBGRAPH_NAME> <subgraph-file.yaml>
 ```
 
-## Local development
+## Project Structure
 
-To deploy and run test scenarios on the locally running blockchain:
+-   `abis/`: Smart contract ABIs.
+-   `src/`: Source code for mappings and configurations.
+    -   `configs/`: Network-specific configuration JSON files.
+    -   `mappings/`: AssemblyScript handlers for contract events.
+    -   `scripts/`: Helper scripts (e.g., config generator).
+-   `schema.graphql`: The GraphQL schema defining the entities.
+-   `subgraph.template.yaml`: The Mustache template for the subgraph manifest.
 
-### 1. Run local blockchain with predefined genesis timestamp
+## Key Entities
 
-```properties
-anvil --timestamp 100
-```
+-   **Future**: Represents Future Vaults (PT/IBT).
+-   **Pool**: Represents AMM pools (Curve V1, NG, SNG).
+-   **Metavault**: Represents Metavaults and their wrappers.
+-   **LimitOrder**: Tracks limit orders via the LimitOrderEngine.
+-   **Account**: User accounts and their portfolios.
+-   **Asset**: Tokens and assets indexed by the subgraph.
 
-### 2. Configure and run ipfs
+## Testing
 
-```properties
-ipfs init
-ipfs daemon
-```
+Run unit tests using Matchstick:
 
-### 3. Create new database
-
-```properties
-createdb db_subgraph
-```
-
-### 4. Clone local graph node
-
-```properties
-git clone https://github.com/graphprotocol/graph-node/
-```
-
-### 5. Run the graph-node cloned in the previous step with setup
-
-```properties
-RUST_BACKTRACE=1 cargo run -p graph-node --release -- \
---postgres-url postgresql://<USER>:@localhost:5432/db_subgraph \
---ethereum-rpc mainnet:http://127.0.0.1:8545 \
---ipfs 127.0.0.1:5001 \
---debug
-```
-
-### 6. Go back to the subgraph repository and generate config file for local development
-
-```properties
-yarn generate-config:local
-```
-
-### 7. Create local node
-
-```properties
-yarn create:local
-```
-
-### 8. Deploy subgraph locally
-
-```properties
-yarn deploy:local
-```
-
-### 9. Go to `core-v2` repository and install its dependencies
-
-```properties
-npm i
-```
-
-### 10. Run test scenarios on the running blockchain
-
-```properties
-forge test --fork-url http://localhost:8545
-```
-
-### 11. For playground go to
-
-```properties
-http://127.0.0.1:8000/subgraphs/name/perspectivefi/spectra-mainnet/graphql
-```
-
-### Deployment
-
-### 1. Generate subgraph config file for the network you want to deploy the subgraph
-
--   Mainnet
-
-```properties
-yarn generate-config
-```
-
--   other supported networks
-
-```properties
-generate-config:<NETWORK>
-```
-
-### 2. Generate contract and schema dependencies
-
-```properties
-yarn codegen
-```
-
-### 3. Create subgraph
-
-```properties
-yarn create
-```
-
-### 4. Authorize your TheGraph account
-
-```properties
-graph auth https://api.thegraph.com/deploy/ <ACCESS_TOKEN>
-```
-
-### 5. Create deployment script in `package.json` (if not exists for your network)
-
-### 6. Add network id (if missing) to the `ChainId` class in `src/utils/ChainId.ts` file
-
-### 7. Deploy the subgraph
-
--   Mainnet
-
-```properties
-yarn deploy
-```
-
--   other network
-
-```properties
-yarn deploy:<NETWORK>
-```
-
-#### IMPORTANT: If your network is not supported you have to go to `src/configs` and add new config file.
-
-## Schema
-
-Graph definition written in PlantUML framework - [schema.puml](schema.puml)
-
-## Example queries
-
-Coming soon
-
-```
-
+```bash
+yarn test
 ```

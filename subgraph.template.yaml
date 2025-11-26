@@ -266,27 +266,6 @@ templates:
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-  - name: IBT
-    kind: ethereum/contract
-    network: {{ network }}
-    source:
-      abi: ERC4626
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      entities: [ ]
-      file: ./src/mappings/transfers.ts
-      abis:
-        - name: ERC20
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
-        - name: ERC4626
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
-        - name: PrincipalToken
-          file: ./abis/PrincipalToken.json
-      eventHandlers:
-        - event: Transfer(indexed address,indexed address,uint256)
-          handler: handleIBTTransfer
   - name: PrincipalToken
     kind: ethereum/contract
     network: {{ network }}
@@ -398,7 +377,7 @@ templates:
       kind: ethereum/events
       apiVersion: 0.0.6
       language: wasm/assemblyscript
-      entities: []
+      entities: [ ]
       file: ./src/mappings/wrappers.ts
       abis:
         - name: Spectra4626Wrapper
@@ -500,6 +479,10 @@ templates:
           handler: handleEnabledModule
         - event: EnabledModule(address)
           handler: handleEnabledModule
+        - event: SafeModuleTransaction(address,address,uint256,bytes,uint8)
+          handler: handleSafeModuleTransaction
+        - event: SafeMultiSigTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes,bytes)
+          handler: handleSafeMultiSigTransaction
   - name: GnosisSafeModule
     kind: ethereum/contract
     network: {{ network }}
