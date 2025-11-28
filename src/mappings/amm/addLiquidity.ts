@@ -220,7 +220,6 @@ function addLiquidity(
 
             ibtRate,
             ptRate,
-            metavaultRequestId: ZERO_BI,
             metavaultEpochId: ZERO_BI,
             metavaultShares: ZERO_BI,
             metavaultAssets: ZERO_BI,

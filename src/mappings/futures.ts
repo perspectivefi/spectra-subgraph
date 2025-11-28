@@ -277,7 +277,6 @@ export function handleMint(event: Mint): void {
             feeRatio: ZERO_BI,
             ibtRate: ZERO_BI,
             ptRate: ZERO_BI,
-            metavaultRequestId: ZERO_BI,
             metavaultEpochId: ZERO_BI,
             metavaultShares: ZERO_BI,
             metavaultAssets: ZERO_BI,
@@ -374,7 +373,6 @@ export function handleRedeem(event: Redeem): void {
 
             ibtRate: ZERO_BI,
             ptRate: ZERO_BI,
-            metavaultRequestId: ZERO_BI,
             metavaultEpochId: ZERO_BI,
             metavaultShares: ZERO_BI,
             metavaultAssets: ZERO_BI,

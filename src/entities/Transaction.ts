@@ -25,7 +25,6 @@ class CreateTransactionParams {
     ptRate: BigInt
 
     // Metavault-specific optional fields
-    metavaultRequestId: BigInt
     metavaultEpochId: BigInt
     metavaultShares: BigInt
     metavaultAssets: BigInt
@@ -100,10 +99,6 @@ export function createTransaction(
     transaction.feeRatio = params.feeRatio
 
     // Set optional metavault-specific fields if provided
-    if (params.metavaultRequestId !== ZERO_BI) {
-        transaction.metavaultRequestId = params.metavaultRequestId
-    }
-
     if (params.metavaultEpochId !== ZERO_BI) {
         transaction.metavaultEpochId = params.metavaultEpochId
     }

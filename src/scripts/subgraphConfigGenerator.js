@@ -2,7 +2,6 @@ const fs = require("fs")
 const path = require("path")
 const Mustache = require("mustache")
 
-const [$1, $2, FILENAME, TEMPLATE_PATH] = process.argv
 const rootDir = "../../"
 
 const DEFAULT = {
@@ -171,18 +170,28 @@ const generateConfigWithGraft = (
 // Main execution
 const args = parseArgs()
 
-// If all graft arguments are provided, generate single config with graft
-if (args.network && args.graft && args.deploymentID) {
+// If network is provided, generate single config (with or without graft)
+if (args.network) {
     console.info(`File(s) generated:`)
-    generateConfigWithGraft(
-        args.network,
-        args.graft,
-        args.deploymentID,
-        DEFAULT.FILENAME,
-        DEFAULT.TEMPLATE_PATH
-    )
+    // If all graft arguments are provided, generate with graft
+    if (args.graft && args.deploymentID) {
+        generateConfigWithGraft(
+            args.network,
+            args.graft,
+            args.deploymentID,
+            DEFAULT.FILENAME,
+            DEFAULT.TEMPLATE_PATH
+        )
+    } else {
+        // Otherwise, generate without graft
+        generateConfig(
+            args.network,
+            DEFAULT.FILENAME,
+            DEFAULT.TEMPLATE_PATH
+        )
+    }
 } else {
-    // Otherwise, generate all configs (original behavior)
+    // If no network specified, generate all configs (original behavior)
     console.info(`File(s) generated:`)
     try {
         fs.readdir(
@@ -190,7 +199,7 @@ if (args.network && args.graft && args.deploymentID) {
             (_, files) => {
                 files.map((file) => {
                     const [network] = file.split(".")
-                    generateConfig(network, FILENAME, TEMPLATE_PATH)
+                    generateConfig(network, DEFAULT.FILENAME, DEFAULT.TEMPLATE_PATH)
                 })
             }
         )

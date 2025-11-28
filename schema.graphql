@@ -366,8 +366,7 @@ type Transaction @entity(immutable: false) {
     ptRate: BigInt # PT rate at the time of the transaction
 
     # Metavault-specific transaction fields
-    metavaultRequestId: BigInt # for deposit/redeem requests
-    metavaultEpochId: BigInt # for requests that have epoch context
+    metavaultEpochId: BigInt # epoch context for all metavault transactions
     metavaultShares: BigInt # shares amount for deposit/withdraw
     metavaultAssets: BigInt # assets amount for deposit/withdraw
 }
