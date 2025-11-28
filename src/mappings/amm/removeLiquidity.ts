@@ -182,6 +182,7 @@ export function removeLiquidity(
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: Address.fromBytes(account.address),
             poolInTransaction: event.address,
+            metavaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [lpAmountIn.id],
             amountsOut: [ibtAmountOut.id, ptAmountOut.id],
@@ -203,6 +204,10 @@ export function removeLiquidity(
 
             ibtRate,
             ptRate,
+            metavaultRequestId: ZERO_BI,
+            metavaultEpochId: ZERO_BI,
+            metavaultShares: ZERO_BI,
+            metavaultAssets: ZERO_BI,
         })
 
         pool.lpTotalSupply = pool.lpTotalSupply.minus(lpTokenDiff)

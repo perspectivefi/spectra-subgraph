@@ -198,6 +198,7 @@ function addLiquidity(
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: Address.fromBytes(account.address),
             poolInTransaction: event.address,
+            metavaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [ibtAmountIn.id, ptAmountIn.id],
             amountsOut: [lpAmountOut.id],
@@ -219,6 +220,10 @@ function addLiquidity(
 
             ibtRate,
             ptRate,
+            metavaultRequestId: ZERO_BI,
+            metavaultEpochId: ZERO_BI,
+            metavaultShares: ZERO_BI,
+            metavaultAssets: ZERO_BI,
         })
 
         pool.totalFees = pool.totalFees.plus(fee)

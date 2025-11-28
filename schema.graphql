@@ -40,6 +40,12 @@ enum TransactionType {
     LP_VAULT_IBT_DEPOSIT
     LP_VAULT_WITHDRAW
     LP_VAULT_REDEEM
+    MV_DEPOSIT_REQUEST
+    MV_DECREASE_DEPOSIT_REQUEST
+    MV_REDEEM_REQUEST
+    MV_DECREASE_REDEEM_REQUEST
+    MV_DEPOSIT
+    MV_WITHDRAW
 }
 
 enum AMM {
@@ -345,6 +351,8 @@ type Transaction @entity(immutable: false) {
     userInTransaction: Account
     "if there is any pool on any side of the transaction to be able to list this pool's transactions"
     poolInTransaction: Pool
+    "if there is any metavault on any side of the transaction to be able to list this metavault's transactions"
+    metavaultInTransaction: Metavault
 
     "in case if more than one token was sent"
     amountsIn: [AssetAmount!]!
@@ -356,6 +364,12 @@ type Transaction @entity(immutable: false) {
     feeRatio: BigInt # fee divided by total liquidity (to calculate fee APY)
     ibtRate: BigInt # IBT rate at the time of the transaction
     ptRate: BigInt # PT rate at the time of the transaction
+
+    # Metavault-specific transaction fields
+    metavaultRequestId: BigInt # for deposit/redeem requests
+    metavaultEpochId: BigInt # for requests that have epoch context
+    metavaultShares: BigInt # shares amount for deposit/withdraw
+    metavaultAssets: BigInt # assets amount for deposit/withdraw
 }
 
 ####################
