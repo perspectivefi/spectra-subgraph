@@ -145,8 +145,8 @@ function tokenExchange(
         if (pool.futureVault && spotPrice.gt(ZERO_BI)) {
             const ibt = isBuyPt ? tokens_sold : tokens_bought
             const ptInIbt = (isBuyPt ? tokens_bought : tokens_sold)
-                .times(CURVE_UNIT)
-                .div(spotPrice)
+                .times(spotPrice)
+                .div(CURVE_UNIT)
             valueUnderlying = ibt
                 .plus(ptInIbt)
                 .times(ibtRate)

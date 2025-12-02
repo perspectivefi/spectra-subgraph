@@ -185,7 +185,7 @@ export function getLpFeeUnderlying(
     if (pool.type == PoolType.CURVE) {
         return valueUnderlying.times(pool.feeRate).div(FEES_UNIT)
     } else if (pool.type == PoolType.CURVE_SNG) {
-        let ptAdminFeeInIbt = ptAdminFee.times(CURVE_UNIT).div(pool.spotPrice)
+        let ptAdminFeeInIbt = ptAdminFee.times(pool.spotPrice).div(CURVE_UNIT)
         let adminFeeUnderlying = ibtAdminFee
             .plus(ptAdminFeeInIbt)
             .times(ibtRate)

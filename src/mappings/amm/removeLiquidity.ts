@@ -125,8 +125,8 @@ export function removeLiquidity(
             const ibtDecimals = getERC20Decimals(Address.fromString(ibtAddress))
             const ibtAmount = token_amounts[0]
             const ptAmountInIbt = token_amounts[1]
-                .times(CURVE_UNIT)
-                .div(spotPrice)
+                .times(spotPrice)
+                .div(CURVE_UNIT)
             valueUnderlying = ibtAmount
                 .plus(ptAmountInIbt)
                 .times(ibtRate)
