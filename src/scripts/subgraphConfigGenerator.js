@@ -107,7 +107,7 @@ const generateConfigWithGraft = (
             // Insert graft section after repository
             const graftSection = [
                 "graft:",
-                `  ${network}: ${deploymentID}`,
+                `  base: ${deploymentID}`,
                 `  block: ${graftBlock}`,
             ]
             lines.splice(repositoryIndex + 1, 0, ...graftSection)
