@@ -1,6 +1,6 @@
 import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 
-import { Future, Transaction } from "../../generated/schema"
+import { Future, Metavault, Transaction } from "../../generated/schema"
 import { ZERO_ADDRESS, ZERO_BI } from "../constants"
 import { getAccount } from "./Account"
 
@@ -11,6 +11,7 @@ class CreateTransactionParams {
     futureInTransaction: Address
     userInTransaction: Address
     poolInTransaction: Address
+    metavaultInTransaction: Address
 
     amountsIn: string[]
     amountsOut: string[]
@@ -22,6 +23,11 @@ class CreateTransactionParams {
 
     ibtRate: BigInt
     ptRate: BigInt
+
+    // Metavault-specific optional fields
+    metavaultEpochId: BigInt
+    metavaultShares: BigInt
+    metavaultAssets: BigInt
 }
 
 class TransactionDetails {
@@ -72,6 +78,13 @@ export function createTransaction(
         transaction.poolInTransaction = params.poolInTransaction.toHex()
     }
 
+    if (params.metavaultInTransaction !== ZERO_ADDRESS) {
+        let metavault = Metavault.load(params.metavaultInTransaction.toHex())
+        if (metavault) {
+            transaction.metavaultInTransaction = metavault.id
+        }
+    }
+
     if (params.transaction.fee !== ZERO_BI) {
         transaction.fee = params.transaction.fee
     }
@@ -84,6 +97,19 @@ export function createTransaction(
 
     transaction.feeUnderlying = params.feeUnderlying
     transaction.feeRatio = params.feeRatio
+
+    // Set optional metavault-specific fields if provided
+    if (params.metavaultEpochId !== ZERO_BI) {
+        transaction.metavaultEpochId = params.metavaultEpochId
+    }
+
+    if (params.metavaultShares !== ZERO_BI) {
+        transaction.metavaultShares = params.metavaultShares
+    }
+
+    if (params.metavaultAssets !== ZERO_BI) {
+        transaction.metavaultAssets = params.metavaultAssets
+    }
 
     transaction.save()
     return transaction

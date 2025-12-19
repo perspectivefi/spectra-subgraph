@@ -141,8 +141,8 @@ function addLiquidity(
         if (pool.futureVault && spotPrice.gt(ZERO_BI)) {
             const ibtAmount = token_amounts[0]
             const ptAmountInIbt = token_amounts[1]
-                .times(CURVE_UNIT)
-                .div(spotPrice)
+                .times(spotPrice)
+                .div(CURVE_UNIT)
             valueUnderlying = ibtAmount
                 .plus(ptAmountInIbt)
                 .times(ibtRate)
@@ -198,6 +198,7 @@ function addLiquidity(
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: Address.fromBytes(account.address),
             poolInTransaction: event.address,
+            metavaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [ibtAmountIn.id, ptAmountIn.id],
             amountsOut: [lpAmountOut.id],
@@ -219,6 +220,9 @@ function addLiquidity(
 
             ibtRate,
             ptRate,
+            metavaultEpochId: ZERO_BI,
+            metavaultShares: ZERO_BI,
+            metavaultAssets: ZERO_BI,
         })
 
         pool.totalFees = pool.totalFees.plus(fee)

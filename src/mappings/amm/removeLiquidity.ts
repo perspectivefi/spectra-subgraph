@@ -125,8 +125,8 @@ export function removeLiquidity(
             const ibtDecimals = getERC20Decimals(Address.fromString(ibtAddress))
             const ibtAmount = token_amounts[0]
             const ptAmountInIbt = token_amounts[1]
-                .times(CURVE_UNIT)
-                .div(spotPrice)
+                .times(spotPrice)
+                .div(CURVE_UNIT)
             valueUnderlying = ibtAmount
                 .plus(ptAmountInIbt)
                 .times(ibtRate)
@@ -182,6 +182,7 @@ export function removeLiquidity(
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: Address.fromBytes(account.address),
             poolInTransaction: event.address,
+            metavaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [lpAmountIn.id],
             amountsOut: [ibtAmountOut.id, ptAmountOut.id],
@@ -203,6 +204,9 @@ export function removeLiquidity(
 
             ibtRate,
             ptRate,
+            metavaultEpochId: ZERO_BI,
+            metavaultShares: ZERO_BI,
+            metavaultAssets: ZERO_BI,
         })
 
         pool.lpTotalSupply = pool.lpTotalSupply.minus(lpTokenDiff)

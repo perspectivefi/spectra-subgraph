@@ -1,12 +1,12 @@
 {
-    "network": "spectra-hemi",
-    "accessManager": "0x4973b53b300d64ab72147EFF8C9d962f6b1dA02e",
+    "network": "monad",
+    "accessManager": "0x03e2ec137c6ab82978d52edb7b504ad2deb13f96",
     "limitOrderEngine": "0x0000000000000000000000000000000000000000",
     "nonceManager": "0x0000000000000000000000000000000000000000",
     "metavaultsRegistry": "0x0000000000000000000000000000000000000000",
-    "startBlock": 1289400,
-    "registry": "0x786Da12e9836a9ff9b7d92e8bac1C849e2ACe378",
-    "spectra": "0x392fca63e58C1870fBeC04Eb6518A75703Dd2954",
+    "startBlock": 37910111,
+    "registry": "0x838e863044337c2083f89c2d1a0678685d7592f4",
+    "spectra": "0x1c77c5b76f02ed1538d5af95a3b1f88e55178d2f",
     "bridgeCCTP": "0x0000000000000000000000000000000000000000",
     "bridgeDebridge": "0x0000000000000000000000000000000000000000"
 }

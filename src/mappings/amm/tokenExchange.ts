@@ -145,8 +145,8 @@ function tokenExchange(
         if (pool.futureVault && spotPrice.gt(ZERO_BI)) {
             const ibt = isBuyPt ? tokens_sold : tokens_bought
             const ptInIbt = (isBuyPt ? tokens_bought : tokens_sold)
-                .times(CURVE_UNIT)
-                .div(spotPrice)
+                .times(spotPrice)
+                .div(CURVE_UNIT)
             valueUnderlying = ibt
                 .plus(ptInIbt)
                 .times(ibtRate)
@@ -203,6 +203,7 @@ function tokenExchange(
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: Address.fromBytes(account.address),
             poolInTransaction: Address.fromBytes(pool.address),
+            metavaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [amountIn.id],
             amountsOut: [amountOut.id],
@@ -224,6 +225,9 @@ function tokenExchange(
 
             ibtRate,
             ptRate,
+            metavaultEpochId: ZERO_BI,
+            metavaultShares: ZERO_BI,
+            metavaultAssets: ZERO_BI,
         })
 
         pool.totalFees = pool.totalFees.plus(fee)

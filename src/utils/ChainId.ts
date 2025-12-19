@@ -12,6 +12,7 @@ class ChainId {
     hyperevm: i32 = 999
     katana: i32 = 747474
     flare: i32 = 14
+    monad: i32 = 143
 }
 
 const chainId = new ChainId()
@@ -43,6 +44,8 @@ export function getChainId(network: string): i32 {
         return chainId.katana
     } else if (network == "flare") {
         return chainId.flare
+    } else if (network == "monad") {
+        return chainId.monad
     }
     throw new Error(`Unsupported network: ${network}`)
 }
