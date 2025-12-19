@@ -207,6 +207,27 @@ dataSources:
       eventHandlers:
         - event: BridgeInitiated(indexed address,indexed address,uint256,indexed uint32,address,string,address)
           handler: handleBridgeInitiated
+  - name: BridgeInterfaceDebridge
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: BridgeInterfaceCCTP
+      address: '{{ bridgeDebridge }}'
+      startBlock: {{ startBlock }}
+    mapping:
+      kind: ethereum/events
+      language: wasm/assemblyscript
+      apiVersion: 0.0.6
+      entities: [ ]
+      file: ./src/mappings/bridgeInterfaceCCTP.ts
+      abis:
+        - name: BridgeInterfaceCCTP
+          file: ./abis/BridgeInterfaceCCTP.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+      eventHandlers:
+        - event: BridgeInitiated(indexed address,indexed address,uint256,indexed uint32,address,string,address)
+          handler: handleBridgeInitiated
 templates:
   - name: Factory
     kind: ethereum/contract
