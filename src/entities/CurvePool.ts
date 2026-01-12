@@ -253,6 +253,59 @@ export const getPoolCoins = (poolAddress: Address): Address[] => {
     return [token0Call.value, token1Call.value]
 }
 
+export const getPoolA = (poolAddress: Address, poolType: string): BigInt => {
+    if (poolType == PoolType.CURVE_SNG) {
+        const contract = CurvePoolSNG.bind(poolAddress)
+        const call = contract.try_A()
+        if (!call.reverted) {
+            return call.value
+        }
+    } else {
+        const contract = CurvePool.bind(poolAddress)
+        const call = contract.try_A()
+        if (!call.reverted) {
+            return call.value
+        }
+    }
+    log.warning("A() call reverted for {}", [poolAddress.toHex()])
+    return ZERO_BI
+}
+
+export const getPoolStoredRates = (
+    poolAddress: Address,
+    poolType: string
+): BigInt[] => {
+    if (poolType == PoolType.CURVE_SNG) {
+        const contract = CurvePoolSNG.bind(poolAddress)
+        const call = contract.try_stored_rates()
+        if (!call.reverted) {
+            return call.value
+        }
+        log.warning("stored_rates() call reverted for {}", [
+            poolAddress.toHex(),
+        ])
+    }
+    return [CURVE_UNIT, CURVE_UNIT]
+}
+
+export const getPoolOffpegFeeMultiplier = (
+    poolAddress: Address,
+    poolType: string
+): BigInt => {
+    const FEE_DENOMINATOR = BigInt.fromI32(10).pow(10)
+    if (poolType == PoolType.CURVE_SNG) {
+        const contract = CurvePoolSNG.bind(poolAddress)
+        const call = contract.try_offpeg_fee_multiplier()
+        if (!call.reverted) {
+            return call.value
+        }
+        log.warning("offpeg_fee_multiplier() call reverted for {}", [
+            poolAddress.toHex(),
+        ])
+    }
+    return FEE_DENOMINATOR
+}
+
 // With 10 decimals precision
 export const getIBTtoPTRate = (poolAddress: Address, input: BigInt): BigInt => {
     let curvePoolContract = CurvePool.bind(poolAddress)
