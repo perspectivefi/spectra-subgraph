@@ -20,6 +20,9 @@ import {
     getPoolLastPrices,
     getPoolLPToken,
     getPoolVirtualPrice,
+    getPoolA,
+    getPoolStoredRates,
+    getPoolOffpegFeeMultiplier,
 } from "../../entities/CurvePool"
 import { getERC20Decimals, getERC20TotalSupply } from "../../entities/ERC20"
 import { getIBTRate } from "../../entities/ERC4626"
@@ -34,15 +37,21 @@ import {
 import { PoolActionType, updatePoolStats } from "../../entities/PoolStats"
 import { createTransaction } from "../../entities/Transaction"
 import { AssetType, PoolType } from "../../utils"
+import { CurveViews } from "../../utils/curveViews"
 import { generateTransactionId } from "../../utils/idGenerators"
 import { toPrecision } from "../../utils/toPrecision"
 
 const FEES_PRECISION = 10
+const FEE_DENOMINATOR = BigInt.fromI32(10).pow(10)
+const PRECISION = BigInt.fromI32(10).pow(18)
+const N_COINS = BigInt.fromI32(2)
 
 function addLiquidity(
     event: ethereum.Event,
     token_amounts: BigInt[],
-    _fee: BigInt
+    _fee: BigInt,
+    fees: BigInt[] | null = null,
+    invariant: BigInt | null = null
 ): void {
     let eventTimestamp = event.block.timestamp
 
@@ -118,6 +127,15 @@ function addLiquidity(
 
         const ibtDecimals = getERC20Decimals(Address.fromString(ibtAddress))
 
+        let valueUnderlying = ZERO_BI
+        let feeUnderlying = ZERO_BI
+        let feeRatio = ZERO_BI
+        let imbalancedVolumeUnderlying = ZERO_BI
+        const ibtRate = getIBTRate(Address.fromString(ibtAddress))
+        const ptRate = pool.futureVault
+            ? getPTRate(Address.fromString(pool.futureVault!))
+            : ZERO_BI
+
         let fee = toPrecision(_fee, FEES_PRECISION, ibtDecimals)
 
         let adminFee = fee
@@ -130,14 +148,126 @@ function addLiquidity(
         let adminFees = updatePoolAdminBalances(pool)
         let ibtAdminFee = adminFees[0]
         let ptAdminFee = adminFees[1]
+        let adminFeeUnderlying = ibtAdminFee
+            .plus(ptAdminFee.times(spotPrice).div(CURVE_UNIT))
+            .times(ibtRate)
+            .div(BigInt.fromString("10").pow(ibtDecimals as u8))
 
-        let valueUnderlying = ZERO_BI
-        let feeUnderlying = ZERO_BI
-        let feeRatio = ZERO_BI
-        const ibtRate = getIBTRate(Address.fromString(ibtAddress))
-        const ptRate = pool.futureVault
-            ? getPTRate(Address.fromString(pool.futureVault!))
-            : ZERO_BI
+        // Calculate imbalanced volume by reverse engineering from fees
+        //   ideal_balance = D1 * old_balances[i] / D0
+        //   difference = |ideal_balance - new_balance|
+        //   fees[i] = dynamic_fee_i * difference / FEE_DENOMINATOR for i in {0,1} for which fees[i] > 0
+        //   difference = fees[i] * FEE_DENOMINATOR / dynamic_fee_i
+        let direction: i32 = -1 // -1 = not set, 0 = BUY_PT, 1 = SELL_PT
+        if (
+            fees !== null &&
+            fees.length >= 2 &&
+            invariant !== null &&
+            pool.feeRate.gt(ZERO_BI)
+        ) {
+            // Get pool parameters
+            const rates = getPoolStoredRates(
+                Address.fromBytes(pool.address),
+                pool.type
+            )
+            const amp = getPoolA(Address.fromBytes(pool.address), pool.type)
+            const offpegFeeMultiplier = getPoolOffpegFeeMultiplier(
+                Address.fromBytes(pool.address),
+                pool.type
+            )
+
+            // Old balances (before deposit)
+            const oldBalances: BigInt[] = [
+                poolIBTAssetAmount.amount,
+                poolPTAssetAmount.amount,
+            ]
+
+            // New balances (after deposit, before fees)
+            const newBalances: BigInt[] = [
+                oldBalances[0].plus(token_amounts[0]),
+                oldBalances[1].plus(token_amounts[1]),
+            ]
+
+            // Calculate D0 using old balances
+            // xp = balances * rates / PRECISION
+            const xpOld: BigInt[] = [
+                oldBalances[0].times(rates[0]).div(PRECISION),
+                oldBalances[1].times(rates[1]).div(PRECISION),
+            ]
+
+            // Only calculate if pool has liquidity
+            if (xpOld[0].gt(ZERO_BI) && xpOld[1].gt(ZERO_BI)) {
+                const D0 = CurveViews.getD(xpOld, amp)
+                const D1 = invariant
+
+                if (D0.gt(ZERO_BI)) {
+                    // ys = (D0 + D1) / N_COINS
+                    const ys = D0.plus(D1).div(N_COINS)
+
+                    // base_fee = fee * N_COINS / (4 * (N_COINS - 1))
+                    const baseFee = pool.feeRate
+                        .times(N_COINS)
+                        .div(
+                            BigInt.fromI32(4).times(
+                                N_COINS.minus(BigInt.fromI32(1))
+                            )
+                        )
+
+                    for (let i = 0; i < 2; i++) {
+                        if (fees[i].gt(ZERO_BI)) {
+                            // xs = rates[i] * (old_balances[i] + new_balance) / PRECISION
+                            const xs = rates[i]
+                                .times(oldBalances[i].plus(newBalances[i]))
+                                .div(PRECISION)
+
+                            const dynamicFee = CurveViews.dynamicFee(
+                                xs,
+                                ys,
+                                baseFee,
+                                offpegFeeMultiplier
+                            )
+
+                            // Back-calculate the difference (imbalanced amount)
+                            if (dynamicFee.gt(ZERO_BI)) {
+                                const difference = fees[i]
+                                    .times(FEE_DENOMINATOR)
+                                    .div(dynamicFee)
+
+                                // Convert to underlying value
+                                if (i == 0) {
+                                    direction = 0
+                                    imbalancedVolumeUnderlying =
+                                        imbalancedVolumeUnderlying.plus(
+                                            difference
+                                                .times(ibtRate)
+                                                .div(
+                                                    BigInt.fromI32(10).pow(
+                                                        ibtDecimals as u8
+                                                    )
+                                                )
+                                        )
+                                } else {
+                                    direction = 1
+                                    imbalancedVolumeUnderlying =
+                                        imbalancedVolumeUnderlying.plus(
+                                            difference
+                                                .times(spotPrice)
+                                                .div(CURVE_UNIT)
+                                                .times(ibtRate)
+                                                .div(
+                                                    BigInt.fromI32(10).pow(
+                                                        ibtDecimals as u8
+                                                    )
+                                                )
+                                        )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         if (pool.futureVault && spotPrice.gt(ZERO_BI)) {
             const ibtAmount = token_amounts[0]
             const ptAmountInIbt = token_amounts[1]
@@ -225,10 +355,38 @@ function addLiquidity(
             metavaultAssets: ZERO_BI,
         })
 
-        pool.totalFees = pool.totalFees.plus(fee)
-        pool.totalFeeRatio = pool.totalFeeRatio.plus(feeRatio)
-        pool.totalAdminFees = pool.totalAdminFees.plus(adminFee)
+        // Track imbalanced add liquidity as a swap (AMM_EXCHANGE)
+        if (imbalancedVolumeUnderlying.gt(ZERO_BI) && direction >= 0) {
+            const isBuyPt = direction == 0
+            const swapActionType = isBuyPt
+                ? PoolActionType.BUY_PT
+                : PoolActionType.SELL_PT
 
+            // @dev: fee and fee ratio are accounted for in the main ADD_LIQUIDITY transaction
+            updatePoolStats(
+                event,
+                pool,
+                SECONDS_PER_HOUR,
+                swapActionType,
+                imbalancedVolumeUnderlying,
+                ZERO_BI,
+                ZERO_BI
+            )
+            // @dev: fee and fee ratio are accounted for in the main ADD_LIQUIDITY transaction
+            updatePoolStats(
+                event,
+                pool,
+                SECONDS_PER_DAY,
+                swapActionType,
+                imbalancedVolumeUnderlying,
+                ZERO_BI,
+                ZERO_BI
+            )
+        }
+
+        pool.totalFees = pool.totalFees.plus(feeUnderlying)
+        pool.totalFeeRatio = pool.totalFeeRatio.plus(feeRatio)
+        pool.totalAdminFees = pool.totalAdminFees.plus(adminFeeUnderlying)
         // In case of no liquidity, the fee() will revert on the "CurvePoolDeployed" event so we have to set the fee rate here
         if (
             poolIBTAssetAmount.amount.equals(ZERO_BI) &&
@@ -287,13 +445,31 @@ function addLiquidity(
 }
 
 export function handleAddLiquidity(event: AddLiquidity): void {
-    addLiquidity(event, event.params.token_amounts, event.params.fee)
+    addLiquidity(
+        event,
+        event.params.token_amounts,
+        event.params.fee,
+        null,
+        null
+    )
 }
 
 export function handleAddLiquidityNG(event: AddLiquidityNG): void {
-    addLiquidity(event, event.params.token_amounts, event.params.fee)
+    addLiquidity(
+        event,
+        event.params.token_amounts,
+        event.params.fee,
+        null,
+        null
+    )
 }
 
 export function handleAddLiquiditySNG(event: AddLiquiditySNG): void {
-    addLiquidity(event, event.params.token_amounts, BigInt.fromI32(0)) // TODO: add fees
+    addLiquidity(
+        event,
+        event.params.token_amounts,
+        BigInt.fromI32(0),
+        event.params.fees,
+        event.params.invariant // D1 from the event
+    )
 }
