@@ -37,7 +37,7 @@ export function handleMetaVaultWrapperInitialized(
 
 export function handleDepositRequest(event: DepositRequest): void {
     updateAccountMetavaultRequest(
-        event.params.owner,
+        event.params.controller,
         event.address,
         event.block.timestamp,
         AssetType.MV_REQUEST_DEPOSIT,
@@ -62,7 +62,7 @@ export function handleDepositRequest(event: DepositRequest): void {
         ),
         transactionAddress: event.transaction.hash,
         futureInTransaction: ZERO_ADDRESS,
-        userInTransaction: event.params.owner,
+        userInTransaction: event.params.controller,
         poolInTransaction: ZERO_ADDRESS,
         metavaultInTransaction: Address.fromBytes(metavault.safeAddress),
         amountsIn: [],
@@ -145,7 +145,7 @@ export function handleDecreaseDepositRequest(
 
 export function handleRedeemRequest(event: RedeemRequest): void {
     updateAccountMetavaultRequest(
-        event.params.owner,
+        event.params.controller,
         event.address,
         event.block.timestamp,
         AssetType.MV_REQUEST_REDEEM,
@@ -170,7 +170,7 @@ export function handleRedeemRequest(event: RedeemRequest): void {
         ),
         transactionAddress: event.transaction.hash,
         futureInTransaction: ZERO_ADDRESS,
-        userInTransaction: event.params.owner,
+        userInTransaction: event.params.controller,
         poolInTransaction: ZERO_ADDRESS,
         metavaultInTransaction: Address.fromBytes(metavault.safeAddress),
         amountsIn: [],
