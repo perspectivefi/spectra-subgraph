@@ -13,6 +13,7 @@ class ChainId {
     katana: i32 = 747474
     flare: i32 = 14
     monad: i32 = 143
+    sei: i32 = 1329
 }
 
 const chainId = new ChainId()
@@ -46,6 +47,8 @@ export function getChainId(network: string): i32 {
         return chainId.flare
     } else if (network == "monad") {
         return chainId.monad
+    } else if (network == "sei") {
+        return chainId.sei
     }
     throw new Error(`Unsupported network: ${network}`)
 }
