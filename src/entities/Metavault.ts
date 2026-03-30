@@ -133,6 +133,7 @@ function createMetavault(
     metavault.address = metavaultAddress
 
     metavault.markets = []
+    metavault.pendleMarkets = []
     metavault.chains = []
 
     let account = getAccount(metavaultAddress.toHex(), timestamp)

@@ -339,6 +339,31 @@
                 "internalType": "address",
                 "name": "market",
                 "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint8",
+                "name": "protocolType",
+                "type": "uint8"
+            }
+        ],
+        "name": "MarketRegisteredWithType",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "metavault",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "market",
+                "type": "address"
             }
         ],
         "name": "MarketUnregistered",
@@ -581,6 +606,43 @@
                     }
                 ],
                 "internalType": "struct IMetavaultsRegistry.PoolInfos",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "market", "type": "address" }
+        ],
+        "name": "getPendleMarketInfos",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "market",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "sy",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "pt",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "yt",
+                        "type": "address"
+                    }
+                ],
+                "internalType": "struct IMetavaultsRegistry.PendleMarketInfos",
                 "name": "",
                 "type": "tuple"
             }

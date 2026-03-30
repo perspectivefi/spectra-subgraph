@@ -6,11 +6,14 @@ import {
     ChainRegistered,
     ChainUnregistered,
     MarketRegistered,
+    MarketRegisteredWithType,
     MarketUnregistered,
     BridgePathAllowed,
+    MetavaultsRegistry,
 } from "../../../generated/MetavaultsRegistry/MetavaultsRegistry"
 import {
     MetavaultBridgePath,
+    PendleMarket,
     Pool,
     RemoteMetavault,
 } from "../../../generated/schema"
@@ -101,19 +104,86 @@ export function handleMarketRegistered(event: MarketRegistered): void {
     }
 }
 
-export function handleMarketUnregistered(event: MarketUnregistered): void {
-    let poolAddress = event.params.market
+export function handleMarketRegisteredWithType(
+    event: MarketRegisteredWithType
+): void {
     let metavault = getMetavault(
         event.params.metavault,
         event.block.timestamp,
         event.block.number
     )
-    let index = metavault.markets.indexOf(poolAddress.toHex())
+
+    let protocolType = event.params.protocolType
+
+    // ProtocolType.Spectra = 0
+    if (protocolType == 0) {
+        let pool = Pool.load(event.params.market.toHex())
+        if (pool) {
+            let markets = metavault.markets
+            markets.push(pool.id)
+            metavault.markets = markets
+            metavault.save()
+        }
+    }
+    // ProtocolType.Pendle = 1
+    else if (protocolType == 1) {
+        let marketAddress = event.params.market
+        let pendleMarket = PendleMarket.load(marketAddress.toHex())
+
+        if (!pendleMarket) {
+            pendleMarket = new PendleMarket(marketAddress.toHex())
+            pendleMarket.address = marketAddress
+            pendleMarket.createdAtTimestamp = event.block.timestamp
+
+            // Read token addresses from the registry contract
+            let registry = MetavaultsRegistry.bind(event.address)
+            let infosResult = registry.try_getPendleMarketInfos(marketAddress)
+
+            if (!infosResult.reverted) {
+                pendleMarket.sy = infosResult.value.getSy()
+                pendleMarket.pt = infosResult.value.getPt()
+                pendleMarket.yt = infosResult.value.getYt()
+            } else {
+                // Fallback: zero addresses if the call reverts
+                pendleMarket.sy = marketAddress
+                pendleMarket.pt = marketAddress
+                pendleMarket.yt = marketAddress
+            }
+
+            pendleMarket.save()
+        }
+
+        let pendleMarkets = metavault.pendleMarkets
+        pendleMarkets.push(pendleMarket.id)
+        metavault.pendleMarkets = pendleMarkets
+        metavault.save()
+    }
+}
+
+export function handleMarketUnregistered(event: MarketUnregistered): void {
+    let marketAddress = event.params.market
+    let metavault = getMetavault(
+        event.params.metavault,
+        event.block.timestamp,
+        event.block.number
+    )
+
+    // Try removing from Spectra markets
+    let index = metavault.markets.indexOf(marketAddress.toHex())
     if (index > -1) {
-        // metavault.markets.splice(index, 1) does not work for some reason
         let markets = metavault.markets
         markets.splice(index, 1)
         metavault.markets = markets
+        metavault.save()
+        return
+    }
+
+    // Try removing from Pendle markets
+    let pendleIndex = metavault.pendleMarkets.indexOf(marketAddress.toHex())
+    if (pendleIndex > -1) {
+        let pendleMarkets = metavault.pendleMarkets
+        pendleMarkets.splice(pendleIndex, 1)
+        metavault.pendleMarkets = pendleMarkets
         metavault.save()
     }
 }

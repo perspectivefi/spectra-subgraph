@@ -676,6 +676,16 @@ type Infravault @entity(immutable: false) {
     type: InfravaultType!
 }
 
+# Pendle market registered to a metavault
+type PendleMarket @entity(immutable: false) {
+    id: ID! # market address
+    address: Bytes!
+    sy: Bytes! # SY token address
+    pt: Bytes! # PT token address
+    yt: Bytes! # YT token address
+    createdAtTimestamp: BigInt!
+}
+
 # Metavault Entity - Some fields can be null depending on the metavault type, e.g. remote metavaults do not hold vault state, only positions
 type Metavault @entity(immutable: false) {
     # Metavault Static details
@@ -688,7 +698,8 @@ type Metavault @entity(immutable: false) {
 
     # Metavault State
     infravault: Infravault # The infra vault address underneath the wrapper [empty if remote]
-    markets: [Pool!]! # The markets registered to the metavault
+    markets: [Pool!]! # The Spectra markets registered to the metavault
+    pendleMarkets: [PendleMarket!]! # The Pendle markets registered to the metavault
     isMetavaultRegistered: Boolean! # Is the metavault registered to the metavault registry
     chains: [RemoteMetavault!]! # The chains registered to the metavault
     bridgePaths: [MetavaultBridgePath!] @derivedFrom(field: "metavault")

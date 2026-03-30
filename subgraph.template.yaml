@@ -56,6 +56,8 @@ dataSources:
           handler: handleChainUnregistered
         - event: MarketRegistered(indexed address,indexed address)
           handler: handleMarketRegistered
+        - event: MarketRegisteredWithType(indexed address,indexed address,uint8)
+          handler: handleMarketRegisteredWithType
         - event: MarketUnregistered(indexed address,indexed address)
           handler: handleMarketUnregistered
         - event: BridgePathAllowed(indexed address,indexed address,address,indexed uint32,address)
