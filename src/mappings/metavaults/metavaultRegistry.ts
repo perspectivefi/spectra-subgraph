@@ -140,9 +140,9 @@ export function handleMarketRegisteredWithType(
             let infosResult = registry.try_getPendleMarketInfos(marketAddress)
 
             if (!infosResult.reverted) {
-                pendleMarket.sy = infosResult.value.getSy()
-                pendleMarket.pt = infosResult.value.getPt()
-                pendleMarket.yt = infosResult.value.getYt()
+                pendleMarket.sy = infosResult.value.sy
+                pendleMarket.pt = infosResult.value.pt
+                pendleMarket.yt = infosResult.value.yt
             } else {
                 // Fallback: zero addresses if the call reverts
                 pendleMarket.sy = marketAddress
@@ -154,6 +154,9 @@ export function handleMarketRegisteredWithType(
         }
 
         let pendleMarkets = metavault.pendleMarkets
+        if (pendleMarkets == null) {
+            pendleMarkets = []
+        }
         pendleMarkets.push(pendleMarket.id)
         metavault.pendleMarkets = pendleMarkets
         metavault.save()
@@ -179,12 +182,14 @@ export function handleMarketUnregistered(event: MarketUnregistered): void {
     }
 
     // Try removing from Pendle markets
-    let pendleIndex = metavault.pendleMarkets.indexOf(marketAddress.toHex())
-    if (pendleIndex > -1) {
-        let pendleMarkets = metavault.pendleMarkets
-        pendleMarkets.splice(pendleIndex, 1)
-        metavault.pendleMarkets = pendleMarkets
-        metavault.save()
+    let pendleMarkets = metavault.pendleMarkets
+    if (pendleMarkets != null) {
+        let pendleIndex = pendleMarkets.indexOf(marketAddress.toHex())
+        if (pendleIndex > -1) {
+            pendleMarkets.splice(pendleIndex, 1)
+            metavault.pendleMarkets = pendleMarkets
+            metavault.save()
+        }
     }
 }
 
