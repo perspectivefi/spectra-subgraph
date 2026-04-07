@@ -210,18 +210,32 @@ export function updateAccountMetavaultRequest(
         requestType,
         getAssetId(metavaultAddress, requestType)
     )
-    // AssemblyScript does not handle switch well
+    const epochId =
+        MetavaultWrapperAbi.bind(metavaultAddress).try_epochId().value
+    const epochChanged =
+        accountAsset.epochId !== null &&
+        !accountAsset.epochId!.isZero() &&
+        accountAsset.epochId!.notEqual(epochId)
+
     if (operation == "add") {
-        accountAsset.balance = accountAsset.balance.plus(amount)
+        if (epochChanged) {
+            // previous balance is from a settled epoch, reset before adding
+            accountAsset.balance = amount
+        } else {
+            accountAsset.balance = accountAsset.balance.plus(amount)
+        }
     } else if (operation == "sub") {
         accountAsset.balance = accountAsset.balance.minus(amount)
     } else if (operation == "set") {
         accountAsset.balance = amount
+    } else if (operation == "clear") {
+        // only zero balance from a previous epoch; preserve current epoch requests
+        if (epochChanged) {
+            accountAsset.balance = ZERO_BI
+        }
     } else {
         throw new Error("Invalid operation: " + operation)
     }
-    const epochId =
-        MetavaultWrapperAbi.bind(metavaultAddress).try_epochId().value
     accountAsset.epochId = epochId
     accountAsset.createdAtTimestamp = timestamp
     accountAsset.save()

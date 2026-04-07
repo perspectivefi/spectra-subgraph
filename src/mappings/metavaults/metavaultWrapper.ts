@@ -249,10 +249,6 @@ export function handleDecreaseRedeemRequest(
             metavaultAssets: ZERO_BI,
         })
     }
-    // what happens if:
-    // 1. user requests deposit
-    // 2. curator settles
-    // 3. user requests new deposit
 }
 
 export function handleDeposit(event: Deposit): void {
@@ -261,7 +257,7 @@ export function handleDeposit(event: Deposit): void {
         event.address,
         event.block.timestamp,
         AssetType.MV_REQUEST_DEPOSIT,
-        "set",
+        "clear",
         ZERO_BI
     )
 
@@ -322,7 +318,7 @@ export function handleWithdraw(event: Withdraw): void {
         event.address,
         event.block.timestamp,
         AssetType.MV_REQUEST_REDEEM,
-        "set",
+        "clear",
         ZERO_BI
     )
 
