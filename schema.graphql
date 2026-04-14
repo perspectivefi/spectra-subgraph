@@ -711,6 +711,48 @@ type Metavault @entity(immutable: false) {
     symbol: String # [empty if remote]
     decimals: Int # [empty if remote]
     underlying: Asset # The underlying asset address [empty if remote]
+
+    # Deployment info (from factory StepDeployed events)
+    factory: Bytes
+    deployedAtBlock: BigInt
+    deployedAtTimestamp: BigInt
+
+    # Denormalized metadata (from RegistryV2 StringSet events)
+    curatorName: String
+    curatorWebsite: String
+    description: String
+    displayName: String
+
+    # Denormalized module addresses (from RegistryV2 AddressSet events)
+    vaultAddress: Bytes
+    treasuryAddress: Bytes
+    rolesDefault: Bytes
+    delayDefault: Bytes
+    rolesPool: Bytes
+    delayPool: Bytes
+    rolesSwap: Bytes
+    delaySwap: Bytes
+    rolesAcct: Bytes
+    delayAcct: Bytes
+
+    # Generic metadata (for non-standard keys)
+    metadataEntries: [MetavaultMetadata!]! @derivedFrom(field: "vault")
+
+    # Completeness flag
+    isComplete: Boolean!
+}
+
+type MetavaultMetadata @entity(immutable: false) {
+    id: ID!
+    vault: Metavault!
+    key: Bytes!
+    stringValue: String
+    addressValue: Bytes
+    uintValue: BigInt
+    bytesValue: Bytes
+    valueType: Int!
+    updatedAtBlock: BigInt!
+    updatedAtTimestamp: BigInt!
 }
 
 type MetavaultBridgeInitiated @entity(immutable: true) {
