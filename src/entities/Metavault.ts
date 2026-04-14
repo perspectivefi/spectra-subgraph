@@ -135,6 +135,7 @@ function createMetavault(
     metavault.markets = []
     metavault.pendleMarkets = []
     metavault.chains = []
+    metavault.isComplete = false
 
     let account = getAccount(metavaultAddress.toHex(), timestamp)
     metavault.account = account.id
