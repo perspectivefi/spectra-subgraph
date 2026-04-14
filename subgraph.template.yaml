@@ -64,6 +64,66 @@ dataSources:
           handler: handleBridgePathAllowed
         - event: BridgePathRemoved(indexed address,indexed address,address,indexed uint32,address)
           handler: handleBridgePathRemoved
+  - name: MetaVaultFactory
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: MetaVaultFactory
+      address: '{{ metaVaultFactory }}'
+      startBlock: {{ metaVaultFactoryStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities: [ ]
+      file: ./src/mappings/metavaults/metavaultFactory.ts
+      abis:
+        - name: MetaVaultFactory
+          file: ./abis/MetaVaultFactory.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+        - name: MetavaultWrapper
+          file: ./abis/MetavaultWrapper.json
+        - name: AmphorAsyncVault
+          file: ./abis/AmphorAsyncVault.json
+      eventHandlers:
+        - event: StepDeployed(indexed address,indexed bytes32,address[],address)
+          handler: handleStepDeployed
+  - name: MetavaultsRegistryV2
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: MetavaultsRegistryV2
+      address: '{{ metavaultsRegistryV2 }}'
+      startBlock: {{ metavaultsRegistryV2StartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities: [ ]
+      file: ./src/mappings/metavaults/metavaultRegistryV2.ts
+      abis:
+        - name: MetavaultsRegistryV2
+          file: ./abis/MetavaultsRegistryV2.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+        - name: MetavaultWrapper
+          file: ./abis/MetavaultWrapper.json
+        - name: AmphorAsyncVault
+          file: ./abis/AmphorAsyncVault.json
+      eventHandlers:
+        - event: StringSet(indexed address,indexed bytes32,string)
+          handler: handleStringSet
+        - event: AddressSet(indexed address,indexed bytes32,address)
+          handler: handleAddressSet
+        - event: Uint256Set(indexed address,indexed bytes32,uint256)
+          handler: handleUint256Set
+        - event: BytesSet(indexed address,indexed bytes32,bytes)
+          handler: handleBytesSet
+        - event: RemoteRegistered(indexed address,indexed uint256,address)
+          handler: handleRemoteRegistered
+        - event: RemoteUnregistered(indexed address,indexed uint256,address)
+          handler: handleRemoteUnregistered
   - name: SpectraWrapper
     kind: ethereum/contract
     network: {{network}}
