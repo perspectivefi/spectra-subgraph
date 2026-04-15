@@ -9,55 +9,25 @@ import {
     RemoteUnregistered,
 } from "../../../generated/MetavaultsRegistryV2/MetavaultsRegistryV2"
 import { MetavaultMetadata, RemoteMetavault } from "../../../generated/schema"
-import { MetavaultWrapper, ERC20 } from "../../../generated/templates"
+import { MetavaultWrapper, ERC20, AmphorAsyncVault } from "../../../generated/templates"
 import { getMetavault } from "../../entities/Metavault"
 
-// Well-known key constants
-const VAULT_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("vault"))
-)
-const WRAPPER_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("wrapper"))
-)
-const TREASURY_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("treasury"))
-)
-const ROLES_DEFAULT_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("roles.default"))
-)
-const DELAY_DEFAULT_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("delay.default"))
-)
-const ROLES_POOL_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("roles.pool"))
-)
-const DELAY_POOL_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("delay.pool"))
-)
-const ROLES_SWAP_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("roles.swap"))
-)
-const DELAY_SWAP_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("delay.swap"))
-)
-const ROLES_ACCT_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("roles.acct"))
-)
-const DELAY_ACCT_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("delay.acct"))
-)
-const CURATOR_NAME_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("curator.name"))
-)
-const CURATOR_WEBSITE_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("curator.website"))
-)
-const DESCRIPTION_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("description"))
-)
-const NAME_KEY = changetype<Bytes>(
-    crypto.keccak256(ByteArray.fromUTF8("name"))
-)
+// Well-known key constants (domain-prefixed)
+const CORE_SAFE_KEY = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("core.safe")))
+const CORE_VAULT_KEY = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("core.vault")))
+const CORE_WRAPPER_KEY = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("core.wrapper")))
+const META_NAME_KEY = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("metadata.name")))
+const META_DESCRIPTION_KEY = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("metadata.description")))
+const META_CURATOR_NAME_KEY = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("metadata.curator.name")))
+const META_CURATOR_LINK_KEY = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("metadata.curator.link")))
+const PIPE_DEFAULT_ROLES = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("pipelines.zodiac-default.roles")))
+const PIPE_DEFAULT_DELAY = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("pipelines.zodiac-default.delay")))
+const PIPE_POOL_ROLES = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("pipelines.zodiac-pool.roles")))
+const PIPE_POOL_DELAY = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("pipelines.zodiac-pool.delay")))
+const PIPE_SWAP_ROLES = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("pipelines.zodiac-swap.roles")))
+const PIPE_SWAP_DELAY = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("pipelines.zodiac-swap.delay")))
+const PIPE_ACCT_ROLES = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("pipelines.zodiac-acct.roles")))
+const PIPE_ACCT_DELAY = changetype<Bytes>(crypto.keccak256(ByteArray.fromUTF8("pipelines.zodiac-acct.delay")))
 
 // ---- StringSet ----
 
@@ -87,13 +57,13 @@ export function handleStringSet(event: StringSet): void {
     metadata.save()
 
     // Denormalize well-known string keys onto Metavault
-    if (key == CURATOR_NAME_KEY) {
+    if (key == META_CURATOR_NAME_KEY) {
         metavault.curatorName = value
-    } else if (key == CURATOR_WEBSITE_KEY) {
+    } else if (key == META_CURATOR_LINK_KEY) {
         metavault.curatorWebsite = value
-    } else if (key == DESCRIPTION_KEY) {
+    } else if (key == META_DESCRIPTION_KEY) {
         metavault.description = value
-    } else if (key == NAME_KEY) {
+    } else if (key == META_NAME_KEY) {
         metavault.displayName = value
     }
     metavault.save()
@@ -127,37 +97,46 @@ export function handleAddressSet(event: AddressSet): void {
     metadata.save()
 
     // Denormalize well-known address keys onto Metavault
-    if (key == VAULT_KEY) {
+    if (key == CORE_VAULT_KEY) {
         metavault.vaultAddress = value
-    } else if (key == WRAPPER_KEY) {
+        // Store a reverse-lookup entry so AmphorAsyncVault handlers can find the metavault
+        let reverseId = "vault-reverse-" + value.toHex()
+        let reverseEntry = MetavaultMetadata.load(reverseId)
+        if (!reverseEntry) {
+            reverseEntry = new MetavaultMetadata(reverseId)
+            reverseEntry.vault = metavault.id
+            reverseEntry.key = key
+            reverseEntry.valueType = 1 // address
+            reverseEntry.updatedAtBlock = event.block.number
+            reverseEntry.updatedAtTimestamp = event.block.timestamp
+        }
+        reverseEntry.addressValue = value
+        reverseEntry.save()
+        // Spawn AmphorAsyncVault template for epoch tracking
+        AmphorAsyncVault.create(value)
+    } else if (key == CORE_WRAPPER_KEY) {
         metavault.wrapperAddress = value
         // Spawn templates for the wrapper
         MetavaultWrapper.create(value)
         ERC20.create(value)
-    } else if (key == TREASURY_KEY) {
-        metavault.treasuryAddress = value
-    } else if (key == ROLES_DEFAULT_KEY) {
+    } else if (key == PIPE_DEFAULT_ROLES) {
         metavault.rolesDefault = value
-    } else if (key == DELAY_DEFAULT_KEY) {
+    } else if (key == PIPE_DEFAULT_DELAY) {
         metavault.delayDefault = value
-    } else if (key == ROLES_POOL_KEY) {
+    } else if (key == PIPE_POOL_ROLES) {
         metavault.rolesPool = value
-    } else if (key == DELAY_POOL_KEY) {
+    } else if (key == PIPE_POOL_DELAY) {
         metavault.delayPool = value
-    } else if (key == ROLES_SWAP_KEY) {
+    } else if (key == PIPE_SWAP_ROLES) {
         metavault.rolesSwap = value
-    } else if (key == DELAY_SWAP_KEY) {
+    } else if (key == PIPE_SWAP_DELAY) {
         metavault.delaySwap = value
-    } else if (key == ROLES_ACCT_KEY) {
+    } else if (key == PIPE_ACCT_ROLES) {
         metavault.rolesAcct = value
-    } else if (key == DELAY_ACCT_KEY) {
+    } else if (key == PIPE_ACCT_DELAY) {
         metavault.delayAcct = value
     }
 
-    // Recompute isComplete
-    let hasVault = metavault.vaultAddress !== null
-    let hasWrapper = metavault.wrapperAddress !== null
-    metavault.isComplete = hasVault && hasWrapper
     metavault.save()
 }
 
