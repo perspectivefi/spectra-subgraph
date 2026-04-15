@@ -177,7 +177,7 @@
   },
   {
     "type": "function",
-    "name": "registryV2",
+    "name": "registry",
     "inputs": [],
     "outputs": [
       {
@@ -247,10 +247,10 @@
   },
   {
     "type": "function",
-    "name": "setRegistryV2",
+    "name": "setRegistry",
     "inputs": [
       {
-        "name": "_registryV2",
+        "name": "_registry",
         "type": "address",
         "internalType": "address"
       }
@@ -318,10 +318,10 @@
   },
   {
     "type": "event",
-    "name": "RegistryV2Updated",
+    "name": "RegistryUpdated",
     "inputs": [
       {
-        "name": "registryV2",
+        "name": "registry",
         "type": "address",
         "indexed": false,
         "internalType": "address"
