@@ -2,15 +2,8 @@
     "network": "sonic-mainnet",
     "limitOrderEngine": "0x0000000000000000000000000000000000000000",
     "nonceManager": "0x0000000000000000000000000000000000000000",
-    "metavaultsRegistry": "0x0000000000000000000000000000000000000000",
-    "metavaultsRegistryV2": "0x0000000000000000000000000000000000000000",
-    "metavaultsRegistryV2StartBlock": 0,
-    "metaVaultFactory": "0x0000000000000000000000000000000000000000",
-    "metaVaultFactoryStartBlock": 0,
     "startBlock": 1856000,
     "registry": "0xcb671f588c85E1403ecB9B4f6dA0dff0d1e9D3FB",
     "accessManager": "0x8f2cE1f5B4811b97b3AD3c8721F0A4676002c3B8",
-    "spectra": "0xb827e91c5cd4d6aca2fc0cd93a07db61896af40b",
-    "bridgeCCTP": "0x0000000000000000000000000000000000000000",
-    "bridgeDebridge": "0x0000000000000000000000000000000000000000"
+    "spectra": "0xb827e91c5cd4d6aca2fc0cd93a07db61896af40b"
 }

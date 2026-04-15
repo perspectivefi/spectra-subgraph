@@ -19,9 +19,6 @@ enum AssetType {
     YT
     FYT
     LP
-    MV_SHARES
-    MV_REQUEST_DEPOSIT  
-    MV_REQUEST_REDEEM
     YIELD
     CLAIMED_YIELD
     WRAPPER
@@ -40,12 +37,6 @@ enum TransactionType {
     LP_VAULT_IBT_DEPOSIT
     LP_VAULT_WITHDRAW
     LP_VAULT_REDEEM
-    MV_DEPOSIT_REQUEST
-    MV_DECREASE_DEPOSIT_REQUEST
-    MV_REDEEM_REQUEST
-    MV_DECREASE_REDEEM_REQUEST
-    MV_DEPOSIT
-    MV_WITHDRAW
 }
 
 enum AMM {
@@ -197,7 +188,6 @@ type AccountAsset @entity(immutable: false) {
     principalToken: Future
     "if YT position generating yield or current yield > 0"
     generatedYield: Boolean
-    epochId: BigInt
     #    fytTokenDetails: FYTTokenDetails
 }
 
@@ -351,9 +341,6 @@ type Transaction @entity(immutable: false) {
     userInTransaction: Account
     "if there is any pool on any side of the transaction to be able to list this pool's transactions"
     poolInTransaction: Pool
-    "if there is any metavault on any side of the transaction to be able to list this metavault's transactions"
-    metavaultInTransaction: Metavault
-
     "in case if more than one token was sent"
     amountsIn: [AssetAmount!]!
     "in case if more than one token was received"
@@ -365,10 +352,6 @@ type Transaction @entity(immutable: false) {
     ibtRate: BigInt # IBT rate at the time of the transaction
     ptRate: BigInt # PT rate at the time of the transaction
 
-    # Metavault-specific transaction fields
-    metavaultEpochId: BigInt # epoch context for all metavault transactions
-    metavaultShares: BigInt # shares amount for deposit/withdraw
-    metavaultAssets: BigInt # assets amount for deposit/withdraw
 }
 
 ####################
@@ -636,149 +619,3 @@ type RoleLabel @entity(immutable: true) {
     logIndex: BigInt!               # Log index within the transaction
 }
 
-####################
-# Metavault Entitites
-####################
-
-type RemoteMetavault @entity(immutable: false) {
-    id: ID!
-    chainId: Int!
-    remoteMetavaultAddress: Bytes!
-}
-
-type MetavaultBridgePath @entity(immutable: false) {
-    id: ID!
-    metavault: Metavault!
-    tokenIn: Asset!
-    tokenOut: Asset!
-    dstChainId: Int!
-    bridgeAddress: Bytes!
-}
-
-type MetavaultEpoch @entity(immutable: false) {
-    id: ID!
-    timestamp: BigInt!
-    blockNumber: BigInt!
-    rate: BigInt!
-    assets: BigInt!
-    metavault: Metavault!
-}
-
-# Metavault Entity - Some fields can be null depending on the metavault type, e.g. remote metavaults do not hold vault state, only positions
-type Metavault @entity(immutable: false) {
-    # Metavault Static details
-    id: ID!
-    createdAtBlock: BigInt!
-    createdAtTimestamp: BigInt!
-    wrapperAddress: Bytes # The wrapper address [empty if remote]
-    address: Bytes! # The SAFE owner of the wrapper
-    safeAddress: Bytes! # The SAFE owner of the wrapper
-
-    # Metavault State
-    chains: [RemoteMetavault!]! # The chains registered to the metavault
-    epochs: [MetavaultEpoch!] @derivedFrom(field: "metavault") # [empty if remote]
-    account: Account # [empty if remote]
-
-    # Metavault Underlying details
-    name: String # [empty if remote]
-    symbol: String # [empty if remote]
-    decimals: Int # [empty if remote]
-    underlying: Asset # The underlying asset address [empty if remote]
-
-    # Deployment info (from factory StepDeployed events)
-    factory: Bytes
-    deployedAtBlock: BigInt
-    deployedAtTimestamp: BigInt
-
-    # Denormalized metadata (from RegistryV2 StringSet events)
-    curatorName: String
-    curatorWebsite: String
-    description: String
-    displayName: String
-
-    # Denormalized module addresses (from RegistryV2 AddressSet events)
-    vaultAddress: Bytes
-    rolesDefault: Bytes
-    delayDefault: Bytes
-    rolesPool: Bytes
-    delayPool: Bytes
-    rolesSwap: Bytes
-    delaySwap: Bytes
-    rolesAcct: Bytes
-    delayAcct: Bytes
-
-    # Generic metadata (for non-standard keys)
-    metadataEntries: [MetavaultMetadata!]! @derivedFrom(field: "vault")
-}
-
-type MetavaultMetadata @entity(immutable: false) {
-    id: ID!
-    vault: Metavault!
-    key: Bytes!
-    stringValue: String
-    addressValue: Bytes
-    uintValue: BigInt
-    bytesValue: Bytes
-    valueType: Int!
-    updatedAtBlock: BigInt!
-    updatedAtTimestamp: BigInt!
-}
-
-type MetavaultBridgeInitiated @entity(immutable: true) {
-    id: Bytes!
-    operator: Bytes! # The operator that added the timelocked transaction
-    safe: Bytes! # The safe address
-    tokenIn: Bytes! # The token in address
-    amount: BigInt! # The amount of tokens to bridge
-    tokenInDecimals: Int! # The decimals of the token in
-    tokenInSymbol: String! # The symbol of the token in
-    tokenInName: String! # The name of the token in
-    dstChainId: Int! # The destination chain id
-    dstSafe: Bytes! # The destination safe address
-    bridge: Bytes! # The bridge name
-    bridgeType: String! # The bridge type
-    tokenOut: Bytes! # The token out address
-    metavault: Metavault! # The metavault that initiated the bridge
-    timestamp: BigInt! # The timestamp of the event
-    blockNumber: BigInt! # The block number of the event
-    transactionHash: Bytes! # The transaction hash of the event
-    logIndex: BigInt! # The log index of the event
-}
-
-type MetavaultModule @entity(immutable: true) {
-    id: Bytes! 
-    address: Bytes! # the address of the module
-    metavault: Metavault! # The metavault the module is binded to
-}
-
-type TimelockedTransactionAdded @entity(immutable: true) {
-    id: Bytes!
-    operator: Bytes! # The operator that added the timelocked transaction
-    metavault: Metavault! # The metavault that initiated the bridge
-    queueNonce: BigInt! # The nonce for the queue
-    timelockedTransactionHash: Bytes! # The hash of the timelocked transaction
-    to: Bytes! # The address to call
-    value: BigInt! # The value to send
-    data: Bytes! # The data to send
-    operation: Int! # The operation type
-    nonce: BigInt! # The nonce for this operation
-    timestamp: BigInt! # The timestamp of the event
-    blockNumber: BigInt! # The block number of the event
-    transactionHash: Bytes! # The transaction hash of the event
-    logIndex: BigInt! # The log index of the event
-    delayModule: Bytes! # Address of the delay module
-}
-
-type MetavaultTransaction @entity(immutable: true) {
-    id: Bytes!
-    metavault: Metavault! # The metavault that initiated the transaction
-    to: Bytes! # The address to call
-    value: BigInt! # The value to send
-    data: Bytes! # The data to send
-    operation: Int! # The operation type
-    module: MetavaultModule # The module that initiated the transaction
-    timestamp: BigInt! # The timestamp of the event
-    blockNumber: BigInt! # The block number of the event
-    transactionHash: Bytes! # The transaction hash of the event
-    logIndex: BigInt! # The log index of the event
-}
