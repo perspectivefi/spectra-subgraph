@@ -33,10 +33,6 @@ enum TransactionType {
     # if only one coin has been withdrawn
     AMM_REMOVE_LIQUIDITY_ONE
     AMM_EXCHANGE
-    LP_VAULT_UNDERLYING_DEPOSIT
-    LP_VAULT_IBT_DEPOSIT
-    LP_VAULT_WITHDRAW
-    LP_VAULT_REDEEM
 }
 
 enum AMM {

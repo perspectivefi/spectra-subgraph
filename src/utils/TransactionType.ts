@@ -5,10 +5,6 @@ class TransactionType {
     AMM_REMOVE_LIQUIDITY: string = "AMM_REMOVE_LIQUIDITY"
     AMM_REMOVE_LIQUIDITY_ONE: string = "AMM_REMOVE_LIQUIDITY_ONE"
     AMM_EXCHANGE: string = "AMM_EXCHANGE"
-    LP_VAULT_UNDERLYING_DEPOSIT: string = "LP_VAULT_UNDERLYING_DEPOSIT"
-    LP_VAULT_IBT_DEPOSIT: string = "LP_VAULT_IBT_DEPOSIT"
-    LP_VAULT_WITHDRAW: string = "LP_VAULT_WITHDRAW"
-    LP_VAULT_REDEEM: string = "LP_VAULT_REDEEM"
 }
 
 const transactionType = new TransactionType()
