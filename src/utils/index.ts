@@ -11,4 +11,3 @@ export {
 } from "./idGenerators"
 export { default as AssetType } from "./AssetType"
 export { default as PoolType } from "./PoolType"
-export { default as InfraVaultType } from "./InfraVaultType"

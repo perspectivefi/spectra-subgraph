@@ -1,18 +1,21 @@
 import { BigInt, Address } from "@graphprotocol/graph-ts"
 
-import { Infravault, Metavault } from "../../../generated/schema"
+import { MetavaultMetadata, Metavault } from "../../../generated/schema"
 import { EpochStart } from "../../../generated/templates/AmphorAsyncVault/AmphorAsyncVault"
 import { AmphorAsyncVault } from "../../../generated/templates/AmphorAsyncVault/AmphorAsyncVault"
 import { createMetavaultEpoch } from "../../entities/Metavault"
 
 export function handleEpochStart(event: EpochStart): void {
-    const infravault = Infravault.load(event.address.toHex())
-    if (!infravault) {
+    // Reverse-lookup: find the metavault that owns this vault address.
+    // The entry is created by handleAddressSet when core.vault key is set.
+    let reverseEntry = MetavaultMetadata.load(
+        "vault-reverse-" + event.address.toHex()
+    )
+    if (!reverseEntry) {
         return
     }
-    const metavault = Metavault.load(infravault.metavault)
+    const metavault = Metavault.load(reverseEntry.vault)
     if (!metavault || !metavault.wrapperAddress) {
-        // a valid infravault without a metavault wrapper should not happen
         return
     }
     const lastSavedBalance = event.params.lastSavedBalance

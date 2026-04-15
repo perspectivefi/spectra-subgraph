@@ -664,28 +664,6 @@ type MetavaultEpoch @entity(immutable: false) {
     metavault: Metavault!
 }
 
-enum InfravaultType {
-    AMPHOR_ASYNC_VAULT
-    UNKNOWN
-}
-
-type Infravault @entity(immutable: false) {
-    id: ID!
-    address: Bytes!
-    metavault: Metavault!
-    type: InfravaultType!
-}
-
-# Pendle market registered to a metavault
-type PendleMarket @entity(immutable: false) {
-    id: ID! # market address
-    address: Bytes!
-    sy: Bytes! # SY token address
-    pt: Bytes! # PT token address
-    yt: Bytes! # YT token address
-    createdAtTimestamp: BigInt!
-}
-
 # Metavault Entity - Some fields can be null depending on the metavault type, e.g. remote metavaults do not hold vault state, only positions
 type Metavault @entity(immutable: false) {
     # Metavault Static details
@@ -697,12 +675,7 @@ type Metavault @entity(immutable: false) {
     safeAddress: Bytes! # The SAFE owner of the wrapper
 
     # Metavault State
-    infravault: Infravault # The infra vault address underneath the wrapper [empty if remote]
-    markets: [Pool!]! # The Spectra markets registered to the metavault
-    pendleMarkets: [PendleMarket!] # The Pendle markets registered to the metavault
-    isMetavaultRegistered: Boolean! # Is the metavault registered to the metavault registry
     chains: [RemoteMetavault!]! # The chains registered to the metavault
-    bridgePaths: [MetavaultBridgePath!] @derivedFrom(field: "metavault")
     epochs: [MetavaultEpoch!] @derivedFrom(field: "metavault") # [empty if remote]
     account: Account # [empty if remote]
 
@@ -725,7 +698,6 @@ type Metavault @entity(immutable: false) {
 
     # Denormalized module addresses (from RegistryV2 AddressSet events)
     vaultAddress: Bytes
-    treasuryAddress: Bytes
     rolesDefault: Bytes
     delayDefault: Bytes
     rolesPool: Bytes
@@ -737,9 +709,6 @@ type Metavault @entity(immutable: false) {
 
     # Generic metadata (for non-standard keys)
     metadataEntries: [MetavaultMetadata!]! @derivedFrom(field: "vault")
-
-    # Completeness flag
-    isComplete: Boolean!
 }
 
 type MetavaultMetadata @entity(immutable: false) {

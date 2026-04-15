@@ -5,54 +5,14 @@ import {
     Account,
     Metavault,
     MetavaultEpoch,
-    Infravault,
     MetavaultBridgePath,
 } from "../../generated/schema"
 import {
-    AmphorAsyncVault as AmphorAsyncVaultTemplate,
     GnosisSafe,
 } from "../../generated/templates"
-import { AmphorAsyncVault } from "../../generated/templates/AmphorAsyncVault/AmphorAsyncVault"
-import { InfraVaultType } from "../utils"
 import { AssetType } from "../utils"
 import { getAccount } from "./Account"
 import { getAsset } from "./Asset"
-
-export function createInfravault(
-    infravaultAddress: Address,
-    metavaultAddress: Address
-): Infravault {
-    let infravault = new Infravault(infravaultAddress.toHex())
-    infravault.address = infravaultAddress
-
-    infravault.type = inferInfravaultType(infravaultAddress)
-    infravault.metavault = metavaultAddress.toHex()
-    infravault.save()
-
-    if (infravault.type == InfraVaultType.AMPHOR_ASYNC_VAULT) {
-        AmphorAsyncVaultTemplate.create(infravaultAddress)
-    }
-
-    return infravault
-}
-
-export function inferInfravaultType(infravaultAddress: Address): string {
-    const infravault = AmphorAsyncVault.bind(infravaultAddress)
-
-    let pendingSiloCall = infravault.try_pendingSilo()
-    let claimableSilo = infravault.try_claimableSilo()
-    let epochId = infravault.try_epochId()
-
-    if (
-        !pendingSiloCall.reverted &&
-        !claimableSilo.reverted &&
-        !epochId.reverted
-    ) {
-        return InfraVaultType.AMPHOR_ASYNC_VAULT
-    }
-
-    return InfraVaultType.UNKNOWN
-}
 
 export function getMetavaultFromWrapper(
     metavaultWrapperAddress: Address,
@@ -70,11 +30,6 @@ export function getMetavaultFromWrapper(
     // metavault does not have a wrapper assigned yet, fill remaining fields
     {
         metavault.wrapperAddress = metavaultWrapperAddress
-        const infravaultAddress = MetavaultWrapper.bind(
-            metavaultWrapperAddress
-        ).try_getInfraVault().value
-        const infravault = createInfravault(infravaultAddress, safeAddress)
-        metavault.infravault = infravault.id
         metavault.name = MetavaultWrapper.bind(
             metavaultWrapperAddress
         ).try_name().value
@@ -128,14 +83,10 @@ function createMetavault(
     let metavault = new Metavault(metavaultAddress.toHex())
     metavault.createdAtTimestamp = timestamp
     metavault.createdAtBlock = blockNumber
-    metavault.isMetavaultRegistered = false
     metavault.safeAddress = metavaultAddress
     metavault.address = metavaultAddress
 
-    metavault.markets = []
-    metavault.pendleMarkets = []
     metavault.chains = []
-    metavault.isComplete = false
 
     let account = getAccount(metavaultAddress.toHex(), timestamp)
     metavault.account = account.id
