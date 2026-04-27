@@ -1,6 +1,6 @@
 # Spectra Subgraph
 
-This repository contains the source code for the Spectra Protocol Subgraph. It indexes data from the Spectra Protocol smart contracts, including Futures, Pools (AMMs), Metavaults, Limit Orders, Access Management, and Blocks.
+This repository contains the source code for the Spectra Protocol Subgraph. It indexes data from the Spectra Protocol smart contracts, including Futures, Pools (AMMs), Limit Orders, Access Management, and Blocks.
 
 ## Prerequisites
 
@@ -79,7 +79,6 @@ graph deploy --product hosted-service <GITHUB_USER>/<SUBGRAPH_NAME> <subgraph-fi
 
 -   **Future**: Represents Future Vaults (PT/IBT).
 -   **Pool**: Represents AMM pools (Curve V1, NG, SNG).
--   **Metavault**: Represents Metavaults and their wrappers.
 -   **LimitOrder**: Tracks limit orders via the LimitOrderEngine.
 -   **Account**: User accounts and their portfolios.
 -   **Asset**: Tokens and assets indexed by the subgraph.
