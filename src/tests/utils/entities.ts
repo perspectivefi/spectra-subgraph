@@ -15,3 +15,6 @@ export let POOL_ENTITY = "Pool"
 export let TRANSFER_ENTITY = "Transfer"
 
 export let NETWORK_ENTITY = "Network"
+
+export let BRIDGED_PT_ENTITY = "BridgedPt"
+export let PT_BRIDGE_OPERATION_ENTITY = "PtBridgeOperation"
