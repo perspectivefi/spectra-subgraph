@@ -324,4 +324,26 @@ templates:
       eventHandlers:
         - event: NonceIncreased(indexed address,uint256,uint256)
           handler: handleNonceManagerNonceIncreased
-
+  - name: PTBridge
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: PTBridge
+      address: '{{ ptBridgeAddr }}'
+      startBlock: {{ ptBridgeStartBlock }}
+    mapping:
+      kind: ethereum/events
+      language: wasm/assemblyscript
+      apiVersion: 0.0.6
+      entities:
+        - BridgedPt
+        - PtBridgeOperation
+      file: ./src/mappings/ptBridge.ts
+      abis:
+        - name: PTBridge
+          file: ./abis/PTBridge.json
+      eventHandlers:
+        - event: PTLocked(indexed uint256,indexed address,indexed address,uint256,string,uint32)
+          handler: handlePTLocked
+        - event: PTUnlocked(indexed bytes32,indexed address,indexed address,uint256)
+          handler: handlePTUnlocked
