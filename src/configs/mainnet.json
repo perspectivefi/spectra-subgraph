@@ -9,5 +9,7 @@
     "factory": "0xae4d5d5199265512B2a77Ad675107735B891aBc8",
     "spectra": "0x6a89228055c7c28430692e342f149f37462b478b",
     "bridgeCCTP": "0xdc19e4e223da7858a1582d9630da291d6c617591",
-    "bridgeDebridge": "0xbdec3d025bfab40b4a509a6cca22fe771a896b7f"
+    "bridgeDebridge": "0xbdec3d025bfab40b4a509a6cca22fe771a896b7f",
+    "ptBridgeAddr": "0x7e7401a74c7d3aba87c9a3797162d96503255add",
+    "ptBridgeStartBlock": 25188800
 }
