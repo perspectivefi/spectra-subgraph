@@ -9,6 +9,6 @@
     "spectra": "0x64fcc3a02eeeba05ef701b7eed066c6ebd5d4e51",
     "bridgeCCTP": "0x2bb1d7aa7121b2171ef8276d790c6646ba92ab9a",
     "bridgeDebridge": "0xde1532d8a909e93b7a2db06fed6fe941af11ee88",
-    "ptBridgeAddr": "0x0000000000000000000000000000000000000000",
-    "ptBridgeStartBlock": 0
+    "ptBridgeAddr": "0x7e7401a74c7d3aba87c9a3797162d96503255add",
+    "ptBridgeStartBlock": 46582704
 }
