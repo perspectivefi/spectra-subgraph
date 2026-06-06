@@ -481,8 +481,19 @@ type OnChainOrderStatus @entity(immutable: false) {
     orderHash: Bytes!               # The raw order hash
     totalFilled: BigInt!            # Accumulated actualMaking from OrderFilled
     cancelled: Boolean!             # True if OrderCanceled was emitted
-    updatedAt: BigInt! @index       # Timestamp of the last update (OrderFilled or OrderCanceled) - (TODO: check indexed for time-based queries)
-    updatedAtBlock: BigInt! @index  # Block number of the last update (OrderFilled or OrderCanceled) -(TODO: check indexed for block-based queries)
+    isPreSigned: Boolean            # True if OrderPreSigned emitted; nullable so a graft can copy pre-existing orders (null = predates presign tracking)
+    updatedAt: BigInt! @index       # Timestamp of the last update (OrderFilled, OrderCanceled or OrderPreSigned) - (TODO: check indexed for time-based queries)
+    updatedAtBlock: BigInt! @index  # Block number of the last update (OrderFilled, OrderCanceled or OrderPreSigned) -(TODO: check indexed for block-based queries)
+}
+
+# Tracks the protocol limit-order fee held on the LimitOrderEngine.
+# Singleton entity (id = "limit-order-fee"), updated on each LimitOrderFeeChange event.
+type LimitOrderFee @entity(immutable: false) {
+    id: ID!                          # Constant: "limit-order-fee"
+    currentFee: BigInt!             # Current fee in 18-decimal WAD (newLimitOrderFee from the last event)
+    previousFee: BigInt!            # The fee value prior to the last change
+    updatedAt: BigInt!              # Timestamp of the last LimitOrderFeeChange event
+    updatedAtBlock: BigInt!         # Block number of the last LimitOrderFeeChange event
 }
 
 ####################
