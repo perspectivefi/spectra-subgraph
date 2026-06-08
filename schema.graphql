@@ -487,13 +487,13 @@ type OnChainOrderStatus @entity(immutable: false) {
 }
 
 # Tracks the protocol limit-order fee held on the LimitOrderEngine.
-# Singleton entity (id = "limit-order-fee"), updated on each LimitOrderFeeChange event.
+# Singleton entity (id = "limit-order-fee"), updated on each LimitOrderFeeUpdated event.
 type LimitOrderFee @entity(immutable: false) {
     id: ID!                          # Constant: "limit-order-fee"
-    currentFee: BigInt!             # Current fee in 18-decimal WAD (newLimitOrderFee from the last event)
-    previousFee: BigInt!            # The fee value prior to the last change
-    updatedAt: BigInt!              # Timestamp of the last LimitOrderFeeChange event
-    updatedAtBlock: BigInt!         # Block number of the last LimitOrderFeeChange event
+    currentFee: BigInt!             # Current fee in 18-decimal WAD (newFee from the last event)
+    previousFee: BigInt!            # The stored fee value prior to the last update (derived, not in the event)
+    updatedAt: BigInt!              # Timestamp of the last LimitOrderFeeUpdated event
+    updatedAtBlock: BigInt!         # Block number of the last LimitOrderFeeUpdated event
 }
 
 ####################

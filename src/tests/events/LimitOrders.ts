@@ -5,7 +5,7 @@ import {
     OrderFilled,
     OrderCanceled,
     OrderPreSigned,
-    LimitOrderFeeChange,
+    LimitOrderFeeUpdated,
     NonceIncreased,
 } from "../../../generated/LimitOrderEngine/LimitOrderEngine"
 
@@ -84,23 +84,18 @@ export function createOrderPreSignedEvent(
     return event
 }
 
-// LimitOrderFeeChange(uint256 previousLimitOrderFee, uint256 newLimitOrderFee)
-export function createLimitOrderFeeChangeEvent(
-    previousFee: BigInt,
+// LimitOrderFeeUpdated(uint256 newFee)
+export function createLimitOrderFeeUpdatedEvent(
     newFee: BigInt
-): LimitOrderFeeChange {
-    let event = withBlock(changetype<LimitOrderFeeChange>(newMockEvent()))
+): LimitOrderFeeUpdated {
+    let event = withBlock(changetype<LimitOrderFeeUpdated>(newMockEvent()))
 
-    let previousParam = new ethereum.EventParam(
-        "previousLimitOrderFee",
-        ethereum.Value.fromUnsignedBigInt(previousFee)
-    )
     let newParam = new ethereum.EventParam(
-        "newLimitOrderFee",
+        "newFee",
         ethereum.Value.fromUnsignedBigInt(newFee)
     )
 
-    event.parameters = [previousParam, newParam]
+    event.parameters = [newParam]
     return event
 }
 

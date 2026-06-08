@@ -137,8 +137,8 @@ dataSources:
           handler: handleOrderCanceled
         - event: OrderPreSigned(indexed bytes32,indexed address)
           handler: handleOrderPreSigned
-        - event: LimitOrderFeeChange(uint256,uint256)
-          handler: handleLimitOrderFeeChange
+        - event: LimitOrderFeeUpdated(uint256)
+          handler: handleLimitOrderFeeUpdated
         - event: NonceIncreased(indexed address,uint256,uint256)
           handler: handleNonceIncreased
         - event: AuthorityUpdated(address)

@@ -4,7 +4,7 @@ import {
     OrderFilled as OrderFilledEvent,
     OrderCanceled as OrderCanceledEvent,
     OrderPreSigned as OrderPreSignedEvent,
-    LimitOrderFeeChange as LimitOrderFeeChangeEvent,
+    LimitOrderFeeUpdated as LimitOrderFeeUpdatedEvent,
     NonceIncreased as NonceIncreasedEvent,
     AuthorityUpdated as AuthorityUpdatedEvent,
     FeeRecipientUpdated as FeeRecipientUpdatedEvent,
@@ -116,21 +116,25 @@ export function handleOrderPreSigned(event: OrderPreSignedEvent): void {
 }
 
 /**
- * Handle LimitOrderFeeChange event from LimitOrderEngine
+ * Handle LimitOrderFeeUpdated event from LimitOrderEngine
  * Emitted when the protocol limit-order fee is updated via setLimitOrderFee.
  * Tracked as a singleton entity holding the current and previous fee (18-decimal WAD).
+ * The event only carries newFee, so previousFee is derived from the stored value.
  */
-export function handleLimitOrderFeeChange(
-    event: LimitOrderFeeChangeEvent
+export function handleLimitOrderFeeUpdated(
+    event: LimitOrderFeeUpdatedEvent
 ): void {
     // Singleton entity for the protocol-wide limit-order fee
     let fee = LimitOrderFee.load("limit-order-fee")
     if (fee == null) {
         fee = new LimitOrderFee("limit-order-fee")
+        fee.previousFee = ZERO_BI
+    } else {
+        // Carry the prior current value into previousFee before overwriting
+        fee.previousFee = fee.currentFee
     }
 
-    fee.previousFee = event.params.previousLimitOrderFee
-    fee.currentFee = event.params.newLimitOrderFee
+    fee.currentFee = event.params.newFee
     fee.updatedAt = event.block.timestamp
     fee.updatedAtBlock = event.block.number
 

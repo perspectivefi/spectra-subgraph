@@ -11,7 +11,7 @@ import {
     handleOrderFilled,
     handleOrderCanceled,
     handleOrderPreSigned,
-    handleLimitOrderFeeChange,
+    handleLimitOrderFeeUpdated,
     handleNonceIncreased,
     handleNonceManagerNonceIncreased,
 } from "../mappings/limitOrders"
@@ -19,7 +19,7 @@ import {
     createOrderFilledEvent,
     createOrderCanceledEvent,
     createOrderPreSignedEvent,
-    createLimitOrderFeeChangeEvent,
+    createLimitOrderFeeUpdatedEvent,
     createNonceIncreasedEvent,
     DEFAULT_TIMESTAMP,
     DEFAULT_BLOCK,
@@ -143,11 +143,10 @@ describe("Limit Orders - handlers", () => {
         })
     })
 
-    describe("handleLimitOrderFeeChange", () => {
-        test("creates the fee singleton with previous and new fee", () => {
-            handleLimitOrderFeeChange(
-                createLimitOrderFeeChangeEvent(
-                    BigInt.zero(),
+    describe("handleLimitOrderFeeUpdated", () => {
+        test("creates the fee singleton with newFee and zero previous", () => {
+            handleLimitOrderFeeUpdated(
+                createLimitOrderFeeUpdatedEvent(
                     BigInt.fromString("10000000000000000") // 1% in WAD
                 )
             )
@@ -162,16 +161,14 @@ describe("Limit Orders - handlers", () => {
             assert.entityCount(LIMIT_ORDER_FEE, 1)
         })
 
-        test("updates the singleton in place on subsequent changes", () => {
-            handleLimitOrderFeeChange(
-                createLimitOrderFeeChangeEvent(
-                    BigInt.zero(),
+        test("derives previousFee from the stored value on subsequent updates", () => {
+            handleLimitOrderFeeUpdated(
+                createLimitOrderFeeUpdatedEvent(
                     BigInt.fromString("10000000000000000")
                 )
             )
-            handleLimitOrderFeeChange(
-                createLimitOrderFeeChangeEvent(
-                    BigInt.fromString("10000000000000000"),
+            handleLimitOrderFeeUpdated(
+                createLimitOrderFeeUpdatedEvent(
                     BigInt.fromString("20000000000000000")
                 )
             )
