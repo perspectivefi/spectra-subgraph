@@ -1,7 +1,7 @@
 {
     "network": "base",
     "accessManager": "0x4973b53b300d64ab72147EFF8C9d962f6b1dA02e",
-    "limitOrderEngine": "0x2679DB21f150a41393d09d52cb12f48eBf9135D5",
+    "limitOrderEngine": "0x782cB7b327FCfb66C069c433b9380576ef619e3c",
     "nonceManager": "0x0000000000000000000000000000000000000000",
     "metavaultsRegistry": "0xa2c9da26c1982cacaf01c5c691e0cf0aeb031ac1",
     "startBlock": 16537641,
