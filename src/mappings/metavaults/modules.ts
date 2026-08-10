@@ -6,7 +6,7 @@ import {
     MetavaultTransaction,
 } from "../../../generated/schema"
 import { GnosisSafeModule } from "../../../generated/templates"
-import { EnabledModule, SafeModuleTransaction, SafeMultiSigTransaction } from "../../../generated/templates/GnosisSAFE/GnosisSAFE"
+import { EnabledModule, SafeModuleTransaction, SafeMultiSigTransaction } from "../../../generated/templates/GnosisSafe/GnosisSAFE"
 import { TransactionAdded } from "../../../generated/templates/GnosisSafeModule/GnosisSAFEModule"
 
 
