@@ -1,11 +1,10 @@
 import { Address, BigInt, log } from "@graphprotocol/graph-ts"
 
-import { MetavaultWrapper as MetavaultWrapperAbi } from "../../generated/Metavault/MetavaultWrapper"
 import { AccountAsset, Future } from "../../generated/schema"
 import { ZERO_BI } from "../constants"
 import { AssetType, generateAccountAssetId } from "../utils"
 import { getAccount } from "./Account"
-import { getAsset, getAssetId } from "./Asset"
+import { getAsset } from "./Asset"
 import { getERC20Balance } from "./ERC20"
 import { getERC4626Balance } from "./ERC4626"
 import { getAccountYieldAsset } from "./Yield"
@@ -16,21 +15,19 @@ export function createAccountAsset(
     accountAddress: Address,
     assetAddress: Address,
     type: string,
-    timestamp: BigInt,
-    assetId: string | null = null // used to override the assetId for special assets like MV request/redeem
+    timestamp: BigInt
 ): AccountAsset {
     let id = generateAccountAssetId(
         accountAddress.toHex(),
-        assetId !== null ? assetId : assetAddress.toHex()
+        assetAddress.toHex()
     )
 
     let accountAsset = new AccountAsset(id)
 
     accountAsset.createdAtTimestamp = timestamp
     accountAsset.balance = ZERO_BI
-    accountAsset.epochId = ZERO_BI
 
-    let asset = getAsset(assetAddress.toHex(), timestamp, type, assetId)
+    let asset = getAsset(assetAddress.toHex(), timestamp, type)
     let account = getAccount(accountAddress.toHex(), timestamp)
 
     accountAsset.asset = asset.id
@@ -44,12 +41,11 @@ export function getAccountAsset(
     accountAddress: Address,
     assetAddress: Address,
     timestamp: BigInt,
-    type: string,
-    assetId: string | null = null // used to override the assetId for special assets like MV request/redeem
+    type: string
 ): AccountAsset {
     let id = generateAccountAssetId(
         accountAddress.toHex(),
-        assetId !== null ? assetId : assetAddress.toHex()
+        assetAddress.toHex()
     )
 
     let accountAsset = AccountAsset.load(id)
@@ -59,8 +55,7 @@ export function getAccountAsset(
             accountAddress,
             assetAddress,
             type,
-            timestamp,
-            assetId
+            timestamp
         )
     }
 
@@ -195,49 +190,3 @@ export function updateAccountAssetYTBalance(
     return accountAsset
 }
 
-export function updateAccountMetavaultRequest(
-    accountAddress: Address,
-    metavaultAddress: Address,
-    timestamp: BigInt,
-    requestType: string,
-    operation: string,
-    amount: BigInt
-): AccountAsset {
-    let accountAsset = getAccountAsset(
-        accountAddress,
-        metavaultAddress,
-        timestamp,
-        requestType,
-        getAssetId(metavaultAddress, requestType)
-    )
-    const epochId =
-        MetavaultWrapperAbi.bind(metavaultAddress).try_epochId().value
-    const epochChanged =
-        accountAsset.epochId !== null &&
-        !accountAsset.epochId!.isZero() &&
-        accountAsset.epochId!.notEqual(epochId)
-
-    if (operation == "add") {
-        if (epochChanged) {
-            // previous balance is from a settled epoch, reset before adding
-            accountAsset.balance = amount
-        } else {
-            accountAsset.balance = accountAsset.balance.plus(amount)
-        }
-    } else if (operation == "sub") {
-        accountAsset.balance = accountAsset.balance.minus(amount)
-    } else if (operation == "set") {
-        accountAsset.balance = amount
-    } else if (operation == "clear") {
-        // only zero balance from a previous epoch; preserve current epoch requests
-        if (epochChanged) {
-            accountAsset.balance = ZERO_BI
-        }
-    } else {
-        throw new Error("Invalid operation: " + operation)
-    }
-    accountAsset.epochId = epochId
-    accountAsset.createdAtTimestamp = timestamp
-    accountAsset.save()
-    return accountAsset
-}

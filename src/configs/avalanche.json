@@ -3,12 +3,9 @@
     "accessManager": "0x4973b53b300d64ab72147EFF8C9d962f6b1dA02e",
     "limitOrderEngine": "0x0000000000000000000000000000000000000000",
     "nonceManager": "0x0000000000000000000000000000000000000000",
-    "metavaultsRegistry": "0xacf33983cab5f9e914e6a93a2f4d531b5c516602",
     "startBlock": 62814000,
     "registry": "0x786Da12e9836a9ff9b7d92e8bac1C849e2ACe378",
     "spectra": "0x4baB31D6c557F8285eccB5167095147a36D9BaFa",
-    "bridgeCCTP": "0x7be591bac3f40ac887aa8761354fe1286b67da29",
-    "bridgeDebridge": "0xebb61709e9514954a01542adb988dc3a49f3f7f8",
     "ptBridgeAddr": "0x0000000000000000000000000000000000000000",
     "ptBridgeStartBlock": 0
 }

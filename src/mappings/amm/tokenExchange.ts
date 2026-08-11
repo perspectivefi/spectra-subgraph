@@ -203,7 +203,6 @@ function tokenExchange(
             futureInTransaction: ZERO_ADDRESS,
             userInTransaction: Address.fromBytes(account.address),
             poolInTransaction: Address.fromBytes(pool.address),
-            metavaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [amountIn.id],
             amountsOut: [amountOut.id],
@@ -225,9 +224,6 @@ function tokenExchange(
 
             ibtRate,
             ptRate,
-            metavaultEpochId: ZERO_BI,
-            metavaultShares: ZERO_BI,
-            metavaultAssets: ZERO_BI,
         })
 
         pool.totalFees = pool.totalFees.plus(fee)
