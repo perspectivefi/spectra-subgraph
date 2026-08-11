@@ -1,0 +1,44 @@
+name: Tag version
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    name: tag merge commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out merge commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Create immutable version tag
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          version="$(node -p "require('./package.json').version")"
+          if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "package.json version must use MAJOR.MINOR.PATCH format; got: $version" >&2
+            exit 1
+          fi
+
+          tag="v${version}"
+          tag_ref="refs/tags/${tag}"
+          remote_ref="$(git ls-remote --refs origin "$tag_ref")"
+          if [[ -n "$remote_ref" ]]; then
+            echo "$tag already exists; refusing to move it." >&2
+            exit 1
+          fi
+
+          git tag "$tag" "$EXPECTED_SHA"
+          git push origin "$tag_ref"
+          echo "Created $tag on $EXPECTED_SHA."
