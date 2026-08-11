@@ -33,6 +33,7 @@ import {
 } from "./mocks/CurvePool"
 import {
     ETH_ADDRESS_MOCK,
+    mockERC20BalanceForAccount,
     mockERC20BalanceFor,
     mockERC20Balances,
     mockERC20Functions,
@@ -56,7 +57,11 @@ import {
     SENDER_YIELD_IN_IBT_MOCK,
 } from "./mocks/FutureVault"
 import { RECEIVER_USER_MOCK } from "./mocks/Transaction"
-import { ACCOUNT_ASSET_ENTITY, TRANSFER_ENTITY } from "./utils/entities"
+import {
+    ACCOUNT_ASSET_ENTITY,
+    ASSET_ENTITY,
+    TRANSFER_ENTITY,
+} from "./utils/entities"
 
 const LP_TRANSFER_TRANSACTION_HASH = Address.fromString(
     "0x0000000000000000000000000000000005552222"
@@ -73,6 +78,10 @@ const INVALID_TRANSFER_TRANSACTION_HASH = Address.fromString(
 const INVALID_ASSET_ADDRESS = Address.fromString(
     "0x0000000000000000000000000000000000009999"
 )
+const UNKNOWN_TRANSFER_LOG_INDEX = BigInt.fromI32(7)
+const UNKNOWN_TRANSFER_TRANSACTION_INDEX = BigInt.fromI32(2)
+const UNKNOWN_SENDER_BALANCE = BigInt.fromI32(11)
+const UNKNOWN_RECEIVER_BALANCE = BigInt.fromI32(29)
 
 export const SENDER_USER_MOCK = Address.fromString(
     "0x1010000000000000000000000000000000000000"
@@ -97,6 +106,16 @@ describe("handleTransfer()", () => {
         mockERC20Balances()
         mockERC20FunctionsFor(INVALID_ASSET_ADDRESS)
         mockERC20BalanceFor(INVALID_ASSET_ADDRESS, BigInt.fromI32(0))
+        mockERC20BalanceForAccount(
+            INVALID_ASSET_ADDRESS,
+            SENDER_USER_MOCK,
+            UNKNOWN_SENDER_BALANCE
+        )
+        mockERC20BalanceForAccount(
+            INVALID_ASSET_ADDRESS,
+            RECEIVER_USER_MOCK,
+            UNKNOWN_RECEIVER_BALANCE
+        )
 
         mockFactoryFunctions()
 
@@ -162,7 +181,9 @@ describe("handleTransfer()", () => {
         invalidAssetTransferEvent.address = INVALID_ASSET_ADDRESS
         invalidAssetTransferEvent.transaction.hash =
             INVALID_TRANSFER_TRANSACTION_HASH
-        invalidAssetTransferEvent.logIndex = ZERO_BI
+        invalidAssetTransferEvent.logIndex = UNKNOWN_TRANSFER_LOG_INDEX
+        invalidAssetTransferEvent.transaction.index =
+            UNKNOWN_TRANSFER_TRANSACTION_INDEX
 
         let invalidAssetValueParam = new ethereum.EventParam(
             "value",
@@ -182,6 +203,57 @@ describe("handleTransfer()", () => {
 
     test("Should create a Transfer entity for known and newly discovered assets", () => {
         assert.entityCount(TRANSFER_ENTITY, 3)
+    })
+
+    test("Should discover unknown assets and refresh each account independently", () => {
+        assert.fieldEquals(
+            ASSET_ENTITY,
+            INVALID_ASSET_ADDRESS.toHex(),
+            "type",
+            "UNKNOWN"
+        )
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                SENDER_USER_MOCK.toHex(),
+                INVALID_ASSET_ADDRESS.toHex()
+            ),
+            "balance",
+            UNKNOWN_SENDER_BALANCE.toString()
+        )
+        assert.fieldEquals(
+            ACCOUNT_ASSET_ENTITY,
+            generateAccountAssetId(
+                RECEIVER_USER_MOCK.toHex(),
+                INVALID_ASSET_ADDRESS.toHex()
+            ),
+            "balance",
+            UNKNOWN_RECEIVER_BALANCE.toString()
+        )
+
+        const transferId = generateTransferId(
+            INVALID_TRANSFER_TRANSACTION_HASH.toHex(),
+            "1",
+            UNKNOWN_TRANSFER_LOG_INDEX.toString()
+        )
+        assert.fieldEquals(
+            TRANSFER_ENTITY,
+            transferId,
+            "from",
+            SENDER_USER_MOCK.toHex()
+        )
+        assert.fieldEquals(
+            TRANSFER_ENTITY,
+            transferId,
+            "to",
+            RECEIVER_USER_MOCK.toHex()
+        )
+        assert.fieldEquals(
+            TRANSFER_ENTITY,
+            transferId,
+            "logIndex",
+            UNKNOWN_TRANSFER_LOG_INDEX.toString()
+        )
     })
 
     test("Should reflect asset transfers in the account portfolio", () => {

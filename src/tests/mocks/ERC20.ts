@@ -97,6 +97,16 @@ export function mockERC20BalanceFor(
     createBalanceOfCallMock(addressMock, balance)
 }
 
+export function mockERC20BalanceForAccount(
+    tokenMock: Address,
+    accountMock: Address,
+    balance: BigInt
+): void {
+    createMockedFunction(tokenMock, "balanceOf", "balanceOf(address):(uint256)")
+        .withArgs([ethereum.Value.fromAddress(accountMock)])
+        .returns([ethereum.Value.fromUnsignedBigInt(balance)])
+}
+
 export const FIRST_FUTURE_VAULT_PT_BALANCE_MOCK = BigInt.fromString("100")
 export const SECOND_FUTURE_VAULT_PT_BALANCE_MOCK = BigInt.fromString("200")
 export const UNDERLYING_BALANCE_MOCK = BigInt.fromString("1100")

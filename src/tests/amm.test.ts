@@ -109,6 +109,9 @@ const REMOVE_LIQUIDITY_LOG_INDEX = BigInt.fromI32(2)
 const REMOVE_ONE_LIQUIDITY_LOG_INDEX = BigInt.fromI32(3)
 const EXCHANGE_LOG_INDEX = BigInt.fromI32(4)
 const SECOND_EXCHANGE_LOG_INDEX = BigInt.fromI32(5)
+const ROUTER_ADDRESS_MOCK = Address.fromString(
+    "0x0000000000000000000000000000000000007777"
+)
 
 const addLiquidityTransactionId = generateTransactionId(
     POOL_ADD_LIQUIDITY_TRANSACTION_HASH,
@@ -143,37 +146,35 @@ const FEE = toPrecision(BigInt.fromI32(40), 1, 8)
 const ADMIN_FEE = toPrecision(BigInt.fromI32(50), 1, 10)
 const FUTURE_ADMIN_FEE = toPrecision(BigInt.fromI32(60), 1, 10)
 const COLLECTED_ADMIN_FEE = toPrecision(BigInt.fromI32(500), 1, 8)
+// Expected from the pool's configured 0.04% fee and 50% admin share for the
+// 10-token IBT output used by the routed exchange scenario.
+const EXPECTED_SWAP_FEE = "8006405124099279"
+const EXPECTED_SWAP_ADMIN_FEE = "4003202562049639"
+
+function setupPoolStack(): void {
+    clearStore()
+    mockERC20Functions()
+    mockERC20Balances()
+    mockFactoryFunctions()
+    mockFutureVaultFunctions()
+    mockFeedRegistryInterfaceFunctions()
+    mockCurvePoolFunctions()
+    mockFutureVaultIBTRate(FIRST_FUTURE_VAULT_ADDRESS_MOCK, BigInt.fromI32(1))
+    createConvertToSharesCallMock(
+        IBT_ADDRESS_MOCK,
+        toPrecision(BigInt.fromI32(10), 1, 18)
+    )
+    createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+    createAssetCallMock(IBT_ADDRESS_MOCK, Address.fromString(ETH_ADDRESS_MOCK))
+    emitFactoryUpdated()
+    emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
+    emiCurveFactoryChange()
+    emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
+}
 
 describe("handleAddLiquidity()", () => {
     beforeAll(() => {
-        clearStore()
-
-        mockERC20Functions()
-        mockERC20Balances()
-
-        mockFactoryFunctions()
-
-        mockFactoryFunctions()
-        mockFutureVaultFunctions()
-        mockFeedRegistryInterfaceFunctions()
-        mockCurvePoolFunctions()
-        mockFutureVaultIBTRate(
-            FIRST_FUTURE_VAULT_ADDRESS_MOCK,
-            BigInt.fromI32(1)
-        )
-        createConvertToSharesCallMock(
-            IBT_ADDRESS_MOCK,
-            toPrecision(BigInt.fromI32(10), 1, 18)
-        )
-        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
-        createAssetCallMock(
-            IBT_ADDRESS_MOCK,
-            Address.fromString(ETH_ADDRESS_MOCK)
-        )
-        emitFactoryUpdated()
-        emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
-        emiCurveFactoryChange()
-        emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
+        setupPoolStack()
 
         let addLiquidityEvent = changetype<AddLiquidity>(newMockEvent())
         addLiquidityEvent.address = FIRST_POOL_ADDRESS_MOCK
@@ -321,11 +322,6 @@ describe("handleAddLiquidity()", () => {
             FIRST_USER_MOCK.toHex(),
             POOL_PT_ADDRESS_MOCK.toHex()
         )
-        let accountLPId = generateAccountAssetId(
-            FIRST_USER_MOCK.toHex(),
-            POOL_LP_ADDRESS_MOCK.toHex()
-        )
-
         const accountEntity = Account.load(FIRST_USER_MOCK.toHex())!
         const portfolio = accountEntity.portfolio.load()
 
@@ -342,12 +338,6 @@ describe("handleAddLiquidity()", () => {
             accountPTId,
             "balance",
             POOL_PT_BALANCE_MOCK.toString()
-        )
-        assert.fieldEquals(
-            ACCOUNT_ASSET_ENTITY,
-            accountLPId,
-            "balance",
-            POOL_LP_BALANCE_MOCK.toString()
         )
     })
 
@@ -427,7 +417,7 @@ describe("handleAddLiquidity()", () => {
         )
     })
 
-    test("Should create hourly and daily pool stats", () => {
+    test("Should count the deposit in hourly and daily pool stats", () => {
         assert.entityCount(POOL_STATS_ENTITY, 2)
         assert.fieldEquals(
             POOL_STATS_ENTITY,
@@ -443,17 +433,38 @@ describe("handleAddLiquidity()", () => {
             POOL_STATS_ENTITY,
             generatePoolStatsId(
                 FIRST_POOL_ADDRESS_MOCK.toHex(),
+                SECONDS_PER_HOUR.toString(),
+                "0"
+            ),
+            "deposits",
+            "1"
+        )
+        assert.fieldEquals(
+            POOL_STATS_ENTITY,
+            generatePoolStatsId(
+                FIRST_POOL_ADDRESS_MOCK.toHex(),
                 SECONDS_PER_DAY.toString(),
                 "0"
             ),
             "pool",
             FIRST_POOL_ADDRESS_MOCK.toHex()
         )
+        assert.fieldEquals(
+            POOL_STATS_ENTITY,
+            generatePoolStatsId(
+                FIRST_POOL_ADDRESS_MOCK.toHex(),
+                SECONDS_PER_DAY.toString(),
+                "0"
+            ),
+            "deposits",
+            "1"
+        )
     })
 })
 
 describe("handleRemoveLiquidity()", () => {
     beforeAll(() => {
+        setupPoolStack()
         let removeLiquidityEvent = changetype<RemoveLiquidity>(newMockEvent())
         removeLiquidityEvent.address = FIRST_POOL_ADDRESS_MOCK
         removeLiquidityEvent.transaction.hash =
@@ -474,7 +485,7 @@ describe("handleRemoveLiquidity()", () => {
         let tokenSupplyParam = new ethereum.EventParam(
             "token_supply",
             ethereum.Value.fromSignedBigInt(
-                LP_TOTAL_SUPPLY.minus(
+                Pool.load(FIRST_POOL_ADDRESS_MOCK.toHex())!.lpTotalSupply.minus(
                     toPrecision(BigInt.fromI32(30), 0, STANDARD_DECIMALS_MOCK)
                 )
             )
@@ -623,11 +634,6 @@ describe("handleRemoveLiquidity()", () => {
             FIRST_USER_MOCK.toHex(),
             POOL_PT_ADDRESS_MOCK.toHex()
         )
-        let accountLPId = generateAccountAssetId(
-            FIRST_USER_MOCK.toHex(),
-            POOL_LP_ADDRESS_MOCK.toHex()
-        )
-
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
             accountIBTId,
@@ -639,12 +645,6 @@ describe("handleRemoveLiquidity()", () => {
             accountPTId,
             "balance",
             POOL_PT_BALANCE_MOCK.toString()
-        )
-        assert.fieldEquals(
-            ACCOUNT_ASSET_ENTITY,
-            accountLPId,
-            "balance",
-            POOL_LP_BALANCE_MOCK.toString()
         )
     })
 
@@ -710,10 +710,11 @@ describe("handleRemoveLiquidity()", () => {
 
 describe("handleTokenExchange()", () => {
     beforeAll(() => {
+        setupPoolStack()
         let tokenExchangeEvent = changetype<TokenExchange>(newMockEvent())
         tokenExchangeEvent.address = FIRST_POOL_ADDRESS_MOCK
         tokenExchangeEvent.transaction.hash = POOL_EXCHANGE_TRANSACTION_HASH
-        tokenExchangeEvent.transaction.from = FIRST_USER_MOCK
+        tokenExchangeEvent.transaction.from = ROUTER_ADDRESS_MOCK
         tokenExchangeEvent.logIndex = EXCHANGE_LOG_INDEX
         tokenExchangeEvent.block.timestamp = ZERO_BI
 
@@ -867,11 +868,6 @@ describe("handleTokenExchange()", () => {
             FIRST_USER_MOCK.toHex(),
             POOL_PT_ADDRESS_MOCK.toHex()
         )
-        let accountLPId = generateAccountAssetId(
-            FIRST_USER_MOCK.toHex(),
-            POOL_LP_ADDRESS_MOCK.toHex()
-        )
-
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
             accountIBTId,
@@ -884,21 +880,17 @@ describe("handleTokenExchange()", () => {
             "balance",
             POOL_PT_BALANCE_MOCK.toString()
         )
-        assert.fieldEquals(
-            ACCOUNT_ASSET_ENTITY,
-            accountLPId,
-            "balance",
-            POOL_LP_BALANCE_MOCK.toString()
-        )
     })
 
-    test("Should assign account and pool relation to the transaction", () => {
+    test("Should attribute a routed exchange to the buyer emitted by the pool", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
             exchangeTransactionId,
             "userInTransaction",
             FIRST_USER_MOCK.toHex()
         )
+
+        assert.notInStore(ACCOUNT_ENTITY, ROUTER_ADDRESS_MOCK.toHex())
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
@@ -913,14 +905,14 @@ describe("handleTokenExchange()", () => {
             TRANSACTION_ENTITY,
             exchangeTransactionId,
             "fee",
-            "8006405124099279"
+            EXPECTED_SWAP_FEE
         )
 
         assert.fieldEquals(
             TRANSACTION_ENTITY,
             exchangeTransactionId,
             "adminFee",
-            "4003202562049639"
+            EXPECTED_SWAP_ADMIN_FEE
         )
     })
 
@@ -929,14 +921,14 @@ describe("handleTokenExchange()", () => {
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "totalFees",
-            "8006405124099279"
+            EXPECTED_SWAP_FEE
         )
 
         assert.fieldEquals(
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "totalAdminFees",
-            "4003202562049639"
+            EXPECTED_SWAP_ADMIN_FEE
         )
     })
 
@@ -1037,6 +1029,7 @@ describe("handleTokenExchange()", () => {
 
 describe("handleRemoveLiquidityOne()", () => {
     beforeAll(() => {
+        setupPoolStack()
         let removeLiquidityOneEvent = changetype<RemoveLiquidityOne>(
             newMockEvent()
         )
@@ -1200,14 +1193,14 @@ describe("handleRemoveLiquidityOne()", () => {
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "totalFees",
-            "8006405124099279"
+            "0"
         )
 
         assert.fieldEquals(
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "totalAdminFees",
-            "4003202562049639"
+            "0"
         )
     })
 
@@ -1230,7 +1223,7 @@ describe("handleRemoveLiquidityOne()", () => {
                 DAY_ID_0
             ),
             "dailyRemoveLiquidity",
-            "2"
+            "1"
         )
 
         assert.fieldEquals(
@@ -1257,6 +1250,7 @@ describe("handleRemoveLiquidityOne()", () => {
 
 describe("handleCommitNewParameters", () => {
     beforeAll(() => {
+        setupPoolStack()
         let commitNewParametersEvent = changetype<CommitNewParameters>(
             newMockEvent()
         )
@@ -1298,6 +1292,7 @@ describe("handleCommitNewParameters", () => {
 
 describe("handleNewParameter", () => {
     beforeAll(() => {
+        setupPoolStack()
         let newParametersEvent = changetype<NewParameters>(newMockEvent())
         newParametersEvent.address = FIRST_POOL_ADDRESS_MOCK
 
@@ -1323,6 +1318,7 @@ describe("handleNewParameter", () => {
 
 describe("handleClaimAdminFee", () => {
     beforeAll(() => {
+        setupPoolStack()
         let claimAdminFeeEvent = changetype<ClaimAdminFee>(newMockEvent())
         claimAdminFeeEvent.address = FIRST_POOL_ADDRESS_MOCK
         claimAdminFeeEvent.block.timestamp = BigInt.fromI32(1)
