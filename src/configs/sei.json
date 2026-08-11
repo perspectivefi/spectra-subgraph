@@ -5,5 +5,7 @@
     "nonceManager": "0x0000000000000000000000000000000000000000",
     "startBlock": 185400000,
     "registry": "0xec1a510788e24c7c535faf0837351eeea044e775",
-    "spectra": "0x35726a51982d3d89efa89d437bfd5603dc59f46d"
+    "spectra": "0x35726a51982d3d89efa89d437bfd5603dc59f46d",
+    "ptBridgeAddr": "0x0000000000000000000000000000000000000000",
+    "ptBridgeStartBlock": 0
 }

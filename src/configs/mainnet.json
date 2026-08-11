@@ -6,5 +6,7 @@
     "startBlock": 19727256,
     "registry": "0x4973b53b300d64ab72147EFF8C9d962f6b1dA02e",
     "factory": "0xae4d5d5199265512B2a77Ad675107735B891aBc8",
-    "spectra": "0x6a89228055c7c28430692e342f149f37462b478b"
+    "spectra": "0x6a89228055c7c28430692e342f149f37462b478b",
+    "ptBridgeAddr": "0x7e7401a74c7d3aba87c9a3797162d96503255add",
+    "ptBridgeStartBlock": 25188800
 }

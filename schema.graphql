@@ -615,3 +615,34 @@ type RoleLabel @entity(immutable: true) {
     logIndex: BigInt!               # Log index within the transaction
 }
 
+####################
+# PT Bridge (EVM → Stellar)
+####################
+
+enum PtBridgeOperationKind {
+    LOCKED
+    UNLOCKED
+}
+
+"""A PT that has been bridged at least once from this EVM chain to Stellar."""
+type BridgedPt @entity(immutable: true) {
+    id: ID! # `${chainId}-${pt.toHexString()}`
+    chainId: Int!
+    pt: Bytes!
+    firstBridgedAt: BigInt!
+    firstBridgedTx: Bytes!
+}
+
+"""Every PT bridge operation (lock outbound, unlock inbound). Powers a future history surface."""
+type PtBridgeOperation @entity(immutable: true) {
+    id: Bytes! # event.transaction.hash.concatI32(event.logIndex)
+    kind: PtBridgeOperationKind!
+    chainId: Int!
+    pt: Bytes!
+    sender: Bytes
+    amount: BigInt
+    stellarRecipient: String # only on LOCKED
+    blockNumber: BigInt!
+    timestamp: BigInt!
+    txHash: Bytes!
+}
