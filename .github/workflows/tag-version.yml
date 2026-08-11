@@ -3,12 +3,6 @@ name: Tag version
 on:
   push:
     branches: [master]
-  workflow_dispatch:
-    inputs:
-      sha:
-        description: Commit on master whose version tag must be repaired
-        required: true
-        type: string
 
 permissions:
   contents: write
@@ -22,26 +16,14 @@ jobs:
       - name: Check out merge commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.sha || github.sha }}
-          fetch-depth: 0
+          ref: ${{ github.sha }}
 
       - name: Create immutable version tag
         shell: bash
         env:
-          EXPECTED_SHA: ${{ inputs.sha || github.sha }}
+          EXPECTED_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-
-          if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "sha must be a full lowercase commit SHA; got: $EXPECTED_SHA" >&2
-            exit 1
-          fi
-
-          git fetch --no-tags origin master
-          if ! git rev-list --first-parent origin/master | grep -Fx "$EXPECTED_SHA" >/dev/null; then
-            echo "$EXPECTED_SHA is not on the first-parent history of master; refusing to tag it." >&2
-            exit 1
-          fi
 
           version="$(node -p "require('./package.json').version")"
           if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
@@ -51,43 +33,12 @@ jobs:
 
           tag="v${version}"
           tag_ref="refs/tags/${tag}"
-          resolve_remote_tag() {
-            local direct="" peeled="" sha ref
-            while read -r sha ref; do
-              case "$ref" in
-                "$tag_ref") direct="$sha" ;;
-                "${tag_ref}^{}") peeled="$sha" ;;
-              esac
-            done < <(git ls-remote origin "$tag_ref" "${tag_ref}^{}")
-            printf '%s' "${peeled:-$direct}"
-          }
-
-          remote_sha="$(resolve_remote_tag)"
-
-          if [[ -n "$remote_sha" ]]; then
-            if [[ "$remote_sha" == "$EXPECTED_SHA" ]]; then
-              echo "$tag already points to $EXPECTED_SHA; nothing to do."
-              exit 0
-            fi
-
-            echo "$tag already points to $remote_sha, not $EXPECTED_SHA. Refusing to move it." >&2
+          remote_ref="$(git ls-remote --refs origin "$tag_ref")"
+          if [[ -n "$remote_ref" ]]; then
+            echo "$tag already exists; refusing to move it." >&2
             exit 1
           fi
 
           git tag "$tag" "$EXPECTED_SHA"
-          if git push origin "$tag_ref"; then
-            echo "Created $tag on $EXPECTED_SHA."
-            exit 0
-          fi
-
-          remote_sha="$(resolve_remote_tag)"
-          if [[ "$remote_sha" == "$EXPECTED_SHA" ]]; then
-            echo "$tag was created concurrently on $EXPECTED_SHA; nothing else to do."
-            exit 0
-          fi
-
-          echo "Could not create $tag on $EXPECTED_SHA." >&2
-          if [[ -n "$remote_sha" ]]; then
-            echo "$tag now points to $remote_sha; refusing to move it." >&2
-          fi
-          exit 1
+          git push origin "$tag_ref"
+          echo "Created $tag on $EXPECTED_SHA."
