@@ -18,7 +18,12 @@ import {
     RemoveLiquidityOne,
     TokenExchange,
 } from "../../generated/templates/CurvePool/CurvePool"
-import { DAY_ID_0, ZERO_BI } from "../constants"
+import {
+    DAY_ID_0,
+    SECONDS_PER_DAY,
+    SECONDS_PER_HOUR,
+    ZERO_BI,
+} from "../constants"
 import {
     handleAddLiquidity,
     handleClaimAdminFee,
@@ -35,7 +40,10 @@ import {
     generateFutureDailyStatsId,
     AssetType,
 } from "../utils"
-import { generateTransactionId } from "../utils/idGenerators"
+import {
+    generatePoolStatsId,
+    generateTransactionId,
+} from "../utils/idGenerators"
 import { RAYS_PRECISION, toPrecision } from "../utils/toPrecision"
 import { emitFactoryUpdated } from "./events/Factory"
 import {
@@ -89,11 +97,11 @@ import {
     ASSET_AMOUNT_ENTITY,
     FEE_CLAIM_ENTITY,
     POOL_ENTITY,
+    POOL_STATS_ENTITY,
     TRANSACTION_ENTITY,
     ACCOUNT_ASSET_ENTITY,
     ACCOUNT_ENTITY,
     FUTURE_DAILY_STATS_ENTITY,
-    APY_IN_TIME_ENTITY,
 } from "./utils/entities"
 
 const ADD_LIQUIDITY_LOG_INDEX = BigInt.fromI32(1)
@@ -418,6 +426,30 @@ describe("handleAddLiquidity()", () => {
             "1"
         )
     })
+
+    test("Should create hourly and daily pool stats", () => {
+        assert.entityCount(POOL_STATS_ENTITY, 2)
+        assert.fieldEquals(
+            POOL_STATS_ENTITY,
+            generatePoolStatsId(
+                FIRST_POOL_ADDRESS_MOCK.toHex(),
+                SECONDS_PER_HOUR.toString(),
+                "0"
+            ),
+            "pool",
+            FIRST_POOL_ADDRESS_MOCK.toHex()
+        )
+        assert.fieldEquals(
+            POOL_STATS_ENTITY,
+            generatePoolStatsId(
+                FIRST_POOL_ADDRESS_MOCK.toHex(),
+                SECONDS_PER_DAY.toString(),
+                "0"
+            ),
+            "pool",
+            FIRST_POOL_ADDRESS_MOCK.toHex()
+        )
+    })
 })
 
 describe("handleRemoveLiquidity()", () => {
@@ -616,19 +648,19 @@ describe("handleRemoveLiquidity()", () => {
         )
     })
 
-    test("Should add fees to total balances", () => {
+    test("Should not add swap fees for a balanced liquidity removal", () => {
         assert.fieldEquals(
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "totalFees",
-            "40000000000000000"
+            "0"
         )
 
         assert.fieldEquals(
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "totalAdminFees",
-            "20000000000000000"
+            "0"
         )
     })
 
@@ -681,6 +713,7 @@ describe("handleTokenExchange()", () => {
         let tokenExchangeEvent = changetype<TokenExchange>(newMockEvent())
         tokenExchangeEvent.address = FIRST_POOL_ADDRESS_MOCK
         tokenExchangeEvent.transaction.hash = POOL_EXCHANGE_TRANSACTION_HASH
+        tokenExchangeEvent.transaction.from = FIRST_USER_MOCK
         tokenExchangeEvent.logIndex = EXCHANGE_LOG_INDEX
         tokenExchangeEvent.block.timestamp = ZERO_BI
 
@@ -896,14 +929,14 @@ describe("handleTokenExchange()", () => {
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "totalFees",
-            "48006405124099279"
+            "8006405124099279"
         )
 
         assert.fieldEquals(
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "totalAdminFees",
-            "24003202562049639"
+            "4003202562049639"
         )
     })
 
@@ -957,6 +990,7 @@ describe("handleTokenExchange()", () => {
         tokenExchangeEvent.address = SECOND_POOL_ADDRESS_MOCK
         tokenExchangeEvent.transaction.hash =
             POOL_SECOND_EXCHANGE_TRANSACTION_HASH
+        tokenExchangeEvent.transaction.from = FIRST_USER_MOCK
         tokenExchangeEvent.logIndex = SECOND_EXCHANGE_LOG_INDEX
         tokenExchangeEvent.block.timestamp = ZERO_BI
 
@@ -1051,12 +1085,12 @@ describe("handleRemoveLiquidityOne()", () => {
         handleRemoveLiquidityOne(removeLiquidityOneEvent)
     })
 
-    test("Should create new transaction entity with 'AMM_REMOVE_LIQUIDITY_ONE' as type", () => {
+    test("Should represent one-coin withdrawal as AMM_REMOVE_LIQUIDITY", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
             removeOneLiquidityTransactionId,
             "type",
-            "AMM_REMOVE_LIQUIDITY_ONE"
+            "AMM_REMOVE_LIQUIDITY"
         )
     })
 
@@ -1095,6 +1129,11 @@ describe("handleRemoveLiquidityOne()", () => {
             removeOneLiquidityTransactionId,
             "amountsOut",
             `[${generateAssetAmountId(
+                POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
+                POOL_IBT_ADDRESS_MOCK.toHex(),
+                REMOVE_ONE_LIQUIDITY_LOG_INDEX.toString(),
+                AssetType.IBT
+            )}, ${generateAssetAmountId(
                 POOL_REMOVE_LIQUIDITY_ONE_TRANSACTION_HASH.toHex(),
                 POOL_PT_ADDRESS_MOCK.toHex(),
                 REMOVE_ONE_LIQUIDITY_LOG_INDEX.toString(),
@@ -1156,35 +1195,19 @@ describe("handleRemoveLiquidityOne()", () => {
         )
     })
 
-    test("Should set correct transaction fee parameters", () => {
-        assert.fieldEquals(
-            TRANSACTION_ENTITY,
-            removeOneLiquidityTransactionId,
-            "fee",
-            "40032025620496397"
-        )
-
-        assert.fieldEquals(
-            TRANSACTION_ENTITY,
-            removeOneLiquidityTransactionId,
-            "adminFee",
-            "20016012810248198"
-        )
-    })
-
-    test("Should add fees to total balances", () => {
+    test("Should leave swap fee totals unchanged", () => {
         assert.fieldEquals(
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "totalFees",
-            "88038430744595676"
+            "8006405124099279"
         )
 
         assert.fieldEquals(
             POOL_ENTITY,
             FIRST_POOL_ADDRESS_MOCK.toHex(),
             "totalAdminFees",
-            "44019215372297837"
+            "4003202562049639"
         )
     })
 

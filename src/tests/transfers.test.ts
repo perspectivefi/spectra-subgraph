@@ -11,6 +11,7 @@ import {
 
 import { Account } from "../../generated/schema"
 import { Transfer } from "../../generated/templates/ERC20/ERC20"
+import { ZERO_BI } from "../constants"
 import { handleTransfer } from "../mappings/transfers"
 import {
     generateAccountAssetId,
@@ -32,8 +33,10 @@ import {
 } from "./mocks/CurvePool"
 import {
     ETH_ADDRESS_MOCK,
+    mockERC20BalanceFor,
     mockERC20Balances,
     mockERC20Functions,
+    mockERC20FunctionsFor,
     POOL_LP_BALANCE_MOCK,
     POOL_PT_BALANCE_MOCK,
     STANDARD_DECIMALS_MOCK,
@@ -67,6 +70,10 @@ const INVALID_TRANSFER_TRANSACTION_HASH = Address.fromString(
     "0x0000000000000000000000000000000005559999"
 )
 
+const INVALID_ASSET_ADDRESS = Address.fromString(
+    "0x0000000000000000000000000000000000009999"
+)
+
 export const SENDER_USER_MOCK = Address.fromString(
     "0x1010000000000000000000000000000000000000"
 )
@@ -88,6 +95,8 @@ describe("handleTransfer()", () => {
 
         mockERC20Functions()
         mockERC20Balances()
+        mockERC20FunctionsFor(INVALID_ASSET_ADDRESS)
+        mockERC20BalanceFor(INVALID_ASSET_ADDRESS, BigInt.fromI32(0))
 
         mockFactoryFunctions()
 
@@ -113,6 +122,7 @@ describe("handleTransfer()", () => {
         let lpTransferEvent = changetype<Transfer>(newMockEvent())
         lpTransferEvent.address = POOL_LP_ADDRESS_MOCK
         lpTransferEvent.transaction.hash = LP_TRANSFER_TRANSACTION_HASH
+        lpTransferEvent.logIndex = ZERO_BI
 
         let fromParam = new ethereum.EventParam(
             "from",
@@ -136,6 +146,7 @@ describe("handleTransfer()", () => {
         let ptTransferEvent = changetype<Transfer>(newMockEvent())
         ptTransferEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
         ptTransferEvent.transaction.hash = PT_TRANSFER_TRANSACTION_HASH
+        ptTransferEvent.logIndex = ZERO_BI
 
         let ptValueParam = new ethereum.EventParam(
             "value",
@@ -147,12 +158,11 @@ describe("handleTransfer()", () => {
         handleTransfer(ptTransferEvent)
 
         let invalidAssetTransferEvent = changetype<Transfer>(newMockEvent())
-        // Asset not existing in any APWine pool
-        invalidAssetTransferEvent.address = Address.fromString(
-            "0x0000000000000000000000000000000000000000"
-        )
+        // Asset discovered from its first transfer
+        invalidAssetTransferEvent.address = INVALID_ASSET_ADDRESS
         invalidAssetTransferEvent.transaction.hash =
             INVALID_TRANSFER_TRANSACTION_HASH
+        invalidAssetTransferEvent.logIndex = ZERO_BI
 
         let invalidAssetValueParam = new ethereum.EventParam(
             "value",
@@ -170,10 +180,9 @@ describe("handleTransfer()", () => {
         handleTransfer(invalidAssetTransferEvent)
     })
 
-    test("Should create new Transfer entity on every valid transfer", () => {
-        assert.entityCount(TRANSFER_ENTITY, 2)
+    test("Should create a Transfer entity for known and newly discovered assets", () => {
+        assert.entityCount(TRANSFER_ENTITY, 3)
     })
-
 
     test("Should reflect asset transfers in the account portfolio", () => {
         assert.fieldEquals(

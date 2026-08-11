@@ -188,6 +188,8 @@ export function handleFeeClaimed(event: FeeClaimed): void {
         claim.feeCollector = feeCollector.id
         claim.future = future.id
         claim.amount = event.params.receivedAssets
+        claim.ibtAmount = event.params.redeemedIbts
+        claim.ptAmount = ZERO_BI
 
         future.totalCollectedFees = future.totalCollectedFees.plus(
             event.params.receivedAssets

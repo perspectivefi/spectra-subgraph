@@ -94,7 +94,6 @@ import {
     POOL_ENTITY,
     FACTORY_ENTITY,
     TRANSACTION_ENTITY,
-    APY_IN_TIME_ENTITY,
 } from "./utils/entities"
 
 const COLLECTED_FEE = 50
@@ -410,6 +409,20 @@ describe("handleFeeClaimed()", () => {
             feeClaimId,
             "amount",
             COLLECTED_FEE.toString()
+        )
+
+        assert.fieldEquals(
+            FEE_CLAIM_ENTITY,
+            feeClaimId,
+            "ibtAmount",
+            COLLECTED_FEE.toString()
+        )
+
+        assert.fieldEquals(
+            FEE_CLAIM_ENTITY,
+            feeClaimId,
+            "ptAmount",
+            ZERO_BI.toString()
         )
 
         assert.fieldEquals(
@@ -915,19 +928,6 @@ describe("handleCurvePoolDeployed()", () => {
             YT_ADDRESS_MOCK.toHex(),
             "chainId",
             "1"
-        )
-    })
-
-    test("Should create new APY entity assigned to the right pool", () => {
-        test("Should create new pool entity", () => {
-            assert.entityCount(POOL_ENTITY, 1)
-        })
-
-        assert.fieldEquals(
-            APY_IN_TIME_ENTITY,
-            `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`,
-            "pool",
-            FIRST_POOL_ADDRESS_MOCK.toHex()
         )
     })
 })
