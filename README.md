@@ -65,6 +65,20 @@ To deploy to a Graph Node (hosted service or decentralized network), use the sta
 graph deploy --product hosted-service <GITHUB_USER>/<SUBGRAPH_NAME> <subgraph-file.yaml>
 ```
 
+### Release provenance
+
+Direct pushes to `master` are prohibited. Every pull request must increase the
+semantic version in `package.json`; after merge, GitHub creates the matching
+immutable `v<version>` tag on the exact `master` commit. The canonical tagged
+line starts at `v2.0.0`; older `v1.6.x` tags were created from a separate
+feature branch and remain unchanged as historical records.
+
+Goldsky deployment is never triggered by GitHub Actions. An operator must
+explicitly select an existing tag whose commit belongs to `master`, check out
+that tag with a clean working tree, build it, and use the same version in the
+Goldsky deployment slug. Reusing a Goldsky version for different source code is
+not allowed.
+
 ## Project Structure
 
 -   `abis/`: Smart contract ABIs.
