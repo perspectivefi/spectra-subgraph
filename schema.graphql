@@ -17,7 +17,6 @@ enum AssetType {
     IBT
     PT
     YT
-    FYT
     LP
     MV_SHARES
     MV_REQUEST_DEPOSIT  
@@ -36,10 +35,6 @@ enum TransactionType {
     # if only one coin has been withdrawn
     AMM_REMOVE_LIQUIDITY_ONE
     AMM_EXCHANGE
-    LP_VAULT_UNDERLYING_DEPOSIT
-    LP_VAULT_IBT_DEPOSIT
-    LP_VAULT_WITHDRAW
-    LP_VAULT_REDEEM
     MV_DEPOSIT_REQUEST
     MV_DECREASE_DEPOSIT_REQUEST
     MV_REDEEM_REQUEST
@@ -48,61 +43,10 @@ enum TransactionType {
     MV_WITHDRAW
 }
 
-enum AMM {
-    CURVE
-    UNISWAP_V3
-    UNKNOWN
-}
-
-enum PriceSource {
-    CHAINLINK
-    REDSTONE
-}
-
 enum FutureState {
     ACTIVE
     PAUSED
     EXPIRED
-}
-
-####################
-# High level detail entities
-####################
-
-"Platform entity to define IBT/FutureVault platform"
-# possibility to add new platforms without subgraph update)
-type Platform @entity(immutable: false) {
-    id: ID!
-    createdAtTimestamp: BigInt!
-    name: String!
-    infoUrl: String!
-}
-
-"FYTTokenDetails entity to define token details in case it is a FYT token"
-type FYTTokenDetails @entity(immutable: false) {
-    id: ID!
-    createdAtTimestamp: BigInt!
-    expirationAtTimestamp: BigInt!
-
-    generatedYield: BigDecimal
-    generatedYieldValue: BigDecimal
-}
-
-"LPTokenDetails entity to define token details in case it is a LP token"
-type LPTokenDetails @entity(immutable: false) {
-    id: ID!
-    createdAtTimestamp: BigInt!
-
-    totalSupply: BigInt!
-
-    tokens: [Asset!]!
-}
-
-"ValueInTime entity to connect a value with time for history purpose"
-type ValueInTime @entity(immutable: false) {
-    id: ID!
-    timestamp: BigInt!
-    value: BigInt!
 }
 
 ####################
@@ -124,7 +68,7 @@ type Factory @entity(immutable: false) {
 }
 
 ####################
-# Assets and prices
+# Assets
 ####################
 
 "Asset entity to index all kind of details of an asset stored in the subgraph"
@@ -136,11 +80,7 @@ type Asset @entity(immutable: false) {
     name: String!
     symbol: String!
     decimals: Int!
-    price: AssetPrice
     type: AssetType!
-
-    "on of the price feeds"
-    chainlinkPriceFeed: ChainlinkAggregatorProxy
 
     "for PT/YT/LP/YIELD assets"
     futureVault: Future
@@ -149,23 +89,12 @@ type Asset @entity(immutable: false) {
     underlying: Asset
     "in case the asset is a CLAIMED_YIELD we create relation between this CLAIMED_YIELD and its native IBT"
     ibt: Asset
-    fytTokenDetails: FYTTokenDetails
-    lpTokenDetails: LPTokenDetails
     "in case the AssetType is IBT we give the IBT Rates"
     lastIBTRate: BigDecimal
     "IBT to underlying asset as returned by convertToAssets(UNIT). The number is in underlying asset decimals"
     convertToAssetsUnit: BigInt
     lastUpdateTimestamp: BigInt
 
-}
-
-"AssetPrice entity to assign a price of a token to an Asset entity and its price source"
-type AssetPrice @entity(immutable: false) {
-    id: ID!
-    createdAtTimestamp: BigInt!
-    value: BigDecimal!
-    source: PriceSource
-    asset: Asset!
 }
 
 "AssetAmount entity to assign an amount of token (in a transaction for instance) to its dollar value and exact asset"
@@ -198,15 +127,6 @@ type AccountAsset @entity(immutable: false) {
     "if YT position generating yield or current yield > 0"
     generatedYield: Boolean
     epochId: BigInt
-    #    fytTokenDetails: FYTTokenDetails
-}
-
-"ChainlinkAggregatorProxy entity to save information about Chainlink aggregator, mapper should use to fetch the price of an asset"
-type ChainlinkAggregatorProxy @entity(immutable: false) {
-    id: ID!
-    "aggregator address"
-    aggregator: String!
-    asset: Asset!
 }
 
 ####################

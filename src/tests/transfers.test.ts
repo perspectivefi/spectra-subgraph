@@ -47,7 +47,6 @@ import {
     createConvertToAssetsCallMock,
 } from "./mocks/ERC4626"
 import { mockFactoryFunctions } from "./mocks/Factory"
-import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
     IBT_ADDRESS_MOCK,
@@ -126,7 +125,6 @@ describe("handleTransfer()", () => {
         )
 
         mockFutureVaultFunctions()
-        mockFeedRegistryInterfaceFunctions()
         mockCurvePoolFunctions()
 
         emitFactoryUpdated()

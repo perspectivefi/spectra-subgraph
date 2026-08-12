@@ -84,7 +84,6 @@ import {
     POOL_IBT_ADDRESS_MOCK,
     POOL_PT_ADDRESS_MOCK,
 } from "./mocks/Factory"
-import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
     FEE_COLLECTOR_ADDRESS_MOCK,
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
@@ -157,7 +156,6 @@ function setupPoolStack(): void {
     mockERC20Balances()
     mockFactoryFunctions()
     mockFutureVaultFunctions()
-    mockFeedRegistryInterfaceFunctions()
     mockCurvePoolFunctions()
     mockFutureVaultIBTRate(FIRST_FUTURE_VAULT_ADDRESS_MOCK, BigInt.fromI32(1))
     createConvertToSharesCallMock(

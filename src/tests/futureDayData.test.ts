@@ -25,7 +25,6 @@ import {
     createConvertToAssetsCallMock,
 } from "./mocks/ERC4626"
 import { mockFactoryFunctions } from "./mocks/Factory"
-import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
     IBT_ADDRESS_MOCK,
@@ -46,7 +45,6 @@ function setupFutureStatsStack(): void {
     mockERC20Functions()
     mockERC20Balances()
     mockFutureVaultFunctions()
-    mockFeedRegistryInterfaceFunctions()
     mockCurvePoolFunctions()
     createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
     createAssetCallMock(IBT_ADDRESS_MOCK, Address.fromString(ETH_ADDRESS_MOCK))

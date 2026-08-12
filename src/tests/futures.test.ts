@@ -68,7 +68,6 @@ import {
     POOL_PT_ADDRESS_MOCK,
     CURVE_FACTORY_ADDRESS_MOCK,
 } from "./mocks/Factory"
-import { mockFeedRegistryInterfaceFunctions } from "./mocks/FeedRegistryInterface"
 import {
     DEPOSIT_TRANSACTION_HASH,
     FEE_COLLECTOR_ADDRESS_MOCK,
@@ -116,7 +115,6 @@ function setupFutureStack(): void {
     mockFactoryFunctions()
     mockCurvePoolFunctions()
     mockFutureVaultFunctions()
-    mockFeedRegistryInterfaceFunctions()
     createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
     createAssetCallMock(IBT_ADDRESS_MOCK, Address.fromString(ETH_ADDRESS_MOCK))
     emitFactoryUpdated()

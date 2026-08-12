@@ -3,7 +3,6 @@ class AssetType {
     IBT: string = "IBT"
     PT: string = "PT"
     YT: string = "YT"
-    FYT: string = "FYT"
     LP: string = "LP"
     MV_SHARES: string = "MV_SHARES"
     MV_REQUEST_DEPOSIT: string = "MV_REQUEST_DEPOSIT"
