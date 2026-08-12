@@ -8,7 +8,7 @@ import {
     test,
 } from "matchstick-as/assembly"
 
-import { Account, Factory } from "../../generated/schema"
+import { Account, Factory, Future } from "../../generated/schema"
 import {
     FeeClaimed,
     Paused,
@@ -94,10 +94,7 @@ import {
     POOL_ENTITY,
     FACTORY_ENTITY,
     TRANSACTION_ENTITY,
-    APY_IN_TIME_ENTITY,
 } from "./utils/entities"
-
-const COLLECTED_FEE = 50
 
 const DEPOSIT_LOG_INDEX = BigInt.fromI32(1)
 const WITHDRAW_LOG_INDEX = BigInt.fromI32(2)
@@ -112,27 +109,24 @@ const withdrawTransactionId = generateTransactionId(
     WITHDRAW_LOG_INDEX.toString()
 )
 
+function setupFutureStack(): void {
+    clearStore()
+    mockERC20Functions()
+    mockERC20Balances()
+    mockFactoryFunctions()
+    mockCurvePoolFunctions()
+    mockFutureVaultFunctions()
+    mockFeedRegistryInterfaceFunctions()
+    createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
+    createAssetCallMock(IBT_ADDRESS_MOCK, Address.fromString(ETH_ADDRESS_MOCK))
+    emitFactoryUpdated()
+    emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
+    emitFutureVaultDeployed(SECOND_FUTURE_VAULT_ADDRESS_MOCK)
+}
+
 describe("handleFutureVaultDeployed()", () => {
     beforeAll(() => {
-        clearStore()
-        mockERC20Functions()
-        mockERC20Balances()
-
-        mockFactoryFunctions()
-        mockCurvePoolFunctions()
-
-        mockFutureVaultFunctions()
-        mockFeedRegistryInterfaceFunctions()
-
-        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
-        createAssetCallMock(
-            IBT_ADDRESS_MOCK,
-            Address.fromString(ETH_ADDRESS_MOCK)
-        )
-
-        emitFactoryUpdated()
-        emitFutureVaultDeployed(FIRST_FUTURE_VAULT_ADDRESS_MOCK)
-        emitFutureVaultDeployed(SECOND_FUTURE_VAULT_ADDRESS_MOCK)
+        setupFutureStack()
     })
 
     test("Should create new Future on every deployment", () => {
@@ -244,6 +238,9 @@ describe("handleFutureVaultDeployed()", () => {
 })
 
 describe("handlePaused()", () => {
+    beforeAll(() => {
+        setupFutureStack()
+    })
     test("Should change future status to `PAUSED`", () => {
         let pausedEvent = changetype<Paused>(newMockEvent())
         pausedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
@@ -260,7 +257,20 @@ describe("handlePaused()", () => {
 })
 
 describe("handleUnpaused()", () => {
+    beforeAll(() => {
+        setupFutureStack()
+    })
     test("Should change future status to `ACTIVE`", () => {
+        let pausedEvent = changetype<Paused>(newMockEvent())
+        pausedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+        handlePaused(pausedEvent)
+        assert.fieldEquals(
+            FUTURE_ENTITY,
+            FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
+            "state",
+            "PAUSED"
+        )
+
         let unpausedEvent = changetype<Unpaused>(newMockEvent())
         unpausedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
 
@@ -277,6 +287,7 @@ describe("handleUnpaused()", () => {
 
 describe("handleYieldUpdated()", () => {
     beforeAll(() => {
+        setupFutureStack()
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
         createAssetCallMock(
             IBT_ADDRESS_MOCK,
@@ -368,50 +379,62 @@ describe("handleYieldUpdated()", () => {
 // })
 
 describe("handleFeeClaimed()", () => {
-    test("Should create a new FeeClaim entity with properly assign future as well as fee collector entity", () => {
-        createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
-        createAssetCallMock(
-            IBT_ADDRESS_MOCK,
-            Address.fromString(ETH_ADDRESS_MOCK)
-        )
-        let feeClaimedEvent = changetype<FeeClaimed>(newMockEvent())
-        feeClaimedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+    beforeAll(() => {
+        setupFutureStack()
+        let future = Future.load(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex())!
+        future.unclaimedFees = BigInt.fromI32(99)
+        future.save()
 
-        let feeCollectorParam = new ethereum.EventParam(
-            "user",
-            ethereum.Value.fromAddress(FEE_COLLECTOR_ADDRESS_MOCK)
-        )
-
-        let feesParam = new ethereum.EventParam(
-            "redeemedIbts",
-            ethereum.Value.fromI32(COLLECTED_FEE)
-        )
-
-        let receivedAssetsParam = new ethereum.EventParam(
-            "receivedAssets",
-            ethereum.Value.fromI32(COLLECTED_FEE)
-        )
-
-        feeClaimedEvent.parameters = [
-            feeCollectorParam,
-            feesParam,
-            receivedAssetsParam,
+        const firstClaim = changetype<FeeClaimed>(newMockEvent())
+        firstClaim.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+        firstClaim.block.timestamp = BigInt.fromI32(100)
+        firstClaim.parameters = [
+            new ethereum.EventParam(
+                "user",
+                ethereum.Value.fromAddress(FEE_COLLECTOR_ADDRESS_MOCK)
+            ),
+            new ethereum.EventParam("redeemedIbts", ethereum.Value.fromI32(30)),
+            new ethereum.EventParam(
+                "receivedAssets",
+                ethereum.Value.fromI32(50)
+            ),
         ]
+        handleFeeClaimed(firstClaim)
 
-        handleFeeClaimed(feeClaimedEvent)
+        future = Future.load(FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex())!
+        future.unclaimedFees = BigInt.fromI32(77)
+        future.save()
 
-        let feeClaimId = generateFeeClaimId(
+        const secondClaim = changetype<FeeClaimed>(newMockEvent())
+        secondClaim.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
+        secondClaim.block.timestamp = BigInt.fromI32(200)
+        secondClaim.parameters = [
+            new ethereum.EventParam(
+                "user",
+                ethereum.Value.fromAddress(FEE_COLLECTOR_ADDRESS_MOCK)
+            ),
+            new ethereum.EventParam("redeemedIbts", ethereum.Value.fromI32(40)),
+            new ethereum.EventParam(
+                "receivedAssets",
+                ethereum.Value.fromI32(70)
+            ),
+        ]
+        handleFeeClaimed(secondClaim)
+    })
+
+    test("keeps received assets separate from redeemed IBTs", () => {
+        const feeClaimId = generateFeeClaimId(
             FEE_COLLECTOR_ADDRESS_MOCK.toHex(),
-            feeClaimedEvent.block.timestamp.toString()
+            "100"
         )
-
+        assert.fieldEquals(FEE_CLAIM_ENTITY, feeClaimId, "amount", "50")
+        assert.fieldEquals(FEE_CLAIM_ENTITY, feeClaimId, "ibtAmount", "30")
         assert.fieldEquals(
             FEE_CLAIM_ENTITY,
             feeClaimId,
-            "amount",
-            COLLECTED_FEE.toString()
+            "ptAmount",
+            ZERO_BI.toString()
         )
-
         assert.fieldEquals(
             FEE_CLAIM_ENTITY,
             feeClaimId,
@@ -426,15 +449,15 @@ describe("handleFeeClaimed()", () => {
             FEE_COLLECTOR_ADDRESS_MOCK.toHex()
         )
     })
-    test("Should reflect collected fees in the future stats", () => {
+
+    test("accumulates claims and resets unclaimed fees", () => {
+        assert.entityCount(FEE_CLAIM_ENTITY, 2)
         assert.fieldEquals(
             FUTURE_ENTITY,
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
             "totalCollectedFees",
-            COLLECTED_FEE.toString()
+            "120"
         )
-    })
-    test("Should reset unclaimed fees", () => {
         assert.fieldEquals(
             FUTURE_ENTITY,
             FIRST_FUTURE_VAULT_ADDRESS_MOCK.toHex(),
@@ -446,6 +469,7 @@ describe("handleFeeClaimed()", () => {
 
 describe("handleMint()", () => {
     beforeAll(() => {
+        setupFutureStack()
         createConvertToAssetsCallMock(IBT_ADDRESS_MOCK, 1)
         createAssetCallMock(
             IBT_ADDRESS_MOCK,
@@ -519,7 +543,7 @@ describe("handleMint()", () => {
         )
     })
     test("Should create output AccountAsset entities", () => {
-        assert.entityCount(ACCOUNT_ASSET_ENTITY, 6)
+        assert.entityCount(ACCOUNT_ASSET_ENTITY, 3)
 
         assert.fieldEquals(
             ACCOUNT_ASSET_ENTITY,
@@ -565,7 +589,7 @@ describe("handleMint()", () => {
                 DAY_ID_0
             ),
             "dailyDeposits",
-            "2"
+            "1"
         )
 
         assert.fieldEquals(
@@ -612,6 +636,8 @@ describe("handleMint()", () => {
 
 describe("handleRedeem()", () => {
     beforeAll(() => {
+        setupFutureStack()
+        emitMint()
         let redeemEvent = changetype<Redeem>(newMockEvent())
         redeemEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
         redeemEvent.transaction.hash = WITHDRAW_TRANSACTION_HASH
@@ -718,7 +744,7 @@ describe("handleRedeem()", () => {
                 DAY_ID_0
             ),
             "dailyDeposits",
-            "2"
+            "1"
         )
 
         assert.fieldEquals(
@@ -775,8 +801,7 @@ describe("handleRedeem()", () => {
 
 describe("handleCurveFactoryChange()", () => {
     beforeAll(() => {
-        mockFactoryFunctions()
-        mockCurvePoolFunctions()
+        setupFutureStack()
         emiCurveFactoryChange()
     })
 
@@ -796,6 +821,8 @@ describe("handleCurveFactoryChange()", () => {
 
 describe("handleCurvePoolDeployed()", () => {
     beforeAll(() => {
+        setupFutureStack()
+        emiCurveFactoryChange()
         emitCurvePoolDeployed(FIRST_POOL_ADDRESS_MOCK)
     })
 
@@ -917,23 +944,11 @@ describe("handleCurvePoolDeployed()", () => {
             "1"
         )
     })
-
-    test("Should create new APY entity assigned to the right pool", () => {
-        test("Should create new pool entity", () => {
-            assert.entityCount(POOL_ENTITY, 1)
-        })
-
-        assert.fieldEquals(
-            APY_IN_TIME_ENTITY,
-            `${FIRST_POOL_ADDRESS_MOCK.toHex()}-1`,
-            "pool",
-            FIRST_POOL_ADDRESS_MOCK.toHex()
-        )
-    })
 })
 
 describe("handleYieldClaimed()", () => {
     beforeAll(() => {
+        setupFutureStack()
         let yieldClaimedEvent = changetype<YieldClaimed>(newMockEvent())
         yieldClaimedEvent.address = FIRST_FUTURE_VAULT_ADDRESS_MOCK
 

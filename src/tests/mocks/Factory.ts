@@ -32,12 +32,6 @@ export const POOL_PT_ADDRESS_MOCK = Address.fromString(
 export const POOL_DEPLOY_TRANSACTION_HASH = Address.fromString(
     "0x0000000000000000000000000000000001112222"
 )
-export const OLD_LP_VAULT_REGISTRY_ADDRESS_MOCK = Address.fromString(
-    "0x0000000000000000000000000000000000007791"
-)
-export const NEW_LP_VAULT_REGISTRY_ADDRESS_MOCK = Address.fromString(
-    "0x0000000000000000000000000000000000007792"
-)
 
 // let tupleArray: Array<ethereum.Value> = [
 //     ethereum.Value.fromAddress(FIRST_POOL_ADDRESS_MOCK),
