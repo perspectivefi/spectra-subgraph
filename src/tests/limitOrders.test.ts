@@ -24,6 +24,7 @@ import {
     DEFAULT_TIMESTAMP,
     DEFAULT_BLOCK,
 } from "./events/LimitOrders"
+import { OnChainOrderStatus } from "../../generated/schema"
 
 const ORDER_STATUS = "OnChainOrderStatus"
 const USER_NONCE = "UserNonce"
@@ -35,6 +36,13 @@ const ORDER_HASH = Bytes.fromHexString(
 )
 const ORDER_ID = ORDER_HASH.toHexString()
 const MAKER = Address.fromString("0x2222222222222222222222222222222222222222")
+
+// isPreSigned must stay null (not false) until an OrderPreSigned event is seen
+function assertPreSignedUnset(): void {
+    const status = OnChainOrderStatus.load(ORDER_ID)
+    assert.assertNotNull(status)
+    assert.assertNull(status!.get("isPreSigned"))
+}
 
 describe("Limit Orders - handlers", () => {
     beforeEach(() => {
@@ -55,7 +63,7 @@ describe("Limit Orders - handlers", () => {
             )
             assert.fieldEquals(ORDER_STATUS, ORDER_ID, "totalFilled", "500")
             assert.fieldEquals(ORDER_STATUS, ORDER_ID, "cancelled", "false")
-            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "isPreSigned", "false")
+            assertPreSignedUnset()
             assert.fieldEquals(
                 ORDER_STATUS,
                 ORDER_ID,
@@ -113,12 +121,12 @@ describe("Limit Orders - handlers", () => {
     })
 
     describe("handleOrderCanceled", () => {
-        test("marks a fresh order cancelled with zero fill and not pre-signed", () => {
+        test("marks a fresh order cancelled with zero fill and presign unknown", () => {
             handleOrderCanceled(createOrderCanceledEvent(MAKER, ORDER_HASH))
 
             assert.fieldEquals(ORDER_STATUS, ORDER_ID, "cancelled", "true")
             assert.fieldEquals(ORDER_STATUS, ORDER_ID, "totalFilled", "0")
-            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "isPreSigned", "false")
+            assertPreSignedUnset()
         })
 
         test("preserves accumulated fills when cancelling an existing order", () => {
@@ -162,7 +170,7 @@ describe("Limit Orders - handlers", () => {
             handleOrderFilled(
                 createOrderFilledEvent(ORDER_HASH, BigInt.fromI32(700))
             )
-            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "isPreSigned", "false")
+            assertPreSignedUnset()
 
             handleOrderPreSigned(createOrderPreSignedEvent(ORDER_HASH, MAKER))
 

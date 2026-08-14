@@ -44,7 +44,9 @@ export function handleOrderFilled(event: OrderFilledEvent): void {
         orderStatus.orderHash = event.params.orderHash
         orderStatus.totalFilled = ZERO_BI
         orderStatus.cancelled = false
-        orderStatus.isPreSigned = false
+        // isPreSigned is deliberately left unset: null means "presign status
+        // unknown" (entity copied by a graft, or first seen via a fill) —
+        // writing false here would claim knowledge we don't have
     }
 
     // Update order status with new fill
@@ -76,7 +78,7 @@ export function handleOrderCanceled(event: OrderCanceledEvent): void {
         orderStatus = new OnChainOrderStatus(orderHashId)
         orderStatus.orderHash = event.params.orderHash
         orderStatus.totalFilled = ZERO_BI
-        orderStatus.isPreSigned = false
+        // isPreSigned deliberately left unset (null = unknown), see handleOrderFilled
     }
 
     // Mark the order as cancelled
