@@ -57,6 +57,24 @@ const createLPTokenCallMack = (addressMock: Address): void => {
     ])
 }
 
+const mockCurvePoolType = (addressMock: Address): void => {
+    createMockedFunction(
+        addressMock,
+        "decimals",
+        "decimals():(uint8)"
+    ).reverts()
+    createMockedFunction(
+        addressMock,
+        "ma_time",
+        "ma_time():(uint256)"
+    ).reverts()
+    createMockedFunction(
+        addressMock,
+        "ma_half_time",
+        "ma_half_time():(uint256)"
+    ).returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1))])
+}
+
 const createFeeCallMock = (addressMock: Address): void => {
     createMockedFunction(addressMock, "fee", "fee():(uint256)").returns([
         ethereum.Value.fromSignedBigInt(POOL_FEE_MOCK),
@@ -97,6 +115,18 @@ const createPriceScaleCallMock = (addressMock: Address): void => {
     ).returns([ethereum.Value.fromSignedBigInt(POOL_PRICE_SCALE_MOCK)])
 }
 
+const createVirtualPriceCallMock = (addressMock: Address): void => {
+    createMockedFunction(
+        addressMock,
+        "get_virtual_price",
+        "get_virtual_price():(uint256)"
+    ).returns([
+        ethereum.Value.fromUnsignedBigInt(
+            BigInt.fromString("1000000000000000000")
+        ),
+    ])
+}
+
 const createLastPricesCallMock = (addressMock: Address): void => {
     createMockedFunction(
         addressMock,
@@ -116,15 +146,34 @@ const createCoinsCallMock = (addressMock: Address): void => {
         .returns([ethereum.Value.fromAddress(POOL_PT_ADDRESS_MOCK)])
 }
 
-const createGetDyCallMock = (addressMock: Address): void => {
+const createBalanceCallMock = (addressMock: Address, index: i32): void => {
+    createMockedFunction(addressMock, "balances", "balances(uint256):(uint256)")
+        .withArgs([ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(index))])
+        .returns([
+            ethereum.Value.fromUnsignedBigInt(
+                BigInt.fromString("10000000000000000000000")
+            ),
+        ])
+}
+
+const createBalancesCallMock = (addressMock: Address): void => {
+    createBalanceCallMock(addressMock, 0)
+    createBalanceCallMock(addressMock, 1)
+}
+
+const createGetDyDirectionCallMock = (
+    addressMock: Address,
+    fromIndex: i32,
+    toIndex: i32
+): void => {
     createMockedFunction(
         addressMock,
         "get_dy",
         "get_dy(uint256,uint256,uint256):(uint256)"
     )
         .withArgs([
-            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(0)),
-            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1)),
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(fromIndex)),
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(toIndex)),
             ethereum.Value.fromUnsignedBigInt(
                 BigInt.fromString("100000000000000000")
             ),
@@ -132,6 +181,11 @@ const createGetDyCallMock = (addressMock: Address): void => {
         .returns([
             ethereum.Value.fromSignedBigInt(BigInt.fromString("9000000000")),
         ])
+}
+
+const createGetDyCallMock = (addressMock: Address): void => {
+    createGetDyDirectionCallMock(addressMock, 0, 1)
+    createGetDyDirectionCallMock(addressMock, 1, 0)
 }
 
 const createNegativeGetDyCallMock = (addressMock: Address): void => {
@@ -150,19 +204,37 @@ const createNegativeGetDyCallMock = (addressMock: Address): void => {
         .returns([
             ethereum.Value.fromSignedBigInt(BigInt.fromString("700000000")),
         ])
+    createMockedFunction(
+        addressMock,
+        "get_dy",
+        "get_dy(uint256,uint256,uint256):(uint256)"
+    )
+        .withArgs([
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1)),
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(0)),
+            ethereum.Value.fromUnsignedBigInt(
+                BigInt.fromString("100000000000000000")
+            ),
+        ])
+        .returns([
+            ethereum.Value.fromSignedBigInt(BigInt.fromString("700000000")),
+        ])
 }
 
 export function mockCurvePoolFunctions(): void {
     ;[FIRST_POOL_ADDRESS_MOCK, SECOND_POOL_ADDRESS_MOCK].forEach(
         (addressMock) => {
+            mockCurvePoolType(addressMock)
             createLPTokenCallMack(addressMock)
             createFeeCallMock(addressMock)
             createAdminFeeCallMock(addressMock)
             createFutureAdminFeeCallMock(addressMock)
             createFutureAdminFeeChangeDeadlineCallMock(addressMock)
             createPriceScaleCallMock(addressMock)
+            createVirtualPriceCallMock(addressMock)
             createLastPricesCallMock(addressMock)
             createCoinsCallMock(addressMock)
+            createBalancesCallMock(addressMock)
         }
     )
     // Positive APR

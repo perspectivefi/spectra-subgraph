@@ -1,11 +1,11 @@
 import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 import {
-    describe,
-    test,
+    assert,
     beforeEach,
     clearStore,
-    assert,
-} from "matchstick-as/assembly/index"
+    describe,
+    test,
+} from "matchstick-as/assembly"
 
 import {
     handleOrderFilled,
@@ -80,6 +80,35 @@ describe("Limit Orders - handlers", () => {
 
             assert.fieldEquals(ORDER_STATUS, ORDER_ID, "totalFilled", "800")
             assert.entityCount(ORDER_STATUS, 1)
+        })
+
+        test("tracks updatedAt and updatedAtBlock as later events arrive", () => {
+            const firstFill = createOrderFilledEvent(
+                ORDER_HASH,
+                BigInt.fromI32(500)
+            )
+            firstFill.block.timestamp = BigInt.fromI32(100)
+            firstFill.block.number = BigInt.fromI32(10)
+            handleOrderFilled(firstFill)
+
+            const secondFill = createOrderFilledEvent(
+                ORDER_HASH,
+                BigInt.fromI32(300)
+            )
+            secondFill.block.timestamp = BigInt.fromI32(200)
+            secondFill.block.number = BigInt.fromI32(20)
+            handleOrderFilled(secondFill)
+
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "updatedAt", "200")
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "updatedAtBlock", "20")
+
+            const cancel = createOrderCanceledEvent(MAKER, ORDER_HASH)
+            cancel.block.timestamp = BigInt.fromI32(250)
+            cancel.block.number = BigInt.fromI32(25)
+            handleOrderCanceled(cancel)
+
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "updatedAt", "250")
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "updatedAtBlock", "25")
         })
     })
 
@@ -211,6 +240,18 @@ describe("Limit Orders - handlers", () => {
                 )
             )
             assert.fieldEquals(USER_NONCE, id, "latestNonce", "9")
+            assert.fieldEquals(
+                USER_NONCE,
+                id,
+                "updatedAt",
+                DEFAULT_TIMESTAMP.toString()
+            )
+            assert.fieldEquals(
+                USER_NONCE,
+                id,
+                "updatedAtBlock",
+                DEFAULT_BLOCK.toString()
+            )
             assert.entityCount(USER_NONCE, 1)
         })
 

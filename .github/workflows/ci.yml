@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  subgraph:
+    name: generate, build, and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: yarn
+
+      - name: Validate release version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="$(node -p "require('./package.json').version")"
+          if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "package.json version must use MAJOR.MINOR.PATCH format; got: $version" >&2
+            exit 1
+          fi
+
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            git fetch --no-tags origin "$GITHUB_BASE_REF" --depth=1
+            base_version="$(git show FETCH_HEAD:package.json | node -e "let input=''; process.stdin.on('data', chunk => input += chunk); process.stdin.on('end', () => console.log(JSON.parse(input).version));")"
+
+            if [[ "$version" == "$base_version" ]]; then
+              echo "Every pull request must bump package.json from the base version ($base_version)." >&2
+              exit 1
+            fi
+
+            if ! node -e 'const [base, next] = process.argv.slice(1).map(v => v.split(".").map(BigInt)); const newer = next[0] > base[0] || (next[0] === base[0] && (next[1] > base[1] || (next[1] === base[1] && next[2] > base[2]))); process.exit(newer ? 0 : 1)' "$base_version" "$version"; then
+              echo "package.json version must increase from $base_version; got: $version" >&2
+              exit 1
+            fi
+
+            tag="v${version}"
+            remote_ref="$(git ls-remote --refs origin "refs/tags/${tag}")"
+            if [[ -n "$remote_ref" ]]; then
+              echo "Version $version is already published as $tag. Choose a new version." >&2
+              exit 1
+            fi
+          fi
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --non-interactive
+
+      - name: Generate canonical manifest
+        run: |
+          yarn gen:config --network mainnet
+          cp subgraph.mainnet.yaml subgraph.yaml
+
+      - name: Generate types
+        run: yarn codegen subgraph.yaml
+
+      - name: Build
+        run: yarn graph build subgraph.yaml
+
+      - name: Test
+        run: yarn test:matchstick

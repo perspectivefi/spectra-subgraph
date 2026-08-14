@@ -1,13 +1,5 @@
 import { Bytes } from "@graphprotocol/graph-ts"
 
-// FYTTokenDetails
-export const generateFYTInfoId = (tokenAddress: string): string =>
-    `${tokenAddress}-FYT`
-
-// LiquidityTokenDetails
-export const generateLPInfoId = (tokenAddress: string): string =>
-    `${tokenAddress}-LP`
-
 // AssetAmount
 export const generateAssetAmountId = (
     transactionHash: string,
@@ -15,12 +7,6 @@ export const generateAssetAmountId = (
     logIndex: string,
     type: string
 ): string => `${transactionHash}-${assetAddress}-${type}-${logIndex}`
-
-// AssetPrice
-export const generateAssetPriceId = (
-    tokenAddress: string,
-    timestamp: string
-): string => `${timestamp}-${tokenAddress}`
 
 // AccountAsset
 export const generateAccountAssetId = (
