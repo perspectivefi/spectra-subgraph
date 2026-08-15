@@ -124,6 +124,8 @@ dataSources:
       abis:
         - name: LimitOrderEngine
           file: ./abis/LimitOrderEngine.json
+        - name: NonceManager
+          file: ./abis/NonceManager.json
         - name: ERC20
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
         - name: PrincipalToken
@@ -431,6 +433,25 @@ templates:
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
+  - name: NonceManager
+    kind: ethereum/contract
+    network: {{ network }}
+    source:
+      abi: NonceManager
+    mapping:
+      kind: ethereum/events
+      language: wasm/assemblyscript
+      apiVersion: 0.0.6
+      entities: [ ]
+      file: ./src/mappings/limitOrders.ts
+      abis:
+        - name: NonceManager
+          file: ./abis/NonceManager.json
+        - name: ERC20
+          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
+      eventHandlers:
+        - event: NonceIncreased(indexed address,uint256,uint256)
+          handler: handleNonceManagerNonceIncreased
   - name: MetavaultWrapper
     kind: ethereum/contract
     network: {{ network }}

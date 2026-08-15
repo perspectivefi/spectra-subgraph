@@ -2,6 +2,7 @@
     "network": "avalanche",
     "accessManager": "0x4973b53b300d64ab72147EFF8C9d962f6b1dA02e",
     "limitOrderEngine": "0x0000000000000000000000000000000000000000",
+    "nonceManager": "0x0000000000000000000000000000000000000000",
     "metavaultsRegistry": "0xacf33983cab5f9e914e6a93a2f4d531b5c516602",
     "startBlock": 62814000,
     "registry": "0x786Da12e9836a9ff9b7d92e8bac1C849e2ACe378",

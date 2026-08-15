@@ -13,6 +13,7 @@ import {
     handleOrderPreSigned,
     handleLimitOrderFeeUpdated,
     handleNonceIncreased,
+    handleNonceManagerNonceIncreased,
 } from "../mappings/limitOrders"
 import {
     createOrderFilledEvent,
@@ -262,5 +263,44 @@ describe("Limit Orders - handlers", () => {
             assert.entityCount(USER_NONCE, 1)
         })
 
+        test("handleNonceManagerNonceIncreased updates the same UserNonce entity", () => {
+            handleNonceManagerNonceIncreased(
+                createNonceIncreasedEvent(
+                    MAKER,
+                    BigInt.fromI32(0),
+                    BigInt.fromI32(1)
+                )
+            )
+
+            const id = "nonce-" + MAKER.toHexString()
+            assert.fieldEquals(USER_NONCE, id, "latestNonce", "1")
+            assert.entityCount(USER_NONCE, 1)
+        })
+
+        test("both nonce handlers update the same entity in place", () => {
+            handleNonceIncreased(
+                createNonceIncreasedEvent(
+                    MAKER,
+                    BigInt.fromI32(0),
+                    BigInt.fromI32(5)
+                )
+            )
+
+            const id = "nonce-" + MAKER.toHexString()
+            assert.fieldEquals(USER_NONCE, id, "latestNonce", "5")
+            assert.entityCount(USER_NONCE, 1)
+
+            // NonceManager handler must resolve to the same UserNonce id
+            handleNonceManagerNonceIncreased(
+                createNonceIncreasedEvent(
+                    MAKER,
+                    BigInt.fromI32(5),
+                    BigInt.fromI32(8)
+                )
+            )
+
+            assert.fieldEquals(USER_NONCE, id, "latestNonce", "8")
+            assert.entityCount(USER_NONCE, 1)
+        })
     })
 })
