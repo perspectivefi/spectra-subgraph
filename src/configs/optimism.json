@@ -2,7 +2,6 @@
     "network": "optimism",
     "accessManager": "0x786Da12e9836a9ff9b7d92e8bac1C849e2ACe378",
     "limitOrderEngine": "0x0000000000000000000000000000000000000000",
-    "nonceManager": "0x0000000000000000000000000000000000000000",
     "metavaultsRegistry": "0x0000000000000000000000000000000000000000",
     "startBlock": 122130500,
     "registry": "0x0458c078fCf527DA293Ec9e813a0DcAF9F949EB1",
