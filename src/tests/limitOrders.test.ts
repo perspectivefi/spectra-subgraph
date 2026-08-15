@@ -1,128 +1,306 @@
-import { Address, BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts"
+import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
 import {
     assert,
     beforeEach,
     clearStore,
     describe,
-    newMockEvent,
     test,
 } from "matchstick-as/assembly"
 
 import {
-    NonceIncreased,
-    OrderCanceled,
-    OrderFilled,
-} from "../../generated/LimitOrderEngine/LimitOrderEngine"
-import {
-    handleNonceIncreased,
-    handleOrderCanceled,
     handleOrderFilled,
+    handleOrderCanceled,
+    handleOrderPreSigned,
+    handleLimitOrderFeeUpdated,
+    handleNonceIncreased,
+    handleNonceManagerNonceIncreased,
 } from "../mappings/limitOrders"
+import {
+    createOrderFilledEvent,
+    createOrderCanceledEvent,
+    createOrderPreSignedEvent,
+    createLimitOrderFeeUpdatedEvent,
+    createNonceIncreasedEvent,
+    DEFAULT_TIMESTAMP,
+    DEFAULT_BLOCK,
+} from "./events/LimitOrders"
+import { OnChainOrderStatus } from "../../generated/schema"
 
-const MAKER = Address.fromString("0x1234567890123456789012345678901234567890")
+const ORDER_STATUS = "OnChainOrderStatus"
+const USER_NONCE = "UserNonce"
+const LIMIT_ORDER_FEE = "LimitOrderFee"
+const FEE_ID = "limit-order-fee"
+
 const ORDER_HASH = Bytes.fromHexString(
     "0x1111111111111111111111111111111111111111111111111111111111111111"
 )
+const ORDER_ID = ORDER_HASH.toHexString()
+const MAKER = Address.fromString("0x2222222222222222222222222222222222222222")
 
-function orderFilled(amount: BigInt, timestamp: i32, blockNumber: i32): void {
-    const event = changetype<OrderFilled>(newMockEvent())
-    event.block.timestamp = BigInt.fromI32(timestamp)
-    event.block.number = BigInt.fromI32(blockNumber)
-    event.parameters = [
-        new ethereum.EventParam(
-            "orderHash",
-            ethereum.Value.fromFixedBytes(ORDER_HASH)
-        ),
-        new ethereum.EventParam(
-            "actualMaking",
-            ethereum.Value.fromUnsignedBigInt(amount)
-        ),
-    ]
-    handleOrderFilled(event)
+// isPreSigned must stay null (not false) until an OrderPreSigned event is seen
+function assertPreSignedUnset(): void {
+    const status = OnChainOrderStatus.load(ORDER_ID)
+    assert.assertNotNull(status)
+    assert.assertNull(status!.get("isPreSigned"))
 }
 
-function orderCanceled(timestamp: i32, blockNumber: i32): void {
-    const event = changetype<OrderCanceled>(newMockEvent())
-    event.block.timestamp = BigInt.fromI32(timestamp)
-    event.block.number = BigInt.fromI32(blockNumber)
-    event.parameters = [
-        new ethereum.EventParam("maker", ethereum.Value.fromAddress(MAKER)),
-        new ethereum.EventParam(
-            "orderHash",
-            ethereum.Value.fromFixedBytes(ORDER_HASH)
-        ),
-    ]
-    handleOrderCanceled(event)
-}
-
-function nonceIncreased(
-    oldNonce: i32,
-    newNonce: i32,
-    timestamp: i32,
-    blockNumber: i32
-): void {
-    const event = changetype<NonceIncreased>(newMockEvent())
-    event.block.timestamp = BigInt.fromI32(timestamp)
-    event.block.number = BigInt.fromI32(blockNumber)
-    event.parameters = [
-        new ethereum.EventParam("maker", ethereum.Value.fromAddress(MAKER)),
-        new ethereum.EventParam(
-            "oldNonce",
-            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(oldNonce))
-        ),
-        new ethereum.EventParam(
-            "newNonce",
-            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(newNonce))
-        ),
-    ]
-    handleNonceIncreased(event)
-}
-
-describe("Limit order lifecycle", () => {
+describe("Limit Orders - handlers", () => {
     beforeEach(() => {
         clearStore()
     })
 
-    test("accumulates successive fills through the production handler", () => {
-        orderFilled(BigInt.fromI32(500), 100, 10)
-        orderFilled(BigInt.fromI32(300), 200, 20)
+    describe("handleOrderFilled", () => {
+        test("creates OnChainOrderStatus with defaults and records the fill", () => {
+            handleOrderFilled(
+                createOrderFilledEvent(ORDER_HASH, BigInt.fromI32(500))
+            )
 
-        const id = ORDER_HASH.toHexString()
-        assert.entityCount("OnChainOrderStatus", 1)
-        assert.fieldEquals("OnChainOrderStatus", id, "totalFilled", "800")
-        assert.fieldEquals("OnChainOrderStatus", id, "cancelled", "false")
-        assert.fieldEquals("OnChainOrderStatus", id, "updatedAt", "200")
-        assert.fieldEquals("OnChainOrderStatus", id, "updatedAtBlock", "20")
+            assert.fieldEquals(
+                ORDER_STATUS,
+                ORDER_ID,
+                "orderHash",
+                ORDER_HASH.toHexString()
+            )
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "totalFilled", "500")
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "cancelled", "false")
+            assertPreSignedUnset()
+            assert.fieldEquals(
+                ORDER_STATUS,
+                ORDER_ID,
+                "updatedAt",
+                DEFAULT_TIMESTAMP.toString()
+            )
+            assert.fieldEquals(
+                ORDER_STATUS,
+                ORDER_ID,
+                "updatedAtBlock",
+                DEFAULT_BLOCK.toString()
+            )
+        })
+
+        test("accumulates totalFilled across multiple fills", () => {
+            handleOrderFilled(
+                createOrderFilledEvent(ORDER_HASH, BigInt.fromI32(500))
+            )
+            handleOrderFilled(
+                createOrderFilledEvent(ORDER_HASH, BigInt.fromI32(300))
+            )
+
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "totalFilled", "800")
+            assert.entityCount(ORDER_STATUS, 1)
+        })
+
+        test("tracks updatedAt and updatedAtBlock as later events arrive", () => {
+            const firstFill = createOrderFilledEvent(
+                ORDER_HASH,
+                BigInt.fromI32(500)
+            )
+            firstFill.block.timestamp = BigInt.fromI32(100)
+            firstFill.block.number = BigInt.fromI32(10)
+            handleOrderFilled(firstFill)
+
+            const secondFill = createOrderFilledEvent(
+                ORDER_HASH,
+                BigInt.fromI32(300)
+            )
+            secondFill.block.timestamp = BigInt.fromI32(200)
+            secondFill.block.number = BigInt.fromI32(20)
+            handleOrderFilled(secondFill)
+
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "updatedAt", "200")
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "updatedAtBlock", "20")
+
+            const cancel = createOrderCanceledEvent(MAKER, ORDER_HASH)
+            cancel.block.timestamp = BigInt.fromI32(250)
+            cancel.block.number = BigInt.fromI32(25)
+            handleOrderCanceled(cancel)
+
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "updatedAt", "250")
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "updatedAtBlock", "25")
+        })
     })
 
-    test("preserves fills when an order is cancelled", () => {
-        orderFilled(BigInt.fromI32(500), 100, 10)
-        orderCanceled(250, 25)
+    describe("handleOrderCanceled", () => {
+        test("marks a fresh order cancelled with zero fill and presign unknown", () => {
+            handleOrderCanceled(createOrderCanceledEvent(MAKER, ORDER_HASH))
 
-        const id = ORDER_HASH.toHexString()
-        assert.fieldEquals("OnChainOrderStatus", id, "totalFilled", "500")
-        assert.fieldEquals("OnChainOrderStatus", id, "cancelled", "true")
-        assert.fieldEquals("OnChainOrderStatus", id, "updatedAt", "250")
-        assert.fieldEquals("OnChainOrderStatus", id, "updatedAtBlock", "25")
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "cancelled", "true")
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "totalFilled", "0")
+            assertPreSignedUnset()
+        })
+
+        test("preserves accumulated fills when cancelling an existing order", () => {
+            handleOrderFilled(
+                createOrderFilledEvent(ORDER_HASH, BigInt.fromI32(100))
+            )
+            handleOrderCanceled(createOrderCanceledEvent(MAKER, ORDER_HASH))
+
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "cancelled", "true")
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "totalFilled", "100")
+        })
     })
 
-    test("records cancellation before any fill", () => {
-        orderCanceled(300, 30)
+    describe("handleOrderPreSigned", () => {
+        test("creates a pre-signed order with zero fill before any fill", () => {
+            handleOrderPreSigned(createOrderPreSignedEvent(ORDER_HASH, MAKER))
 
-        const id = ORDER_HASH.toHexString()
-        assert.fieldEquals("OnChainOrderStatus", id, "totalFilled", "0")
-        assert.fieldEquals("OnChainOrderStatus", id, "cancelled", "true")
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "isPreSigned", "true")
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "totalFilled", "0")
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "cancelled", "false")
+            assert.fieldEquals(
+                ORDER_STATUS,
+                ORDER_ID,
+                "orderHash",
+                ORDER_HASH.toHexString()
+            )
+        })
+
+        test("pre-sign then fill: stays pre-signed and accumulates the fill", () => {
+            handleOrderPreSigned(createOrderPreSignedEvent(ORDER_HASH, MAKER))
+            handleOrderFilled(
+                createOrderFilledEvent(ORDER_HASH, BigInt.fromI32(250))
+            )
+
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "isPreSigned", "true")
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "totalFilled", "250")
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "cancelled", "false")
+        })
+
+        test("fill then pre-sign: preserves fills and flips isPreSigned", () => {
+            handleOrderFilled(
+                createOrderFilledEvent(ORDER_HASH, BigInt.fromI32(700))
+            )
+            assertPreSignedUnset()
+
+            handleOrderPreSigned(createOrderPreSignedEvent(ORDER_HASH, MAKER))
+
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "isPreSigned", "true")
+            assert.fieldEquals(ORDER_STATUS, ORDER_ID, "totalFilled", "700")
+            assert.entityCount(ORDER_STATUS, 1)
+        })
     })
 
-    test("tracks the latest nonce and its chain position", () => {
-        nonceIncreased(5, 6, 400, 40)
-        nonceIncreased(6, 9, 500, 50)
+    describe("handleLimitOrderFeeUpdated", () => {
+        test("creates the fee singleton with newFee and zero previous", () => {
+            handleLimitOrderFeeUpdated(
+                createLimitOrderFeeUpdatedEvent(
+                    BigInt.fromString("10000000000000000") // 1% in WAD
+                )
+            )
 
-        const id = "nonce-" + MAKER.toHexString()
-        assert.entityCount("UserNonce", 1)
-        assert.fieldEquals("UserNonce", id, "user", MAKER.toHexString())
-        assert.fieldEquals("UserNonce", id, "latestNonce", "9")
-        assert.fieldEquals("UserNonce", id, "updatedAt", "500")
-        assert.fieldEquals("UserNonce", id, "updatedAtBlock", "50")
+            assert.fieldEquals(LIMIT_ORDER_FEE, FEE_ID, "previousFee", "0")
+            assert.fieldEquals(
+                LIMIT_ORDER_FEE,
+                FEE_ID,
+                "currentFee",
+                "10000000000000000"
+            )
+            assert.entityCount(LIMIT_ORDER_FEE, 1)
+        })
+
+        test("derives previousFee from the stored value on subsequent updates", () => {
+            handleLimitOrderFeeUpdated(
+                createLimitOrderFeeUpdatedEvent(
+                    BigInt.fromString("10000000000000000")
+                )
+            )
+            handleLimitOrderFeeUpdated(
+                createLimitOrderFeeUpdatedEvent(
+                    BigInt.fromString("20000000000000000")
+                )
+            )
+
+            assert.fieldEquals(
+                LIMIT_ORDER_FEE,
+                FEE_ID,
+                "previousFee",
+                "10000000000000000"
+            )
+            assert.fieldEquals(
+                LIMIT_ORDER_FEE,
+                FEE_ID,
+                "currentFee",
+                "20000000000000000"
+            )
+            assert.entityCount(LIMIT_ORDER_FEE, 1)
+        })
+    })
+
+    describe("nonce handlers", () => {
+        test("handleNonceIncreased tracks the latest nonce per user", () => {
+            handleNonceIncreased(
+                createNonceIncreasedEvent(
+                    MAKER,
+                    BigInt.fromI32(5),
+                    BigInt.fromI32(6)
+                )
+            )
+
+            const id = "nonce-" + MAKER.toHexString()
+            assert.fieldEquals(USER_NONCE, id, "user", MAKER.toHexString())
+            assert.fieldEquals(USER_NONCE, id, "latestNonce", "6")
+
+            handleNonceIncreased(
+                createNonceIncreasedEvent(
+                    MAKER,
+                    BigInt.fromI32(6),
+                    BigInt.fromI32(9)
+                )
+            )
+            assert.fieldEquals(USER_NONCE, id, "latestNonce", "9")
+            assert.fieldEquals(
+                USER_NONCE,
+                id,
+                "updatedAt",
+                DEFAULT_TIMESTAMP.toString()
+            )
+            assert.fieldEquals(
+                USER_NONCE,
+                id,
+                "updatedAtBlock",
+                DEFAULT_BLOCK.toString()
+            )
+            assert.entityCount(USER_NONCE, 1)
+        })
+
+        test("handleNonceManagerNonceIncreased updates the same UserNonce entity", () => {
+            handleNonceManagerNonceIncreased(
+                createNonceIncreasedEvent(
+                    MAKER,
+                    BigInt.fromI32(0),
+                    BigInt.fromI32(1)
+                )
+            )
+
+            const id = "nonce-" + MAKER.toHexString()
+            assert.fieldEquals(USER_NONCE, id, "latestNonce", "1")
+            assert.entityCount(USER_NONCE, 1)
+        })
+
+        test("both nonce handlers update the same entity in place", () => {
+            handleNonceIncreased(
+                createNonceIncreasedEvent(
+                    MAKER,
+                    BigInt.fromI32(0),
+                    BigInt.fromI32(5)
+                )
+            )
+
+            const id = "nonce-" + MAKER.toHexString()
+            assert.fieldEquals(USER_NONCE, id, "latestNonce", "5")
+            assert.entityCount(USER_NONCE, 1)
+
+            // NonceManager handler must resolve to the same UserNonce id
+            handleNonceManagerNonceIncreased(
+                createNonceIncreasedEvent(
+                    MAKER,
+                    BigInt.fromI32(5),
+                    BigInt.fromI32(8)
+                )
+            )
+
+            assert.fieldEquals(USER_NONCE, id, "latestNonce", "8")
+            assert.entityCount(USER_NONCE, 1)
+        })
     })
 })
