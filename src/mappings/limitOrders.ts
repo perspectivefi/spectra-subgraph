@@ -1,5 +1,3 @@
-import { BigInt, Address, Bytes, ethereum } from "@graphprotocol/graph-ts"
-
 import {
     OrderFilled as OrderFilledEvent,
     OrderCanceled as OrderCanceledEvent,
@@ -12,18 +10,17 @@ import {
     Paused as PausedEvent,
     Unpaused as UnpausedEvent,
 } from "../../generated/LimitOrderEngine/LimitOrderEngine"
-// NonceManager events are also available from the LimitOrderEngine generated types
-// since NonceManager is included as an ABI in the LimitOrderEngine data source
-// (LimitOrderEngine extends NonceManage hence they have the same address))
+// NonceIncreased comes from the LimitOrderEngine ABI directly:
+// the engine inherits NonceManager (same contract, same address)
 // Import entities
 import {
     UserNonce,
     OnChainOrderStatus,
     LimitOrderFee,
 } from "../../generated/schema"
-import { ZERO_BI, ZERO_BD } from "../constants"
+import { ZERO_BI } from "../constants"
 // Import utilities
-import { logInfo, logWarning } from "../utils/log"
+import { logInfo } from "../utils/log"
 
 /**
  * Handle OrderFilled event from LimitOrderEngine
@@ -173,36 +170,6 @@ export function handleNonceIncreased(event: NonceIncreasedEvent): void {
     userNonce.save()
 }
 
-/**
- * Handle NonceIncreased event from NonceManager
- * This event is emitted when a user's nonce is increased via NonceManager
- */
-export function handleNonceManagerNonceIncreased(
-    event: NonceIncreasedEvent
-): void {
-    logInfo("Handling NonceIncreased event from NonceManager", [
-        "maker: " + event.params.maker.toHexString(),
-        "oldNonce: " + event.params.oldNonce.toString(),
-        "newNonce: " + event.params.newNonce.toString(),
-    ])
-
-    // Create unique ID for UserNonce entity
-    let userNonceId = "nonce-" + event.params.maker.toHexString()
-
-    // Get or create UserNonce entity
-    let userNonce = UserNonce.load(userNonceId)
-    if (userNonce == null) {
-        userNonce = new UserNonce(userNonceId)
-        userNonce.user = event.params.maker
-    }
-
-    // Update with the new nonce (should always be higher)
-    userNonce.latestNonce = event.params.newNonce
-    userNonce.updatedAt = event.block.timestamp
-    userNonce.updatedAtBlock = event.block.number
-
-    userNonce.save()
-}
 
 /**
  * Handle AuthorityUpdated event from LimitOrderEngine
