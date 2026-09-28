@@ -68,6 +68,9 @@ jobs:
           yarn gen:config --network mainnet
           cp subgraph.mainnet.yaml subgraph.yaml
 
+      - name: Test manifest generation
+        run: yarn test:manifests
+
       - name: Generate types
         run: yarn codegen subgraph.yaml
 

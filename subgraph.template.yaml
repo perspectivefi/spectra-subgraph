@@ -129,6 +129,7 @@ dataSources:
           handler: handleOperationCanceled
         - event: RoleLabel(indexed uint64,string)
           handler: handleRoleLabel
+{{#hasPtBridge}}
   - name: PTBridge
     kind: ethereum/contract
     network: {{ network }}
@@ -152,6 +153,7 @@ dataSources:
           handler: handlePTLocked
         - event: PTUnlocked(indexed bytes32,indexed address,indexed address,uint256)
           handler: handlePTUnlocked
+{{/hasPtBridge}}
 templates:
   - name: Factory
     kind: ethereum/contract
