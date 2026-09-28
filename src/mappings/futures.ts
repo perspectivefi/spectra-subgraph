@@ -255,7 +255,6 @@ export function handleMint(event: Mint): void {
             futureInTransaction: Address.fromBytes(principalToken.address),
             userInTransaction: event.params.to,
             poolInTransaction: ZERO_ADDRESS,
-            metavaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [],
             amountsOut: [firstAmountOut.id, secondAmountOut.id],
@@ -279,9 +278,6 @@ export function handleMint(event: Mint): void {
             feeRatio: ZERO_BI,
             ibtRate: ZERO_BI,
             ptRate: ZERO_BI,
-            metavaultEpochId: ZERO_BI,
-            metavaultShares: ZERO_BI,
-            metavaultAssets: ZERO_BI,
         })
 
         // Mint specific FutureDailyStats data
@@ -350,7 +346,6 @@ export function handleRedeem(event: Redeem): void {
             futureInTransaction: Address.fromBytes(principalToken.address),
             userInTransaction: event.params.from,
             poolInTransaction: ZERO_ADDRESS,
-            metavaultInTransaction: ZERO_ADDRESS,
 
             amountsIn: [firstAmountIn.id, secondAmountIn.id],
             amountsOut: [],
@@ -375,9 +370,6 @@ export function handleRedeem(event: Redeem): void {
 
             ibtRate: ZERO_BI,
             ptRate: ZERO_BI,
-            metavaultEpochId: ZERO_BI,
-            metavaultShares: ZERO_BI,
-            metavaultAssets: ZERO_BI,
         })
 
         // Redeem specific FutureDailyStats data

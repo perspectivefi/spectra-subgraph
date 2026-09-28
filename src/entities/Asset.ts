@@ -7,15 +7,14 @@ import { getNetwork } from "./Network"
 export function getAsset(
     address: string,
     timestamp: BigInt,
-    type: string,
-    id: string | null = null
+    type: string
 ): Asset {
-    let asset = Asset.load(id !== null ? id : address)
+    let asset = Asset.load(address)
     if (asset) {
         return asset
     }
 
-    asset = createAsset(address, timestamp, type, id)
+    asset = createAsset(address, timestamp, type)
 
     return asset as Asset
 }
@@ -23,10 +22,9 @@ export function getAsset(
 function createAsset(
     address: string,
     timestamp: BigInt,
-    type: string,
-    id: string | null = null
+    type: string
 ): Asset {
-    let asset = new Asset(id !== null ? id : address)
+    let asset = new Asset(address)
     asset.chainId = getNetwork().chainId
     asset.address = Address.fromString(address)
     asset.createdAtTimestamp = timestamp
@@ -38,8 +36,4 @@ function createAsset(
 
     asset.save()
     return asset
-}
-
-export function getAssetId(address: Address, suffix: string): string {
-    return address.toHex() + "_" + suffix
 }
