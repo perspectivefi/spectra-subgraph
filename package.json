@@ -1,12 +1,13 @@
 {
     "name": "spectra-subgraph",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "repository": "https://github.com/perspectivefi/spectra-subgraph",
     "license": "MIT",
     "scripts": {
         "codegen": "graph codegen",
         "gen:config": "node ./src/scripts/subgraphConfigGenerator.js",
-        "test": "yarn test:prepare && yarn test:matchstick",
+        "test": "yarn test:manifests && yarn test:prepare && yarn test:matchstick",
+        "test:manifests": "node --test tests/*.test.cjs",
         "test:prepare": "yarn gen:config --network mainnet && cp subgraph.mainnet.yaml subgraph.yaml && yarn codegen subgraph.yaml",
         "test:matchstick": "graph test --version 0.6.0",
         "prettify": "prettier --write \"./**/*.{js,jsx,json,ts,tsx,css}\""

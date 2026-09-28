@@ -13,6 +13,15 @@ const encoding = {
     encoding: "utf-8",
 }
 
+const renderTemplate = (template, view) =>
+    Mustache.render(template, {
+        ...view,
+        hasPtBridge:
+            !!view.ptBridgeAddr &&
+            view.ptBridgeAddr.toLowerCase() !==
+                "0x0000000000000000000000000000000000000000",
+    })
+
 // Parse command line arguments
 function parseArgs() {
     const args = process.argv.slice(2)
@@ -57,7 +66,7 @@ const generateConfig = (
             )
         )
 
-        const output = Mustache.render(template, view)
+        const output = renderTemplate(template, view)
         const outputFileName = `${filename}.${network}.yaml`
 
         fs.writeFileSync(
@@ -94,7 +103,7 @@ const generateConfigWithGraft = (
         )
 
         // Render the template with Mustache
-        let output = Mustache.render(template, view)
+        let output = renderTemplate(template, view)
 
         // Add graft section after repository line and before schema
         // Find the line with "repository:" and insert graft section after it
@@ -184,11 +193,7 @@ if (args.network) {
         )
     } else {
         // Otherwise, generate without graft
-        generateConfig(
-            args.network,
-            DEFAULT.FILENAME,
-            DEFAULT.TEMPLATE_PATH
-        )
+        generateConfig(args.network, DEFAULT.FILENAME, DEFAULT.TEMPLATE_PATH)
     }
 } else {
     // If no network specified, generate all configs (original behavior)
@@ -199,7 +204,11 @@ if (args.network) {
             (_, files) => {
                 files.map((file) => {
                     const [network] = file.split(".")
-                    generateConfig(network, DEFAULT.FILENAME, DEFAULT.TEMPLATE_PATH)
+                    generateConfig(
+                        network,
+                        DEFAULT.FILENAME,
+                        DEFAULT.TEMPLATE_PATH
+                    )
                 })
             }
         )
