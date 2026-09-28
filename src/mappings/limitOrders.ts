@@ -1,8 +1,8 @@
-import { BigInt, Address, Bytes, ethereum } from "@graphprotocol/graph-ts"
-
 import {
     OrderFilled as OrderFilledEvent,
     OrderCanceled as OrderCanceledEvent,
+    OrderPreSigned as OrderPreSignedEvent,
+    LimitOrderFeeUpdated as LimitOrderFeeUpdatedEvent,
     NonceIncreased as NonceIncreasedEvent,
     AuthorityUpdated as AuthorityUpdatedEvent,
     FeeRecipientUpdated as FeeRecipientUpdatedEvent,
@@ -10,14 +10,17 @@ import {
     Paused as PausedEvent,
     Unpaused as UnpausedEvent,
 } from "../../generated/LimitOrderEngine/LimitOrderEngine"
-// NonceManager events are also available from the LimitOrderEngine generated types
-// since NonceManager is included as an ABI in the LimitOrderEngine data source
-// (LimitOrderEngine extends NonceManage hence they have the same address))
+// NonceIncreased comes from the LimitOrderEngine ABI directly:
+// the engine inherits NonceManager (same contract, same address)
 // Import entities
-import { UserNonce, OnChainOrderStatus } from "../../generated/schema"
-import { ZERO_BI, ZERO_BD } from "../constants"
+import {
+    UserNonce,
+    OnChainOrderStatus,
+    LimitOrderFee,
+} from "../../generated/schema"
+import { ZERO_BI } from "../constants"
 // Import utilities
-import { logInfo, logWarning } from "../utils/log"
+import { logInfo } from "../utils/log"
 
 /**
  * Handle OrderFilled event from LimitOrderEngine
@@ -38,6 +41,9 @@ export function handleOrderFilled(event: OrderFilledEvent): void {
         orderStatus.orderHash = event.params.orderHash
         orderStatus.totalFilled = ZERO_BI
         orderStatus.cancelled = false
+        // isPreSigned is deliberately left unset: null means "presign status
+        // unknown" (entity copied by a graft, or first seen via a fill) —
+        // writing false here would claim knowledge we don't have
     }
 
     // Update order status with new fill
@@ -69,6 +75,7 @@ export function handleOrderCanceled(event: OrderCanceledEvent): void {
         orderStatus = new OnChainOrderStatus(orderHashId)
         orderStatus.orderHash = event.params.orderHash
         orderStatus.totalFilled = ZERO_BI
+        // isPreSigned deliberately left unset (null = unknown), see handleOrderFilled
     }
 
     // Mark the order as cancelled
@@ -78,6 +85,59 @@ export function handleOrderCanceled(event: OrderCanceledEvent): void {
 
     // Single save operation
     orderStatus.save()
+}
+
+/**
+ * Handle OrderPreSigned event from LimitOrderEngine
+ * Emitted when a maker registers an order on-chain via preSignSingle/preSignBatch,
+ * allowing fillers to skip EIP-712 signature verification.
+ * Fires before any fill, so totalFilled is ZERO_BI when the entity is first created here.
+ */
+export function handleOrderPreSigned(event: OrderPreSignedEvent): void {
+    // Use orderHash hex string as entity ID for efficient lookups
+    const orderHashId = event.params.orderHash.toHexString()
+
+    // Get or create OnChainOrderStatus entity
+    let orderStatus = OnChainOrderStatus.load(orderHashId)
+    if (orderStatus == null) {
+        orderStatus = new OnChainOrderStatus(orderHashId)
+        orderStatus.orderHash = event.params.orderHash
+        orderStatus.totalFilled = ZERO_BI
+        orderStatus.cancelled = false
+    }
+
+    // Mark the order as pre-signed (registered on-chain)
+    orderStatus.isPreSigned = true
+    orderStatus.updatedAt = event.block.timestamp
+    orderStatus.updatedAtBlock = event.block.number
+
+    orderStatus.save()
+}
+
+/**
+ * Handle LimitOrderFeeUpdated event from LimitOrderEngine
+ * Emitted when the protocol limit-order fee is updated via setLimitOrderFee.
+ * Tracked as a singleton entity holding the current and previous fee (18-decimal WAD).
+ * The event only carries newFee, so previousFee is derived from the stored value.
+ */
+export function handleLimitOrderFeeUpdated(
+    event: LimitOrderFeeUpdatedEvent
+): void {
+    // Singleton entity for the protocol-wide limit-order fee
+    let fee = LimitOrderFee.load("limit-order-fee")
+    if (fee == null) {
+        fee = new LimitOrderFee("limit-order-fee")
+        fee.previousFee = ZERO_BI
+    } else {
+        // Carry the prior current value into previousFee before overwriting
+        fee.previousFee = fee.currentFee
+    }
+
+    fee.currentFee = event.params.newFee
+    fee.updatedAt = event.block.timestamp
+    fee.updatedAtBlock = event.block.number
+
+    fee.save()
 }
 
 /**
@@ -110,36 +170,6 @@ export function handleNonceIncreased(event: NonceIncreasedEvent): void {
     userNonce.save()
 }
 
-/**
- * Handle NonceIncreased event from NonceManager
- * This event is emitted when a user's nonce is increased via NonceManager
- */
-export function handleNonceManagerNonceIncreased(
-    event: NonceIncreasedEvent
-): void {
-    logInfo("Handling NonceIncreased event from NonceManager", [
-        "maker: " + event.params.maker.toHexString(),
-        "oldNonce: " + event.params.oldNonce.toString(),
-        "newNonce: " + event.params.newNonce.toString(),
-    ])
-
-    // Create unique ID for UserNonce entity
-    let userNonceId = "nonce-" + event.params.maker.toHexString()
-
-    // Get or create UserNonce entity
-    let userNonce = UserNonce.load(userNonceId)
-    if (userNonce == null) {
-        userNonce = new UserNonce(userNonceId)
-        userNonce.user = event.params.maker
-    }
-
-    // Update with the new nonce (should always be higher)
-    userNonce.latestNonce = event.params.newNonce
-    userNonce.updatedAt = event.block.timestamp
-    userNonce.updatedAtBlock = event.block.number
-
-    userNonce.save()
-}
 
 /**
  * Handle AuthorityUpdated event from LimitOrderEngine

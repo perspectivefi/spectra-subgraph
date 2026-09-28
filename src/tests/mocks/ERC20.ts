@@ -3,10 +3,7 @@ import { createMockedFunction } from "matchstick-as"
 
 import { toPrecision } from "../../utils/toPrecision"
 import { POOL_LP_ADDRESS_MOCK } from "./CurvePool"
-import {
-    POOL_IBT_ADDRESS_MOCK,
-    POOL_PT_ADDRESS_MOCK,
-} from "./Factory"
+import { POOL_IBT_ADDRESS_MOCK, POOL_PT_ADDRESS_MOCK } from "./Factory"
 import {
     FIRST_FUTURE_VAULT_ADDRESS_MOCK,
     SECOND_FUTURE_VAULT_ADDRESS_MOCK,
@@ -51,6 +48,13 @@ const createTotalSupplyCallMock = (addressMock: Address): void => {
     ).returns([ethereum.Value.fromUnsignedBigInt(LP_TOTAL_SUPPLY)])
 }
 
+export function mockERC20FunctionsFor(addressMock: Address): void {
+    createNameCallMock(addressMock)
+    createSymbolCallMock(addressMock)
+    createDecimalsCallMock(addressMock)
+    createTotalSupplyCallMock(addressMock)
+}
+
 export function mockERC20Functions(): void {
     ;[
         Address.fromString(ETH_ADDRESS_MOCK),
@@ -86,6 +90,23 @@ const createBalanceOfCallMock = (
         .returns([ethereum.Value.fromSignedBigInt(returnVault)])
 }
 
+export function mockERC20BalanceFor(
+    addressMock: Address,
+    balance: BigInt
+): void {
+    createBalanceOfCallMock(addressMock, balance)
+}
+
+export function mockERC20BalanceForAccount(
+    tokenMock: Address,
+    accountMock: Address,
+    balance: BigInt
+): void {
+    createMockedFunction(tokenMock, "balanceOf", "balanceOf(address):(uint256)")
+        .withArgs([ethereum.Value.fromAddress(accountMock)])
+        .returns([ethereum.Value.fromUnsignedBigInt(balance)])
+}
+
 export const FIRST_FUTURE_VAULT_PT_BALANCE_MOCK = BigInt.fromString("100")
 export const SECOND_FUTURE_VAULT_PT_BALANCE_MOCK = BigInt.fromString("200")
 export const UNDERLYING_BALANCE_MOCK = BigInt.fromString("1100")
@@ -94,7 +115,6 @@ export const YT_BALANCE_MOCK = BigInt.fromString("400")
 export const POOL_IBT_BALANCE_MOCK = BigInt.fromString("500")
 export const POOL_PT_BALANCE_MOCK = BigInt.fromString("600")
 export const POOL_LP_BALANCE_MOCK = BigInt.fromString("700")
-
 export function mockERC20Balances(): void {
     createBalanceOfCallMock(
         Address.fromString(ETH_ADDRESS_MOCK),

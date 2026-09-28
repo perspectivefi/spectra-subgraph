@@ -58,7 +58,6 @@ export function mockFutureVaultFunctions(): void {
         SECOND_FUTURE_VAULT_ADDRESS_MOCK,
         FACTORY_ADDRESS_MOCK,
         Address.fromString(ETH_ADDRESS_MOCK),
-        PRINCIPAL_TOKEN_ADDRESS_MOCK,
     ].forEach((addressMock) => {
         createMockedFunction(
             addressMock,

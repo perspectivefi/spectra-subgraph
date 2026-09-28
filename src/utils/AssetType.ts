@@ -3,7 +3,6 @@ class AssetType {
     IBT: string = "IBT"
     PT: string = "PT"
     YT: string = "YT"
-    FYT: string = "FYT"
     LP: string = "LP"
     YIELD: string = "YIELD"
     CLAIMED_YIELD: string = "CLAIMED_YIELD"

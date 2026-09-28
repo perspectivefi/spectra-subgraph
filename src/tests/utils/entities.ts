@@ -11,6 +11,7 @@ export let ASSET_AMOUNT_ENTITY = "AssetAmount"
 export let ACCOUNT_ASSET_ENTITY = "AccountAsset"
 
 export let POOL_ENTITY = "Pool"
+export let POOL_STATS_ENTITY = "PoolStats"
 
 export let TRANSFER_ENTITY = "Transfer"
 

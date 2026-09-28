@@ -63,8 +63,6 @@ dataSources:
       abis:
         - name: LimitOrderEngine
           file: ./abis/LimitOrderEngine.json
-        - name: NonceManager
-          file: ./abis/NonceManager.json
         - name: ERC20
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
         - name: PrincipalToken
@@ -74,6 +72,10 @@ dataSources:
           handler: handleOrderFilled
         - event: OrderCanceled(address,bytes32)
           handler: handleOrderCanceled
+        - event: OrderPreSigned(indexed bytes32,indexed address)
+          handler: handleOrderPreSigned
+        - event: LimitOrderFeeUpdated(uint256)
+          handler: handleLimitOrderFeeUpdated
         - event: NonceIncreased(indexed address,uint256,uint256)
           handler: handleNonceIncreased
         - event: AuthorityUpdated(address)
@@ -171,8 +173,6 @@ templates:
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
         - name: ERC4626
           file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC4626.json
-        - name: FeedRegistryInterface
-          file: ./node_modules/@chainlink/contracts/abi/v0.8/FeedRegistryInterface.json
         - name: CurvePool
           file: ./abis/CurvePoolUnified.json
         - name: CurvePoolNG
@@ -328,22 +328,3 @@ templates:
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-  - name: NonceManager
-    kind: ethereum/contract
-    network: {{ network }}
-    source:
-      abi: NonceManager
-    mapping:
-      kind: ethereum/events
-      language: wasm/assemblyscript
-      apiVersion: 0.0.6
-      entities: [ ]
-      file: ./src/mappings/limitOrders.ts
-      abis:
-        - name: NonceManager
-          file: ./abis/NonceManager.json
-        - name: ERC20
-          file: ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json
-      eventHandlers:
-        - event: NonceIncreased(indexed address,uint256,uint256)
-          handler: handleNonceManagerNonceIncreased

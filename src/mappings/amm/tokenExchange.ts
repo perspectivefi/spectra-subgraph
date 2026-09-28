@@ -47,7 +47,9 @@ function tokenExchange(
 ): void {
     let eventTimestamp = event.block.timestamp
 
-    let account = getAccount(event.transaction.from.toHex(), eventTimestamp)
+    // The transaction sender can be a router. Attribute the exchange to the
+    // buyer emitted by the pool, which is the account whose balances changed.
+    let account = getAccount(buyer.toHex(), eventTimestamp)
     let pool = Pool.load(event.address.toHex())
 
     if (pool) {

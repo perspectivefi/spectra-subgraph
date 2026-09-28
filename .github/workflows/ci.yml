@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   subgraph:
-    name: generate and build
+    name: generate, build, and test
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -73,3 +73,6 @@ jobs:
 
       - name: Build
         run: yarn graph build subgraph.yaml
+
+      - name: Test
+        run: yarn test:matchstick
