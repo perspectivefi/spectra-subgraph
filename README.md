@@ -43,6 +43,38 @@ To add support for a new network:
 3. Add the network to `src/utils/ChainIds.ts` if it is not already present.
 4. Run `yarn gen:config` to generate the new `subgraph.<network-name>.yaml` file.
 
+## Registry Address Check
+
+Every contract address in `src/configs/*.json` (Registry, AccessManager, LimitOrderEngine, PT bridge, and the informational `factory` / `spectra` fields) is checked against the Spectra address registry, [`@perspectivefi/addresses`](https://www.npmjs.com/package/@perspectivefi/addresses):
+
+```bash
+yarn check:registry
+```
+
+CI (`.github/workflows/registry-addresses.yml`) runs it on every pull request and on pushes to `master`. It guarantees that, for each network, each configured address equals the registry entry for the mapped key on that chain (for example `registry` -> `core.registry`, `limitOrderEngine` -> `limit-orders.engine`; the network -> chain id and field -> key maps are explicit at the top of `scripts/check-registry-addresses.cjs`). The check fails on:
+
+-   an address that differs from the registry, or has no registry entry;
+-   an address the registry marks `blocked`;
+-   an address field in a config that has no registry key mapped;
+-   an exception that no longer matches anything (stale).
+
+The zero address is allowed: it means the data source is disabled on that network. The script is read-only; it never changes a config or a manifest, and it does not check start blocks.
+
+To accept a known difference, add an entry to `registry-address-exceptions.json` with a reason that says what is live on-chain and why the difference is intended:
+
+```json
+[
+    {
+        "network": "base",
+        "field": "limitOrderEngine",
+        "address": "0x782cB7b327FCfb66C069c433b9380576ef619e3c",
+        "reason": "..."
+    }
+]
+```
+
+`network` is the config file name (`base` for `src/configs/base.json`), `field` is the config key, and `address` is the configured value. If the registry is the one that is wrong, fix it in the registry repo and bump `@perspectivefi/addresses` here instead of adding an exception. To pick up registry changes: `yarn upgrade @perspectivefi/addresses`.
+
 ## Code Generation
 
 After generating the configuration file for your target network, generate the AssemblyScript types (identical for all networks):

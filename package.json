@@ -1,6 +1,6 @@
 {
     "name": "spectra-subgraph",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "repository": "https://github.com/perspectivefi/spectra-subgraph",
     "license": "MIT",
     "scripts": {
@@ -9,6 +9,7 @@
         "test": "yarn test:manifests && yarn test:prepare && yarn test:matchstick",
         "test:manifests": "node --test tests/*.test.cjs",
         "test:prepare": "yarn gen:config --network mainnet && cp subgraph.mainnet.yaml subgraph.yaml && yarn codegen subgraph.yaml",
+        "check:registry": "node scripts/check-registry-addresses.cjs",
         "test:matchstick": "graph test --version 0.6.0",
         "prettify": "prettier --write \"./**/*.{js,jsx,json,ts,tsx,css}\""
     },
@@ -16,6 +17,7 @@
         "@graphprotocol/graph-cli": "^0.97.1",
         "@graphprotocol/graph-ts": "^0.31.0",
         "@openzeppelin/contracts": "^4.1.0",
+        "@perspectivefi/addresses": "^0.1.2",
         "@trivago/prettier-plugin-sort-imports": "^3.3.0",
         "@typescript-eslint/eslint-plugin": "^5.33.1",
         "@typescript-eslint/parser": "^5.33.1",
