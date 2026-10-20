@@ -1,0 +1,8 @@
+[
+    {
+        "network": "base",
+        "field": "limitOrderEngine",
+        "address": "0x782cB7b327FCfb66C069c433b9380576ef619e3c",
+        "reason": "Address matches limit-orders.engine on Base, but the registry marks it blocked: a deprecated test deployment from an abandoned limit-order stack (registry note, confirmed 2026-10-19). The subgraph still indexes it as the LimitOrderEngine data source, so this stays until that data source is removed or replaced by the spectra-lo-otc engine. Code is live on Base."
+    }
+]
