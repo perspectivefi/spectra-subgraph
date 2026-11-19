@@ -6,6 +6,7 @@ import {
     clearStore,
     assert,
     beforeAll,
+    createMockedFunction,
 } from "matchstick-as/assembly"
 
 import { Account, Pool } from "../../generated/schema"
@@ -18,6 +19,8 @@ import {
     RemoveLiquidityOne,
     TokenExchange,
 } from "../../generated/templates/CurvePool/CurvePool"
+import { TokenExchange as TokenExchangeNG } from "../../generated/templates/CurvePool/CurvePoolNG"
+import { TokenExchange as TokenExchangeSNG } from "../../generated/templates/CurvePool/CurvePoolSNG"
 import {
     DAY_ID_0,
     SECONDS_PER_DAY,
@@ -32,6 +35,8 @@ import {
     handleRemoveLiquidity,
     handleRemoveLiquidityOne,
     handleTokenExchange,
+    handleTokenExchangeNG,
+    handleTokenExchangeSNG,
 } from "../mappings/amm"
 import {
     generateAssetAmountId,
@@ -39,6 +44,7 @@ import {
     generateFeeClaimId,
     generateFutureDailyStatsId,
     AssetType,
+    PoolType,
 } from "../utils"
 import {
     generatePoolStatsId,
@@ -67,6 +73,7 @@ import {
     STANDARD_DECIMALS_MOCK,
     mockERC20Functions,
     mockERC20Balances,
+    mockERC20BalanceForAccount,
     POOL_IBT_BALANCE_MOCK,
     POOL_PT_BALANCE_MOCK,
     POOL_LP_BALANCE_MOCK,
@@ -145,7 +152,7 @@ const FEE = toPrecision(BigInt.fromI32(40), 1, 8)
 const ADMIN_FEE = toPrecision(BigInt.fromI32(50), 1, 10)
 const FUTURE_ADMIN_FEE = toPrecision(BigInt.fromI32(60), 1, 10)
 const COLLECTED_ADMIN_FEE = toPrecision(BigInt.fromI32(500), 1, 8)
-// Expected from the pool's configured 0.04% fee and 50% admin share for the
+// Expected from the pool's configured 0.08% fee and 50% admin share for the
 // 10-token IBT output used by the routed exchange scenario.
 const EXPECTED_SWAP_FEE = "8006405124099279"
 const EXPECTED_SWAP_ADMIN_FEE = "4003202562049639"
@@ -709,16 +716,17 @@ describe("handleRemoveLiquidity()", () => {
 describe("handleTokenExchange()", () => {
     beforeAll(() => {
         setupPoolStack()
+        mockRouterBalances()
         let tokenExchangeEvent = changetype<TokenExchange>(newMockEvent())
         tokenExchangeEvent.address = FIRST_POOL_ADDRESS_MOCK
         tokenExchangeEvent.transaction.hash = POOL_EXCHANGE_TRANSACTION_HASH
-        tokenExchangeEvent.transaction.from = ROUTER_ADDRESS_MOCK
+        tokenExchangeEvent.transaction.from = FIRST_USER_MOCK
         tokenExchangeEvent.logIndex = EXCHANGE_LOG_INDEX
         tokenExchangeEvent.block.timestamp = ZERO_BI
 
         let buyerParam = new ethereum.EventParam(
             "buyer",
-            ethereum.Value.fromAddress(FIRST_USER_MOCK)
+            ethereum.Value.fromAddress(ROUTER_ADDRESS_MOCK)
         )
 
         let soldIdParam = new ethereum.EventParam(
@@ -880,7 +888,7 @@ describe("handleTokenExchange()", () => {
         )
     })
 
-    test("Should attribute a routed exchange to the buyer emitted by the pool", () => {
+    test("Should attribute a routed exchange to the transaction sender", () => {
         assert.fieldEquals(
             TRANSACTION_ENTITY,
             exchangeTransactionId,
@@ -1022,6 +1030,178 @@ describe("handleTokenExchange()", () => {
         ]
 
         handleTokenExchange(tokenExchangeEvent)
+    })
+})
+
+function mockRouterBalances(): void {
+    mockERC20BalanceForAccount(
+        POOL_IBT_ADDRESS_MOCK,
+        ROUTER_ADDRESS_MOCK,
+        ZERO_BI
+    )
+    mockERC20BalanceForAccount(
+        POOL_PT_ADDRESS_MOCK,
+        ROUTER_ADDRESS_MOCK,
+        ZERO_BI
+    )
+}
+
+function assertRoutedSwapAttribution(poolType: string, buyPt: boolean): void {
+    setupPoolStack()
+    mockRouterBalances()
+    const pool = Pool.load(FIRST_POOL_ADDRESS_MOCK.toHex())!
+    pool.type = poolType
+    pool.save()
+
+    if (poolType == PoolType.CURVE_SNG) {
+        createMockedFunction(
+            FIRST_POOL_ADDRESS_MOCK,
+            "last_price",
+            "last_price(uint256):(uint256)"
+        )
+            .withArgs([ethereum.Value.fromUnsignedBigInt(ZERO_BI)])
+            .returns([
+                ethereum.Value.fromUnsignedBigInt(
+                    BigInt.fromString("1000000000000000000")
+                ),
+            ])
+        createMockedFunction(
+            FIRST_POOL_ADDRESS_MOCK,
+            "stored_rates",
+            "stored_rates():(uint256[])"
+        ).returns([
+            ethereum.Value.fromUnsignedBigIntArray([
+                BigInt.fromString("1000000000000000000"),
+                BigInt.fromString("1000000000000000000"),
+            ]),
+        ])
+        for (let i = 0; i < 2; i++) {
+            createMockedFunction(
+                FIRST_POOL_ADDRESS_MOCK,
+                "get_dy",
+                "get_dy(int128,int128,uint256):(uint256)"
+            )
+                .withArgs([
+                    ethereum.Value.fromSignedBigInt(BigInt.fromI32(i)),
+                    ethereum.Value.fromSignedBigInt(BigInt.fromI32(1 - i)),
+                    ethereum.Value.fromUnsignedBigInt(
+                        BigInt.fromString("100000000000000000")
+                    ),
+                ])
+                .returns([
+                    ethereum.Value.fromUnsignedBigInt(
+                        BigInt.fromString("9000000000")
+                    ),
+                ])
+
+            createMockedFunction(
+                FIRST_POOL_ADDRESS_MOCK,
+                "admin_balances",
+                "admin_balances(uint256):(uint256)"
+            )
+                .withArgs([
+                    ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(i)),
+                ])
+                .returns([ethereum.Value.fromUnsignedBigInt(ZERO_BI)])
+        }
+    }
+
+    const event = newMockEvent()
+    event.address = FIRST_POOL_ADDRESS_MOCK
+    event.transaction.hash = POOL_EXCHANGE_TRANSACTION_HASH
+    event.transaction.from = FIRST_USER_MOCK
+    event.logIndex = EXCHANGE_LOG_INDEX
+    event.block.timestamp = ZERO_BI
+    event.parameters = [
+        new ethereum.EventParam(
+            "buyer",
+            ethereum.Value.fromAddress(ROUTER_ADDRESS_MOCK)
+        ),
+        new ethereum.EventParam(
+            "sold_id",
+            ethereum.Value.fromI32(buyPt ? 0 : 1)
+        ),
+        new ethereum.EventParam(
+            "tokens_sold",
+            ethereum.Value.fromUnsignedBigInt(
+                BigInt.fromString("5000000000000000000")
+            )
+        ),
+        new ethereum.EventParam(
+            "bought_id",
+            ethereum.Value.fromI32(buyPt ? 1 : 0)
+        ),
+        new ethereum.EventParam(
+            "tokens_bought",
+            ethereum.Value.fromUnsignedBigInt(
+                BigInt.fromString("10000000000000000000")
+            )
+        ),
+    ]
+    if (poolType == PoolType.CURVE_SNG) {
+        handleTokenExchangeSNG(changetype<TokenExchangeSNG>(event))
+    } else if (poolType == PoolType.CURVE_NG) {
+        handleTokenExchangeNG(changetype<TokenExchangeNG>(event))
+    } else {
+        handleTokenExchange(changetype<TokenExchange>(event))
+    }
+
+    assert.fieldEquals(
+        TRANSACTION_ENTITY,
+        exchangeTransactionId,
+        "userInTransaction",
+        FIRST_USER_MOCK.toHex()
+    )
+    assert.fieldEquals(
+        ACCOUNT_ASSET_ENTITY,
+        generateAccountAssetId(
+            FIRST_USER_MOCK.toHex(),
+            POOL_IBT_ADDRESS_MOCK.toHex()
+        ),
+        "balance",
+        "500"
+    )
+    assert.fieldEquals(
+        ACCOUNT_ASSET_ENTITY,
+        generateAccountAssetId(
+            FIRST_USER_MOCK.toHex(),
+            POOL_PT_ADDRESS_MOCK.toHex()
+        ),
+        "balance",
+        "600"
+    )
+    assert.notInStore(ACCOUNT_ENTITY, ROUTER_ADDRESS_MOCK.toHex())
+    assert.notInStore(
+        ACCOUNT_ASSET_ENTITY,
+        generateAccountAssetId(
+            ROUTER_ADDRESS_MOCK.toHex(),
+            POOL_IBT_ADDRESS_MOCK.toHex()
+        )
+    )
+    assert.notInStore(
+        ACCOUNT_ASSET_ENTITY,
+        generateAccountAssetId(
+            ROUTER_ADDRESS_MOCK.toHex(),
+            POOL_PT_ADDRESS_MOCK.toHex()
+        )
+    )
+}
+
+describe("Routed swap account attribution", () => {
+    test("Curve: refreshes the sender portfolio when buying PT through a router", () => {
+        assertRoutedSwapAttribution(PoolType.CURVE, true)
+    })
+    test("Curve NG: refreshes the sender portfolio when buying PT through a router", () => {
+        assertRoutedSwapAttribution(PoolType.CURVE_NG, true)
+    })
+    test("Curve NG: refreshes the sender portfolio when selling PT through a router", () => {
+        assertRoutedSwapAttribution(PoolType.CURVE_NG, false)
+    })
+    test("Curve SNG: refreshes the sender portfolio when buying PT through a router", () => {
+        assertRoutedSwapAttribution(PoolType.CURVE_SNG, true)
+    })
+    test("Curve SNG: refreshes the sender portfolio when selling PT through a router", () => {
+        assertRoutedSwapAttribution(PoolType.CURVE_SNG, false)
     })
 })
 
