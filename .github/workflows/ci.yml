@@ -15,7 +15,8 @@ concurrency:
 jobs:
   subgraph:
     name: generate, build, and test
-    runs-on: ubuntu-latest
+    # Graph CLI 0.97.1 selects the Matchstick 0.6.0 Linux binary on Ubuntu 22 or 24.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Check out repository
